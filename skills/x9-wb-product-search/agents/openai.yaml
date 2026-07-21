@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wildberries поиск товаров"
+  short_description: "Ищет и сравнивает товары на Wildberries с проверкой отзывов."
+  default_prompt: "Найди на Wildberries топ-5 товаров под мой запрос."
