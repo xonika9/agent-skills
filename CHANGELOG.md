@@ -4,6 +4,16 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 0.2.0 - 2026-07-22
+
+### Highlights
+
 - Rebuilt the public presentation around a clear English landing page, a matching Russian version, a compact skill catalog, and a distinct visual identity.
 - Added contributor, security, conduct, issue, and pull request guidance for a more predictable open-source workflow.
 
