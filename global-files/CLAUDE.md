@@ -36,3 +36,11 @@ Inspect relevant context before acting. Treat prior beliefs as hypotheses when t
 - Build on existing files, examples, logs, and previous results instead of re-deriving them.
 - For non-trivial work, state a brief plan first; for simple work, proceed directly.
 <!-- END SHARED PERSONAL CORE -->
+
+## Claude Code runtime
+
+### Documentation and browser tools
+
+- Use `find-docs` with Context7 for library documentation, setup guides, API references, and framework-specific behavior.
+- For local web development, use the Claude Code Browser pane (`mcp__Claude_Browser__*`). Start the dev server with `preview_start` `{name}` from `.claude/launch.json` (create it if missing; never run dev servers via Bash), or open an external URL with `preview_start` `{url}`. Verify with `read_page`/`find`, console and network logs (`read_console_messages`, `read_network_requests`, `preview_logs`), interactions via `computer`/`form_input`, and screenshots. If the Browser pane is unavailable, use `agent-browser` in headed mode.
+- Before the first browser action, load and follow the installed `x9-browser-session` skill. It owns authenticated Chromium mechanics and the Claude Code route; do not hard-code its installation path.

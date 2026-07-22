@@ -36,3 +36,23 @@ Inspect relevant context before acting. Treat prior beliefs as hypotheses when t
 - Build on existing files, examples, logs, and previous results instead of re-deriving them.
 - For non-trivial work, state a brief plan first; for simple work, proceed directly.
 <!-- END SHARED PERSONAL CORE -->
+
+## Codex runtime
+
+### Documentation and browser tools
+
+- Use `find-docs` with Context7 for library documentation, setup guides, API references, and framework-specific behavior.
+- For in-app browser work, use the installed `browser:control-in-app-browser` skill and follow its current setup instructions; discover the `node_repl js` tool if it is deferred. Do not copy its initialization API into this always-on file because plugin versions change it.
+- Before the first browser action, load and follow the installed `x9-browser-session` skill. It owns authenticated Chromium mechanics and the Codex route; do not hard-code its installation path.
+
+### Subagent routing
+
+The rules below were verified with real child runs in Codex Desktop runtime `0.145.0-alpha.27` on 2026-07-21. The separately installed shell CLI was `0.144.6`. Re-test after a runtime update instead of inferring behavior from the visible JSON schema alone.
+
+- Default bounded worker settings unless the user or a task-specific skill says otherwise: inherit the parent model, use `reasoning_effort: "medium"`, and use `fork_turns: "none"`.
+- `model` and `reasoning_effort` overrides work with `fork_turns: "none"`; confirm the actual model and effort in child session metadata when they matter.
+- `agent_type` may be accepted even when omitted from the visible schema. A live `agent_type: "explorer"` probe recorded `agent_role: "explorer"` in session metadata.
+- Numeric recent-history forks such as `fork_turns: "1"` work. A full-history fork accepted a model override but silently kept the parent model, so never rely on model or effort overrides with `fork_turns: "all"`.
+- `service_tier` was accepted by the tool surface but not exposed in child metadata; treat exact tier routing as unverified unless another live signal confirms it.
+- Tool return shapes vary. Track the returned task path, collect the child's final result, and inspect child metadata before releasing it when routing is load-bearing.
+- Configured thread and depth limits are ceilings, not promises of simultaneous capacity. Keep useful unfinished agents; release completed agents only after their result has been collected and integrated.

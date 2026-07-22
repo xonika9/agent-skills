@@ -5,16 +5,28 @@ description: Use when browser work requires choosing between a connector, a loca
 
 # Browser session
 
-Use this skill in Claude Code and Codex. It owns the shared route selection, the exact logged-in Edge connection, runtime-specific browser surfaces, and fallbacks. The setup below was verified on 2026-07-21; re-check installed tool instructions and live schemas when a named surface is absent.
+Use this skill in Claude Code and Codex. It owns shared route selection, a portable authenticated Chromium/CDP contract, the verified Edge adapter, runtime-specific browser surfaces, and fallbacks. The Edge adapter below was verified on 2026-07-21; re-check installed tool instructions and live schemas when a named surface is absent.
 
 ## Choose the surface
 
 1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic operation on the linked resource.
 2. Use the runtime's local-app browser surface for public pages, visual inspection, and UI testing.
-3. Use the dedicated Microsoft Edge automation profile when account state, region, cart, saved data, or private pages matter.
+3. Use a dedicated authenticated Chromium automation profile when account state, region, cart, saved data, or private pages matter.
 4. Once selected, keep one browser surface through ordinary stale-reference or timeout errors. Switch only when the surface is unavailable or the user changes the requested browser.
 
-## Logged-in Edge
+## Authenticated Chromium over CDP
+
+Treat the browser executable, dedicated user-data directory, localhost CDP endpoint, launcher, primary controller, and fallback controller as adapter parameters. Chrome, Edge, Brave, and other Chromium browsers can use the same contract when they support remote debugging:
+
+- use a dedicated automation profile rather than the user's default live profile;
+- bind CDP to localhost and do not expose the endpoint to the network;
+- attach controllers to the same existing profile instead of launching a clean browser;
+- create a task-owned page or tab and leave existing browser state untouched;
+- keep credentials, cookies, tokens, local storage, and private page contents inside the browser session.
+
+Do not assume the Edge paths or port below on another machine. Read [references/setup.md](references/setup.md), substitute the local Chromium adapter parameters, and verify the discovery endpoint before browsing.
+
+## Verified Edge adapter
 
 - Profile: `~/Library/Application Support/Microsoft Edge Automation`.
 - Launcher: `~/Applications/Edge (Agent).app` with remote-debugging port `9222`.
@@ -25,7 +37,7 @@ Use this skill in Claude Code and Codex. It owns the shared route selection, the
 - Re-snapshot after navigation, filtering, modal changes, and redraws because element references become stale.
 - If neither route attaches, launch `Edge (Agent).app` or ask the user to do so, then retry the same surface.
 
-Keep credentials, cookies, tokens, local storage, and private page contents inside the browser session. Read before mutating. Posting, purchasing, sending, deleting, or changing account data still requires authority from the user's request.
+Read before mutating. Posting, purchasing, sending, deleting, or changing account data still requires authority from the user's request.
 
 ## Claude Code
 
@@ -39,9 +51,9 @@ Keep credentials, cookies, tokens, local storage, and private page contents insi
 - Logged-in Edge: use the `chrome-devtools` MCP from `~/.codex/config.toml`.
 - If its tools are absent after Edge is running, restart Codex before using `agent-edge`.
 
-## Install the same setup
+## Install an adapter
 
-Read [references/setup.md](references/setup.md) to create the dedicated Edge profile, launcher, MCP entries, and fallback wrapper. Bind CDP to localhost and never commit browser profile contents or credentials.
+Read [references/setup.md](references/setup.md) for the portable adapter contract and the verified Edge example. Never commit browser profile contents or credentials.
 
 ## Failure behavior
 

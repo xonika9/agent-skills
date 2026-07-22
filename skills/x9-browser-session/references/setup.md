@@ -1,6 +1,23 @@
-# Logged-in Edge setup on macOS
+# Authenticated Chromium/CDP setup
 
-This reproduces the browser session used by `x9-browser-session`: a dedicated Microsoft Edge profile, local CDP on port `9222`, `chrome-devtools` as the primary controller, and `agent-edge` as a fallback attached to the same profile.
+Use the portable contract below for any Chromium browser. The complete Microsoft Edge/macOS recipe then reproduces the configuration verified for `x9-browser-session`: a dedicated profile, local CDP on port `9222`, `chrome-devtools` as the primary controller, and `agent-edge` as a fallback attached to the same profile.
+
+## Portable adapter contract
+
+Choose these values for the target machine instead of copying the Edge-specific paths blindly:
+
+| Parameter | Requirement |
+|---|---|
+| Browser executable | A locally installed Chromium browser that supports remote debugging |
+| User-data directory | A dedicated automation profile, separate from the default daily profile |
+| CDP endpoint | A localhost-only port or browser WebSocket endpoint |
+| Launcher | Starts that executable with the dedicated profile and remote debugging enabled |
+| Primary controller | Attaches to the existing CDP endpoint and can create a new page |
+| Fallback controller | Attaches to the same endpoint; it must not launch a clean browser |
+
+Before adding runtime configuration, launch the browser and verify its local CDP discovery endpoint. If the browser exposes only a WebSocket endpoint, configure a controller that accepts that endpoint directly; do not assume `http://127.0.0.1:9222` works for every Chromium version. Keep the endpoint local, open a task-owned page for verification, and close only pages created by the check.
+
+## Verified Microsoft Edge adapter on macOS
 
 ## 1. Create the automation profile and launcher
 

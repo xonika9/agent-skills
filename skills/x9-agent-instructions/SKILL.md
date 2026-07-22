@@ -28,7 +28,7 @@ System and developer instructions remain higher authority than user, repository,
 4. Keep the shared block between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->` byte-identical in both global files.
 5. State hard negative boundaries explicitly when safety or preservation depends on them. Prefer positive target behavior for ordinary guidance.
 6. Specify process only when the path is part of correctness: dependencies, approval gates, deterministic transformations, state/checkpoints, or known failure modes.
-7. Run `python3 scripts/check_globals.py`, then exercise the behavior scenarios below. A prose reread alone is not validation.
+7. Resolve the installed `x9-agent-instructions` directory from the loaded `SKILL.md`, then run `python3 <skill-directory>/scripts/check_globals.py`. Do not resolve the script from the caller's current working directory. Exercise the behavior scenarios below; a prose reread alone is not validation.
 
 ## Behavior scenarios
 
@@ -42,6 +42,6 @@ System and developer instructions remain higher authority than user, repository,
 ## Done
 
 - The rule has one canonical owner and no accidental contradiction.
-- Shared global policy passes `python3 scripts/check_globals.py`.
+- Shared global policy passes `python3 <skill-directory>/scripts/check_globals.py` from an unrelated working directory.
 - At least one positive and one boundary scenario were checked in a fresh context for substantive changes.
 - The handoff names changed files and validation performed.
