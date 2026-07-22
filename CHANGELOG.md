@@ -4,23 +4,36 @@
 
 ### Highlights
 
-- Tightened the README by folding validation and security proof into the contribution section instead of a separate internal-facing block.
-- Restored the intended skill contracts for social research, authenticated personal browsing, cross-provider idea critique, cross-harness context files, subscription-aware Codex delegation, and packaging recurring workflows as skills.
-- Replaced the generated-looking skill table with a problem-first guide and a human-readable catalog that explains the story and practical use of every skill.
-- Added a batch-audit recipe that discovers project-owned skills from flexible paths, delegates bounded audits to fresh workers, preserves raw evidence per target, and requires orchestrator QA plus a consolidated table containing every retained Blocker, Important, and Minor finding.
-- Hardened delegation temporary-file and opt-in telemetry handling; defined read-only/default and authorized context-file actions; added OKF dependency preflight and automatic semantic-repair timestamps; corrected single-target skill validation; and made Wildberries search breadth converge with explicit account actions and risk-based independent verification.
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 1.0.0 - 2026-07-22
+
+### Highlights
+
+- Reworked the public guide into a problem-first catalog that explains the practical role of every skill and keeps contribution, validation, and security guidance concise.
+- Restored the intended contracts for social research, authenticated personal browsing, cross-provider idea critique, cross-harness context files, subscription-aware Codex delegation, and packaging recurring workflows as skills.
+- Added a batch-audit workflow that discovers project-owned skills, delegates bounded fresh-context reviews, preserves raw evidence, and consolidates every retained finding through orchestrator QA.
+- Expanded loop engineering with topology guidance for choosing, composing, and validating reliable multi-agent workflows.
+- Hardened temporary-file and opt-in telemetry handling, context-file authority boundaries, OKF dependency checks and semantic metadata repair, single-target validation, and Wildberries search verification.
 
 ### Install / update
 
 - Existing authenticated-browser users should add the privacy flags documented in `x9-browser-session` to their `chrome-devtools-mcp@latest` configuration, then restart Claude Code or Codex.
+- Other users can update through their existing Agent Skills, Claude Code, or Codex installation route without migration steps.
 
 ### Compatibility
 
+- Declared the public skill names, installation and update routes, and supported behavior stable enough for normal compatibility guarantees starting with 1.0.0.
 - Added same-task changelog rules, release-time diff reconciliation, and a CI gate that catches release-relevant changes when `Unreleased` is empty.
-- Defined deterministic `PATCH`, `MINOR`, `1.0.0`, and post-1.0 `MAJOR` selection rules for release preparation.
-- Replaced stale-prone tool versions and verification dates in runtime guidance with live `--help`, documentation, schema, and session-metadata checks.
+- Defined deterministic release-version selection rules and replaced stale runtime facts with live `--help`, documentation, schema, and session-metadata checks.
 
 ### Breaking changes
+
+- None.
 
 ## 0.2.0 - 2026-07-22
 
