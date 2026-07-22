@@ -18,6 +18,21 @@ REQUIRED_SECTIONS = (
     "Compatibility",
     "Breaking changes",
 )
+RELEASE_RELEVANT_PREFIXES = (
+    "skills/",
+    "global-files/",
+    "assets/",
+    ".claude-plugin/",
+    ".codex-plugin/",
+    ".agents/plugins/",
+)
+RELEASE_RELEVANT_FILES = {
+    "README.md",
+    "README.ru.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md",
+}
 
 
 def load_version(path: Path) -> str:
@@ -38,17 +53,43 @@ def section_body(markdown: str, heading: str) -> str:
     return markdown[start:end].strip()
 
 
+def unreleased_section(changelog: str) -> str:
+    match = re.search(r"^## Unreleased\s*$", changelog, re.MULTILINE)
+    if match is None:
+        raise SystemExit("CHANGELOG.md has no '## Unreleased' section")
+    start = match.end()
+    next_heading = re.search(r"^## ", changelog[start:], re.MULTILINE)
+    end = start + next_heading.start() if next_heading else len(changelog)
+    return changelog[start:end]
+
+
+def has_unreleased_entries(changelog: str) -> bool:
+    unreleased = unreleased_section(changelog)
+    return any(section_body(unreleased, heading) for heading in REQUIRED_SECTIONS)
+
+
+def is_release_relevant(path: str) -> bool:
+    return path in RELEASE_RELEVANT_FILES or path.startswith(RELEASE_RELEVANT_PREFIXES)
+
+
+def validate_development_changelog(changelog: str, changed_paths: list[str]) -> None:
+    relevant = sorted(path for path in changed_paths if is_release_relevant(path))
+    if relevant and not has_unreleased_entries(changelog):
+        paths = "\n".join(f"- {path}" for path in relevant)
+        raise SystemExit(
+            "Release-relevant files changed since the current version tag, "
+            "but CHANGELOG.md Unreleased is empty:\n"
+            f"{paths}\n"
+            "Add a user-facing outcome to Unreleased in the same task."
+        )
+
+
 def validate_new_release(changelog: str, notes: str) -> None:
     for heading in REQUIRED_SECTIONS:
         if not section_body(notes, heading):
             raise SystemExit(f"Release section '### {heading}' is empty")
 
-    unreleased_match = re.search(r"^## Unreleased\s*$", changelog, re.MULTILINE)
-    if unreleased_match is None:
-        raise SystemExit("CHANGELOG.md has no '## Unreleased' section")
-    start = unreleased_match.end()
-    next_heading = re.search(r"^## ", changelog[start:], re.MULTILINE)
-    unreleased = changelog[start : start + next_heading.start()] if next_heading else changelog[start:]
+    unreleased = unreleased_section(changelog)
     for heading in REQUIRED_SECTIONS:
         if section_body(unreleased, heading):
             raise SystemExit(
@@ -62,6 +103,29 @@ def tag_exists(tag: str) -> bool:
         cwd=ROOT,
         check=False,
     ).returncode == 0
+
+
+def changed_paths_since(ref: str, root: Path = ROOT) -> list[str]:
+    output = subprocess.check_output(
+        ["git", "diff", "--no-renames", "--name-only", "-z", ref, "--"],
+        cwd=root,
+    )
+    changed = {item.decode() for item in output.split(b"\0") if item}
+    untracked = subprocess.check_output(
+        ["git", "ls-files", "-z", "--others", "--exclude-standard"],
+        cwd=root,
+    )
+    changed.update(item.decode() for item in untracked.split(b"\0") if item)
+    return sorted(changed)
+
+
+def previous_release_tag(current_tag: str) -> str | None:
+    output = subprocess.check_output(
+        ["git", "tag", "--list", "v[0-9]*", "--sort=-v:refname"],
+        cwd=ROOT,
+        text=True,
+    )
+    return next((tag for tag in output.splitlines() if tag != current_tag), None)
 
 
 def changelog_notes(version: str) -> tuple[str, str]:
@@ -108,8 +172,15 @@ def main() -> None:
 
     tag = f"v{claude_version}"
     changelog, notes = changelog_notes(claude_version)
-    if not tag_exists(tag):
+    if tag_exists(tag):
+        validate_development_changelog(changelog, changed_paths_since(tag))
+    else:
         validate_new_release(changelog, notes)
+        previous_tag = previous_release_tag(tag)
+        if previous_tag:
+            print(f"AUDIT: reconcile release notes with every change since {previous_tag}:")
+            for path in changed_paths_since(previous_tag):
+                print(f"- {path}")
     if args.notes_out is not None:
         args.notes_out.write_text(notes, encoding="utf-8")
 

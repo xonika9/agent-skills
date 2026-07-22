@@ -30,6 +30,7 @@
 - Restored a portable authenticated Chromium/CDP contract while retaining the verified Microsoft Edge adapter.
 - Made the global-instructions validator independent of the caller's working directory.
 - Published sanitized Claude Code and Codex runtime adapters alongside the shared global-instructions core, without machine-specific installation paths.
+- Added same-task changelog rules, release-time diff reconciliation, and a CI gate that catches release-relevant changes when `Unreleased` is empty.
 
 ### Breaking changes
 

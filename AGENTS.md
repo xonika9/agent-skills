@@ -29,8 +29,10 @@ This is the public source of truth for the `x9-*` Agent Skills. The package targ
 
 ## Changelog and releases
 
-- Update `CHANGELOG.md` for every user-visible change. Describe the outcome, not the implementation steps.
+- Update `CHANGELOG.md` in the same task as every user-visible change, before reporting completion. Describe the outcome, not the implementation steps. Do not defer changelog reconstruction to release day.
 - Keep an `Unreleased` section with `Highlights`, `Install / update`, `Compatibility`, and `Breaking changes`. When preparing a release, an agent must turn that section into concise release notes, state `None` explicitly when there are no breaking changes, and restore an empty `Unreleased` template.
+- Before preparing a release, compare the complete diff from the latest public tag to `HEAD` with the candidate release notes. Reconcile every user-visible change, including changes omitted from `Unreleased`; review the `AUDIT` file list printed by `scripts/prepare_release.py --check` before publication.
+- `scripts/prepare_release.py --check` also blocks post-release changes to public skills, installation surfaces, manifests, global examples, community documents, or identity assets when `Unreleased` is empty. This gate is a backstop, not a substitute for the semantic diff review.
 - Treat «подготовь релиз» or an equivalent request as authorization to prepare release files only: choose the semantic-version bump, update `CHANGELOG.md`, synchronize both plugin manifests, and run the full verification set. Stop before commit or push unless the user also requests publication.
 - Treat «подготовь и выпусти релиз», «выпусти релиз», or another explicit publication request as authorization to prepare, commit, and push the release, then monitor both the validation and release workflows until the GitHub Release is visible or a concrete failure is reported.
 - Before a release, set the release date, bump both plugin manifests to the same `X.Y.Z`, and make sure the changelog has a matching version heading.
@@ -50,6 +52,7 @@ python3 skills/x9-skill-creator/scripts/test_validate.py
 python3 skills/x9-okf-adapt/scripts/test_okf.py
 python3 scripts/check_package.py
 python3 scripts/check_public.py
+python3 scripts/test_prepare_release.py
 python3 scripts/prepare_release.py --check
 claude plugin validate .claude-plugin/marketplace.json
 claude plugin validate .claude-plugin/plugin.json
