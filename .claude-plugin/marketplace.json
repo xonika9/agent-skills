@@ -1,0 +1,23 @@
+{
+  "name": "xonika9",
+  "owner": {
+    "name": "xonika9",
+    "url": "https://github.com/xonika9"
+  },
+  "description": "Practical workflows for skills-compatible AI agents.",
+  "plugins": [
+    {
+      "name": "x9-agent-skills",
+      "source": "./",
+      "description": "Practical skills for research, browser work, delegation, instructions, and reliable agent workflows.",
+      "category": "productivity",
+      "keywords": [
+        "agent-skills",
+        "research",
+        "browser-automation",
+        "delegation",
+        "productivity"
+      ]
+    }
+  ]
+}

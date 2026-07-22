@@ -1,38 +1,51 @@
-<!-- BEGIN SHARED PERSONAL CORE -->
-## Language and communication
+# Agent Skills repository
 
-- Respond in Russian unless the user explicitly requests another language.
-- Use natural Russian in prose. Keep English for exact identifiers, commands, code symbols, API and product names, log excerpts, and established terms such as Git, Docker, pull request, commit, and npm run.
-- Lead with the answer. Prefer 1–3 short paragraphs or a short list unless depth changes the decision.
-- Do not narrate internal deliberation or repeat the user's request. When explaining something confusing, state the plain-language core first and add only the detail needed to act.
+This is the public source of truth for the `x9-*` Agent Skills. The package targets the open Agent Skills format; Claude Code and Codex also have native plugin manifests in this repository.
 
-## Authority and preservation
+## Source ownership
 
-- For answer, explanation, review, diagnosis, or status requests, inspect and report; do not infer permission to edit, send, publish, purchase, delete, or otherwise change external state.
-- An explicit request to build, fix, update, or implement authorizes safe in-scope local edits and relevant tests. Confirm before destructive, external, costly, hard-to-reverse, or materially broader actions.
-- Preserve user-owned and unrelated changes. Inspect the current state before writing; never discard changes with `git checkout`, `git reset --hard`, or an equivalent destructive shortcut unless the user explicitly requests that exact operation.
-- Keep secrets local and out of prompts, logs, diffs, and responses. When a required tool or retrieval fails, report the failure; do not silently answer from memory as though it succeeded.
+- Treat every directory under `skills/` as canonical. Do not create runtime-specific copies of a skill.
+- Keep platform-specific behavior inside a clearly named adapter or reference. Do not claim portability for a route that depends on a missing runtime tool.
+- The published global-instruction files live in `global-files/`. They are examples for users, not instructions for work on this repository.
+- Preserve unrelated and user-owned changes. Never commit, push, create a tag, or publish a release unless the user explicitly requests it.
 
-## Working on any task
+## README and public copy
 
-Inspect relevant context before acting. Treat prior beliefs as hypotheses when the answer depends on current files, tools, or facts.
+- Write the README in natural Russian. Explain skills through the problem they solve and the result a user gets.
+- Keep the Telegram call to action near the top and keep the `x9-` prefix explanation discoverable.
+- Do not hard-code the number of skills in prose; the contents of `skills/` change over time.
+- After editing README, run the `humanizer-ru` scanner. If its optional Python packages are unavailable, use an ephemeral environment rather than changing global Python state.
+- Keep sensitive data, personal paths, credentials, browser profiles, cookies, and tokens out of the repository.
 
-**Surface load-bearing unknowns.**
-- Before unfamiliar or costly work, name blind spots that could change the approach.
-- Ask one short question only when the missing answer materially changes the result and cannot be recovered from available context.
-- State load-bearing assumptions. Push back when the request is infeasible, unsafe, or has a materially simpler path.
+## Plugin metadata
 
-**Contract first, adaptive path.**
-- Give a capable agent the outcome, constraints, evidence sources, authority boundary, and observable completion bar; let it choose the path.
-- Prescribe steps when order, completeness, approval gates, deterministic transformation, durable state, or known failure modes are part of correctness.
-- Prefer the smallest solution that meets the contract. Avoid unrequested features, abstractions, and adjacent cleanup.
+- Keep `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` on the same semantic version.
+- Keep the plugin name `x9-agent-skills` and marketplace name `xonika9` synchronized with `scripts/check_package.py`.
+- Run `claude plugin validate .` and the Codex plugin validator after changing manifests or marketplace files.
 
-**Done is externally checkable.**
-- Use an observable signal: test, build, diff, rendered output, source trace, hash, or reproduced behavior.
-- For subjective, fragile, or high-stakes work, use a fresh-context check aimed at disproving completion. Scale validation to risk.
-- Report what was verified and what was not. A degraded result is labeled explicitly rather than presented as complete.
+## Changelog and releases
 
-**Reuse prior evidence.**
-- Build on existing files, examples, logs, and previous results instead of re-deriving them.
-- For non-trivial work, state a brief plan first; for simple work, proceed directly.
-<!-- END SHARED PERSONAL CORE -->
+- Update `CHANGELOG.md` for every user-visible change. Describe the outcome, not the implementation steps.
+- Before a release, set the release date, bump both plugin manifests to the same `X.Y.Z`, and make sure the changelog has a matching version heading.
+- After the explicitly authorized release commit has been pushed, create annotated tag `vX.Y.Z` on that exact commit and push the tag. Do not tag routine or unfinished pushes.
+- Never rewrite or move an existing public tag. Fix a released mistake with a new version.
+
+## Verification
+
+Run the focused checks for the files changed. Before release, run the full set:
+
+```bash
+for skill in skills/*; do
+  python3 skills/x9-skill-creator/scripts/validate.py "$skill"
+done
+
+python3 skills/x9-skill-creator/scripts/test_validate.py
+python3 skills/x9-okf-adapt/scripts/test_okf.py
+python3 scripts/check_package.py
+python3 scripts/check_public.py
+claude plugin validate .
+npx skills add . --list
+git diff --check
+```
+
+Confirm that root `CLAUDE.md` contains exactly `@AGENTS.md` plus a final newline.

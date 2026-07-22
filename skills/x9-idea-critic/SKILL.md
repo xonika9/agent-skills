@@ -35,7 +35,7 @@ Exclude advocacy and solution-selling from the critic's role, but do not omit fa
 ## Runtime routes
 
 - **From Claude Code:** run the Opus route in a fresh Opus agent with only the sealed brief. Run the GPT route through `x9-codex-delegation`; it owns the current Codex mechanics and delegation log.
-- **From Codex:** run the Opus route in a fresh non-persistent Claude CLI session when available. Run the GPT route through the native subagent interface after following the active global subagent contract; use `fork_turns: "none"` and request a supported model/effort only when exposed by the live schema.
+- **From Codex:** run the Opus route in a fresh non-persistent Claude CLI session when available and explicitly pass `--effort high`; do not inherit Codex's bounded-worker effort or the user's Claude CLI effort setting. Run the GPT route through the native subagent interface after following the active global subagent contract; use `fork_turns: "none"` and request a supported model/effort only when exposed by the live schema.
 
 Use the current configured model unless the user selected an exact available version. Do not pass the surrounding conversation. Pass only the sealed brief and explicit evidence locations. Do not disable tools when repository or source verification is load-bearing; grant only the read surfaces needed.
 

@@ -1,0 +1,39 @@
+{
+  "name": "x9-agent-skills",
+  "version": "0.1.0",
+  "description": "Practical agent skills for research, browser work, delegation, instructions, and reliable workflows.",
+  "author": {
+    "name": "xonika9",
+    "url": "https://github.com/xonika9"
+  },
+  "homepage": "https://github.com/xonika9/agent-skills",
+  "repository": "https://github.com/xonika9/agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "research",
+    "browser-automation"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "x9 Agent Skills",
+    "shortDescription": "Practical workflows for skills-compatible AI agents",
+    "longDescription": "Focused skills for research, browser sessions, delegation, agent instructions, idea critique, knowledge bases, and reliable multi-step work.",
+    "developerName": "xonika9",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/xonika9/agent-skills",
+    "defaultPrompt": [
+      "Research a current question using primary sources.",
+      "Set up a safe logged-in Chromium browser session.",
+      "Critique my idea and find the cheapest disconfirming tests."
+    ],
+    "brandColor": "#111827"
+  }
+}

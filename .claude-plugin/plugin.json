@@ -1,0 +1,20 @@
+{
+  "name": "x9-agent-skills",
+  "version": "0.1.0",
+  "description": "Practical agent skills for research, browser work, delegation, instructions, and reliable workflows.",
+  "author": {
+    "name": "xonika9",
+    "url": "https://github.com/xonika9"
+  },
+  "homepage": "https://github.com/xonika9/agent-skills",
+  "repository": "https://github.com/xonika9/agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "research",
+    "browser-automation"
+  ],
+  "skills": "./skills/"
+}
