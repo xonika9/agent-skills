@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -61,6 +62,59 @@ def quote(value: str):
     return "'" + value.replace("'", "''") + "'"
 
 
+def parsed_header(header: bytes):
+    if not header:
+        return {}
+    try:
+        parsed, error = inspect_yaml(header.decode("utf-8"))
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"existing frontmatter is not UTF-8: {exc}") from None
+    if error:
+        raise ValueError(error)
+    return parsed["value"]
+
+
+def valid_timestamp(value):
+    if not isinstance(value, str) or not value.strip():
+        return False
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return parsed.tzinfo is not None
+    except ValueError:
+        return False
+
+
+def valid_core_value(key: str, value, catalog: set[str]):
+    if key in {"title", "description"}:
+        return isinstance(value, str) and bool(value.strip()) and (key != "description" or "\n" not in value and "\r" not in value)
+    if key == "type":
+        return isinstance(value, str) and value in catalog
+    if key == "tags":
+        return (
+            isinstance(value, list)
+            and 2 <= len(value) <= 5
+            and len(value) == len(set(value))
+            and all(isinstance(tag, str) and TAG_RE.fullmatch(tag) for tag in value)
+        )
+    if key == "timestamp":
+        return valid_timestamp(value)
+    return False
+
+
+def merge_existing_meta(meta: dict, header: bytes, catalog: set[str], replace_existing: bool):
+    merged = dict(meta)
+    preserved = []
+    if replace_existing or not header:
+        return merged, preserved
+    existing = parsed_header(header)
+    for key in REQUIRED:
+        value = existing.get(key)
+        if valid_core_value(key, value, catalog) and merged[key] != value:
+            merged[key] = value
+            preserved.append(key)
+    return merged, preserved
+
+
 def preserved_unknown_fields(header: bytes):
     """Keep raw top-level blocks whose keys are outside the OKF core."""
     if not header:
@@ -107,11 +161,7 @@ def validate_manifest_meta(meta: dict, catalog: set[str]):
         raise ValueError("manifest tags must be a list of 2-5 values")
     if len(tags) != len(set(tags)) or any(not isinstance(tag, str) or not TAG_RE.fullmatch(tag) for tag in tags):
         raise ValueError("manifest tags must be unique English kebab-case strings")
-    try:
-        parsed = datetime.fromisoformat(meta["timestamp"].replace("Z", "+00:00"))
-        if parsed.tzinfo is None:
-            raise ValueError
-    except ValueError:
+    if not valid_timestamp(meta["timestamp"]):
         raise ValueError("manifest timestamp must be ISO 8601 with timezone") from None
 
 
@@ -131,19 +181,48 @@ def header_bytes(meta: dict, eol: bytes, existing_header: bytes = b""):
     return output + b"---" + eol
 
 
+def source_timestamp(root: Path, path: Path, header: bytes):
+    if header:
+        existing = parsed_header(header).get("timestamp")
+        if valid_timestamp(existing):
+            return existing
+    try:
+        repo = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        repo_root = Path(repo.stdout.strip()).resolve() if repo.returncode == 0 else None
+        rel = path.resolve().relative_to(repo_root).as_posix() if repo_root else None
+        proc = subprocess.run(
+            ["git", "-C", str(repo_root), "log", "-1", "--format=%cI", "--", rel],
+            capture_output=True,
+            text=True,
+            check=False,
+        ) if repo_root and rel else None
+        candidate = proc.stdout.strip() if proc else ""
+        if proc and proc.returncode == 0 and valid_timestamp(candidate):
+            return candidate
+    except (FileNotFoundError, ValueError):
+        pass
+    return datetime.fromtimestamp(path.stat().st_mtime).astimezone().isoformat(timespec="seconds")
+
+
 def inventory(root: Path, excludes: set[str], include_readme: bool = False):
     files = {}
     for path in candidates(root, excludes, include_readme):
         data = path.read_bytes()
-        _, body, bom, had_header = split_document(data)
+        header, body, bom, had_header = split_document(data)
         files[path.relative_to(root).as_posix()] = {
             "file_sha256": hashlib.sha256(data).hexdigest(),
             "body_sha256": hashlib.sha256(body).hexdigest(),
             "bom": bom,
             "line_endings": line_endings(body),
             "had_frontmatter": had_header,
+            "suggested_timestamp": source_timestamp(root, path, header),
         }
-    return {"version": 2, "root": str(root), "files": files}
+    return {"version": 3, "root": str(root), "files": files}
 
 
 def load_manifest(path: Path):
@@ -168,6 +247,7 @@ def main():
     parser.add_argument("--include-readme", action="store_true")
     parser.add_argument("--types")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--replace-existing-metadata", action="store_true")
     args = parser.parse_args()
     root = args.root.resolve()
     excludes = DEFAULT_EXCLUDES | set(args.exclude)
@@ -181,6 +261,7 @@ def main():
     before = json.loads(args.inventory.read_text(encoding="utf-8")).get("files", {})
     manifest = load_manifest(args.manifest)
     pending = []
+    preserved_by_file = {}
     for rel, meta in manifest.items():
         try:
             validate_manifest_meta(meta, catalog)
@@ -204,7 +285,16 @@ def main():
             raise SystemExit(f"body changed since inventory: {rel}")
         if hashlib.sha256(data).hexdigest() != before[rel]["file_sha256"]:
             raise SystemExit(f"frontmatter changed since inventory: {rel}")
-        output = (BOM if bom else b"") + header_bytes(meta, preferred_eol(body, existing_header), existing_header) + body
+        try:
+            effective_meta, preserved = merge_existing_meta(
+                meta, existing_header, catalog, args.replace_existing_metadata
+            )
+            validate_manifest_meta(effective_meta, catalog)
+        except ValueError as exc:
+            raise SystemExit(f"cannot merge existing metadata for {rel}: {exc}") from None
+        if preserved:
+            preserved_by_file[rel] = preserved
+        output = (BOM if bom else b"") + header_bytes(effective_meta, preferred_eol(body, existing_header), existing_header) + body
         if output != data:
             pending.append((rel, path, output))
 
@@ -212,6 +302,8 @@ def main():
         if not args.dry_run:
             path.write_bytes(output)
         print(("would update" if args.dry_run else "updated") + f": {rel}")
+    for rel, keys in preserved_by_file.items():
+        print(f"preserved existing metadata: {rel} ({', '.join(keys)})")
     print(f"files changed: {len(pending)}")
 
 

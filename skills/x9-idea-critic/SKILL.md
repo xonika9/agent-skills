@@ -56,6 +56,7 @@ Use the current configured model unless the user selected an exact available ver
 4. Serious/minor risks.
 5. Cheapest tests that could falsify the remaining assumptions.
 6. Missing evidence and unresolved disagreement.
+7. For `REVISE` or `SURVIVES`, up to three concrete changes that address the most serious findings. For `KILL`, do not manufacture a rescue plan.
 
 `COMPLETE` requires every critic requested by the selected mode and traceable evidence for factual claims. Never silently substitute a different route or fewer critics.
 When a CLI transport file was used, completion also requires confirming that it no longer exists.

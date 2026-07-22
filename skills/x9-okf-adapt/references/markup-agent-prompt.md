@@ -6,6 +6,7 @@ Use this brief for a read-only metadata proposer. The proposer does not edit doc
 
 - Explicit file list.
 - Repository OKF type/tag conventions.
+- Pre-edit inventory, including `suggested_timestamp` and any existing frontmatter.
 - Complete document text when practical; otherwise headings plus enough representative body context to support an accurate description.
 
 ## Output
@@ -28,6 +29,8 @@ Return one JSON object per file:
 ## Rules
 
 - Use only supplied content; report insufficient context instead of inventing metadata.
+- Copy existing valid core fields unchanged. Fill only missing or invalid fields unless the user explicitly authorized replacement.
+- For a missing or invalid timestamp, use the inventory's `suggested_timestamp`; do not invent the migration time.
 - Keep descriptions unique and single-line.
 - Preserve existing valid custom metadata in a separate `preserve` object when relevant.
 - Do not emit shell commands, patches, or rewritten document bodies.

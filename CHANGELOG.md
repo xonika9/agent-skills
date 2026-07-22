@@ -7,6 +7,7 @@
 - Tightened the README by folding validation and security proof into the contribution section instead of a separate internal-facing block.
 - Restored the intended skill contracts for social research, authenticated personal browsing, cross-provider idea critique, cross-harness context files, subscription-aware Codex delegation, and packaging recurring workflows as skills.
 - Replaced the generated-looking skill table with a problem-first guide and a human-readable catalog that explains the story and practical use of every skill.
+- Added a batch-audit recipe that discovers project-owned skills from flexible paths, delegates the existing audit contract to fresh workers, and preserves one evidence-backed report per target before any fixes are authorized.
 
 ### Install / update
 

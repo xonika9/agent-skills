@@ -23,12 +23,13 @@ System and developer instructions remain higher authority than user, repository,
 ## Editing contract
 
 1. Read both global files and any runtime adapter affected by the change.
-2. Identify the canonical owner. Allow a short audience-specific summary elsewhere only when it changes behavior; point back to the owner.
-3. Preserve unrelated user content. Replace only the intended bounded section when markers exist.
-4. Keep the shared block between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->` byte-identical in both global files.
-5. State hard negative boundaries explicitly when safety or preservation depends on them. Prefer positive target behavior for ordinary guidance.
-6. Specify process only when the path is part of correctness: dependencies, approval gates, deterministic transformations, state/checkpoints, or known failure modes.
-7. Resolve the installed `x9-agent-instructions` directory from the loaded `SKILL.md`, then run `python3 <skill-directory>/scripts/check_globals.py`. Do not resolve the script from the caller's current working directory. Exercise the behavior scenarios below; a prose reread alone is not validation.
+2. Add a standing rule only when omitting it would make a capable agent materially likely to behave differently or repeat a known failure. Do not spend always-loaded context on generic advice the model already follows.
+3. Identify the canonical owner. Allow a short audience-specific summary elsewhere only when it changes behavior; point back to the owner.
+4. Preserve unrelated user content. Replace only the intended bounded section when markers exist.
+5. Keep the shared block between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->` byte-identical in both global files.
+6. State hard negative boundaries explicitly when safety or preservation depends on them. Prefer positive target behavior for ordinary guidance.
+7. Specify process only when the path is part of correctness: dependencies, approval gates, deterministic transformations, state/checkpoints, or known failure modes.
+8. Resolve the installed `x9-agent-instructions` directory from the loaded `SKILL.md`, then run `python3 <skill-directory>/scripts/check_globals.py`. Do not resolve the script from the caller's current working directory. Exercise the behavior scenarios below; a prose reread alone is not validation.
 
 ## Behavior scenarios
 
@@ -41,6 +42,7 @@ System and developer instructions remain higher authority than user, repository,
 
 ## Done
 
+- Every added standing rule changes likely behavior or prevents a documented failure; generic advice was left out.
 - The rule has one canonical owner and no accidental contradiction.
 - Shared global policy passes `python3 <skill-directory>/scripts/check_globals.py` from an unrelated working directory.
 - At least one positive and one boundary scenario were checked in a fresh context for substantive changes.

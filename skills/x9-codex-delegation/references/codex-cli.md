@@ -16,6 +16,10 @@ Write-capable:
 codex exec -s workspace-write -o /tmp/codex-last.md - <"$PROMPT_FILE"
 ```
 
+For a multiline or sensitive brief, create `PROMPT_FILE` with `mktemp` outside the repository, restrict it to the current user, and install cleanup before writing the brief. Pass the brief through stdin rather than argv, and verify cleanup after success, failure, or interruption. Never leave the transport file in the repository, logs, or user artifacts.
+
+This protects the transport file and process arguments, not Codex session history: the submitted prompt may still be persisted by the runtime. Do not put credentials or secret values in the brief. Refer to a local credential source that the authorized task can read instead.
+
 - Use `-c 'model_reasoning_effort="medium"'` when an explicit effort override is required. Plain `codex exec` has no `--effort` flag.
 - Use `-m <model>` only when the user explicitly requests an available model; otherwise inherit `~/.codex/config.toml`.
 - `--skip-git-repo-check` is appropriate for a read-only one-shot outside a repository. Do not use it to bypass a task's repository contract.

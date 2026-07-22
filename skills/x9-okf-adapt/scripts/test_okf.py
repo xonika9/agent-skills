@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -37,6 +39,31 @@ def expect(label: str, condition: bool, result=None):
 
 def main():
     with tempfile.TemporaryDirectory() as tmp:
+        git_root = Path(tmp) / "git-source"
+        git_docs = git_root / "nested" / "docs"
+        git_docs.mkdir(parents=True)
+        git_file = git_docs / "history.md"
+        git_file.write_text("# Git history\n", encoding="utf-8")
+        expect("temporary Git repository initialized", subprocess.run(["git", "init", "-q", git_root]).returncode == 0)
+        expect("temporary Git identity configured", subprocess.run(["git", "-C", git_root, "config", "user.email", "okf-test"]).returncode == 0)
+        expect("temporary Git name configured", subprocess.run(["git", "-C", git_root, "config", "user.name", "OKF Test"]).returncode == 0)
+        expect("Git timestamp fixture staged", subprocess.run(["git", "-C", git_root, "add", "nested/docs/history.md"]).returncode == 0)
+        commit_env = {
+            **os.environ,
+            "GIT_AUTHOR_DATE": "2020-01-02T03:04:05+00:00",
+            "GIT_COMMITTER_DATE": "2020-01-02T03:04:05+00:00",
+        }
+        expect("Git timestamp fixture committed", subprocess.run(["git", "-C", git_root, "commit", "-q", "-m", "fixture"], env=commit_env).returncode == 0)
+        git_file.touch()
+        git_inventory = Path(tmp) / "git-inventory.json"
+        expect("nested Git inventory created", run(INSERT, git_docs, "--inventory-out", git_inventory).returncode == 0)
+        git_suggested = json.loads(git_inventory.read_text(encoding="utf-8"))["files"]["history.md"]["suggested_timestamp"]
+        expect(
+            "nested root uses Git history before filesystem mtime",
+            datetime.fromisoformat(git_suggested.replace("Z", "+00:00"))
+            == datetime.fromisoformat("2020-01-02T03:04:05+00:00"),
+        )
+
         atomic_root = Path(tmp) / "atomic"
         atomic_root.mkdir()
         atomic_file = atomic_root / "a.md"
@@ -108,6 +135,12 @@ timestamp: '2026-07-15T12:00:00+03:00'
         inventory = Path(tmp) / "inventory.json"
         created = run(INSERT, root, "--inventory-out", inventory)
         expect("inventory created", created.returncode == 0 and inventory.exists(), created)
+        inventory_data = json.loads(inventory.read_text(encoding="utf-8"))
+        suggested = inventory_data["files"]["doc.md"]["suggested_timestamp"]
+        expect(
+            "inventory supplies a timezone-aware suggested timestamp",
+            datetime.fromisoformat(suggested.replace("Z", "+00:00")).tzinfo is not None,
+        )
 
         manifest = Path(tmp) / "manifest.json"
         manifest.write_text(json.dumps({
@@ -117,6 +150,7 @@ timestamp: '2026-07-15T12:00:00+03:00'
         applied = run(INSERT, root, "--manifest", manifest, "--inventory", inventory)
         expect("manifest applied", applied.returncode == 0, applied)
         expect("BOM and CRLF body preserved", (root / "doc.md").read_bytes().startswith(BOM) and (root / "doc.md").read_bytes().endswith(body))
+        expect("valid field in partial header is preserved", b"type: 'Analysis'" in (root / "partial.md").read_bytes(), applied)
 
         valid = run(VALIDATE, root, "--inventory", inventory)
         expect("complete OKF validates", valid.returncode == 0, valid)
@@ -132,6 +166,52 @@ timestamp: '2026-07-15T12:00:00+03:00'
         custom_bytes = custom.read_bytes()
         expect("unknown fields, Unicode key, scalar delimiter, and CR endings preserved", b"owner: Alex\r" in custom_bytes and "владелец: Алекс\r".encode("utf-8") in custom_bytes and b"  ---\r" in custom_bytes and b"  after\r" in custom_bytes and b"\n" not in custom_bytes, custom_applied)
 
+        preserve_root = Path(tmp) / "preserve-core"
+        preserve_root.mkdir()
+        preserve_file = preserve_root / "preserve.md"
+        preserve_file.write_text("""---
+type: Analysis
+title: Existing title
+description: Existing description
+tags:
+  - existing-tag
+  - preservation
+timestamp: '2026-07-01T10:00:00+03:00'
+---
+# Preserve
+""", encoding="utf-8")
+        preserve_inventory = Path(tmp) / "preserve-inventory.json"
+        expect("preservation inventory created", run(INSERT, preserve_root, "--inventory-out", preserve_inventory).returncode == 0)
+        preserve_manifest = Path(tmp) / "preserve-manifest.json"
+        preserve_manifest.write_text(json.dumps({"preserve.md": meta("Replacement title", "Replacement description")}), encoding="utf-8")
+        preserve_apply = run(INSERT, preserve_root, "--manifest", preserve_manifest, "--inventory", preserve_inventory)
+        preserve_text = preserve_file.read_text(encoding="utf-8")
+        expect(
+            "valid existing core metadata wins by default",
+            preserve_apply.returncode == 0
+            and "Existing title" in preserve_text
+            and "Existing description" in preserve_text
+            and "2026-07-01T10:00:00+03:00" in preserve_text
+            and "Replacement title" not in preserve_text,
+            preserve_apply,
+        )
+        replacement_inventory = Path(tmp) / "replacement-inventory.json"
+        expect("replacement inventory created", run(INSERT, preserve_root, "--inventory-out", replacement_inventory).returncode == 0)
+        replacement_apply = run(
+            INSERT,
+            preserve_root,
+            "--manifest",
+            preserve_manifest,
+            "--inventory",
+            replacement_inventory,
+            "--replace-existing-metadata",
+        )
+        expect(
+            "explicit replacement can change valid core metadata",
+            replacement_apply.returncode == 0 and "Replacement title" in preserve_file.read_text(encoding="utf-8"),
+            replacement_apply,
+        )
+
         unquoted = root / "unquoted.md"
         unquoted.write_text("""---
 type: Reference
@@ -146,6 +226,14 @@ timestamp: 2026-07-15T12:00:00+03:00
 """, encoding="utf-8")
         unquoted_time = run(VALIDATE, root)
         expect("unquoted ISO timestamp is accepted", unquoted_time.returncode == 0, unquoted_time)
+        unquoted_inventory = Path(tmp) / "unquoted-inventory.json"
+        expect("unquoted timestamp inventory created", run(INSERT, root, "--inventory-out", unquoted_inventory).returncode == 0)
+        unquoted_suggested = json.loads(unquoted_inventory.read_text(encoding="utf-8"))["files"]["unquoted.md"]["suggested_timestamp"]
+        expect(
+            "existing valid unquoted timestamp wins",
+            datetime.fromisoformat(unquoted_suggested.replace("Z", "+00:00"))
+            == datetime.fromisoformat("2026-07-15T12:00:00+03:00"),
+        )
 
         nozone = root / "nozone.md"
         nozone.write_text(unquoted.read_text(encoding="utf-8").replace("2026-07-15T12:00:00+03:00", "2026-07-15T12:00:00").replace("Unquoted time", "No-zone time").replace("Ruby timestamp parsing fixture", "Missing timezone rejection fixture"), encoding="utf-8")

@@ -33,6 +33,8 @@ Ask only when a missing answer is load-bearing. A fully specified request does n
 5. Preserve the skill's intent and user-owned resources. Escalate only irreversible or materially scope-changing decisions.
 6. Run structural validation and state the evidence tier. Run [behavioral evaluation](references/evals.md) only when behavioral evidence is selected; otherwise record behavioral claims as unverified without treating that deferral as a defect by itself.
 
+Audit one target directly. For multiple targets, or when the user explicitly requests a batch audit, read [references/batch-audit.md](references/batch-audit.md) and delegate bounded groups to fresh workers. Batch execution changes only coordination and aggregation; every target still uses the same Audit action, evidence tier, rubric, validation, and verdict contract defined here.
+
 For a genuinely underspecified new skill, use the focused questions in [references/interview.md](references/interview.md). Stop once triggers, non-triggers, runtime, input/output, authority, and success evidence are clear.
 
 ## Structural check

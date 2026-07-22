@@ -26,6 +26,7 @@ Read [references/agents-md.md](references/agents-md.md) when editing agent files
 
 - Global `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` belong to `x9-agent-instructions`.
 - Skill folders belong to `x9-skill-creator`.
+- Do not put personal absolute paths such as `/Users/<name>/...` or `/home/<name>/...` in committed files. Prefer repository-relative paths or neutral placeholders; keep a machine-bound path only when the repository genuinely depends on that machine and the user explicitly wants it documented.
 - Do not overwrite existing instructions by position from a stale read; re-read immediately before applying a patch.
 
 ## Done
