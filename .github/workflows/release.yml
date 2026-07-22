@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows:
+      - Validate
+    types:
+      - completed
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish version
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the validated commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Read and validate release metadata
+        id: metadata
+        run: |
+          python3 scripts/check_package.py
+          python3 scripts/prepare_release.py \
+            --notes-out "$RUNNER_TEMP/release-notes.md" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Create tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+          RELEASE_TAG: ${{ steps.metadata.outputs.tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "$RELEASE_TAG is already released; nothing to do."
+            exit 0
+          fi
+
+          git fetch origin --tags --force
+          if git rev-parse --verify --quiet "refs/tags/$RELEASE_TAG" >/dev/null; then
+            tagged_sha=$(git rev-list -n 1 "$RELEASE_TAG")
+            if [ "$tagged_sha" != "$RELEASE_SHA" ]; then
+              echo "$RELEASE_TAG already points to $tagged_sha, expected $RELEASE_SHA" >&2
+              exit 1
+            fi
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$RELEASE_TAG" "$RELEASE_SHA" -m "Release $RELEASE_TAG"
+            git push origin "$RELEASE_TAG"
+          fi
+
+          gh release create "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "x9 Agent Skills $RELEASE_TAG" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"

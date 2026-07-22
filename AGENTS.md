@@ -26,8 +26,10 @@ This is the public source of truth for the `x9-*` Agent Skills. The package targ
 ## Changelog and releases
 
 - Update `CHANGELOG.md` for every user-visible change. Describe the outcome, not the implementation steps.
+- Treat «подготовь релиз» or an equivalent request as authorization to prepare release files only: choose the semantic-version bump, update `CHANGELOG.md`, synchronize both plugin manifests, and run the full verification set. Stop before commit or push unless the user also requests publication.
+- Treat «подготовь и выпусти релиз», «выпусти релиз», or another explicit publication request as authorization to prepare, commit, and push the release, then monitor both the validation and release workflows until the GitHub Release is visible or a concrete failure is reported.
 - Before a release, set the release date, bump both plugin manifests to the same `X.Y.Z`, and make sure the changelog has a matching version heading.
-- After the explicitly authorized release commit has been pushed, create annotated tag `vX.Y.Z` on that exact commit and push the tag. Do not tag routine or unfinished pushes.
+- A successful push to `main` triggers `.github/workflows/release.yml` after validation. It creates annotated tag `vX.Y.Z` and the matching GitHub Release only when that version has not already been released.
 - Never rewrite or move an existing public tag. Fix a released mistake with a new version.
 
 ## Verification
