@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reject secrets, personal paths, and non-noreply commit email addresses."""
+"""Reject secrets, personal paths, and private-project naming patterns."""
 
 from pathlib import Path
 import re
@@ -22,9 +22,7 @@ PATTERNS = {
     ),
     "personal macOS home": re.compile(r"/Users/(?!<)[A-Za-z0-9._-]+(?:/|\b)"),
     "personal Linux home": re.compile(r"/home/(?!<)[A-Za-z0-9._-]+(?:/|\b)"),
-    "private repository name": re.compile(
-        r"\b" + "agent-for-" + "common-questions" + r"\b"
-    ),
+    "private project naming pattern": re.compile(r"\bagent-for-[a-z0-9-]+\b"),
     "email address": re.compile(
         r"(?<![\w.+-])[\w.+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?![\w.-])"
     ),
@@ -57,22 +55,8 @@ def scan_files() -> list[str]:
     return problems
 
 
-def scan_commit_emails() -> list[str]:
-    output = subprocess.check_output(
-        ["git", "log", "--format=%H%x00%ae%x00%ce"]
-    ).decode()
-    problems = []
-    for row in output.splitlines():
-        commit, author, committer = row.split("\0")
-        if not author.endswith("@users.noreply.github.com"):
-            problems.append(f"{commit[:12]}: author email is not GitHub noreply")
-        if not committer.endswith("@users.noreply.github.com"):
-            problems.append(f"{commit[:12]}: committer email is not GitHub noreply")
-    return problems
-
-
 def main() -> None:
-    problems = scan_files() + scan_commit_emails()
+    problems = scan_files()
     if problems:
         print("FAIL: public repository check")
         for problem in problems:

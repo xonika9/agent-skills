@@ -1,0 +1,50 @@
+name: Skill proposal
+description: Propose a focused new skill or a substantial workflow extension.
+title: "[Skill]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What repeated failure or expensive workflow should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Observable outcome
+      description: What should be measurably different after the skill runs?
+    validations:
+      required: true
+  - type: textarea
+    id: trigger
+    attributes:
+      label: Trigger and non-trigger cases
+      description: When should the skill run, and when should it stay out of the way?
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Intended runtime
+      options:
+        - Agent Skills compatible agents
+        - Claude Code only
+        - Codex only
+        - Runtime-specific or unknown
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and alternatives
+      description: Existing tools, failed approaches, examples, or a smaller alternative.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This proposal describes a reusable workflow rather than a one-off prompt.
+          required: true

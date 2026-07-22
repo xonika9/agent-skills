@@ -34,6 +34,9 @@
       "Set up a safe logged-in Chromium browser session.",
       "Critique my idea and find the cheapest disconfirming tests."
     ],
-    "brandColor": "#111827"
+    "brandColor": "#17245C",
+    "composerIcon": "./assets/x9-composer-icon.png",
+    "logo": "./assets/x9-icon.png",
+    "logoDark": "./assets/x9-icon.png"
   }
 }

@@ -1,162 +1,155 @@
+<p align="center">
+  <img src="assets/x9-agent-skills-hero.jpg" alt="" width="100%">
+</p>
+
+<p align="center">
+  Language: <strong>English</strong> · <a href="README.ru.md">Русский</a>
+</p>
+
 # x9 Agent Skills
 
-[![skills.sh](https://skills.sh/b/xonika9/agent-skills)](https://skills.sh/xonika9/agent-skills)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![View x9 Agent Skills on skills.sh](https://skills.sh/b/xonika9/agent-skills)](https://skills.sh/xonika9/agent-skills)
+[![Validation workflow status](https://github.com/xonika9/agent-skills/actions/workflows/validate.yml/badge.svg)](https://github.com/xonika9/agent-skills/actions/workflows/validate.yml)
+[![Latest release](https://img.shields.io/github/v/release/xonika9/agent-skills?label=release)](https://github.com/xonika9/agent-skills/releases/latest)
 
-Рабочие скиллы для современных AI-агентов, которые поддерживают открытый формат [Agent Skills](https://agentskills.io/). Они помогают исследовать сложные вопросы, управлять браузером, проверять идеи, писать инструкции и не превращать многошаговую работу в бесконечный цикл.
+Practical [Agent Skills](https://agentskills.io/) for work that rarely fits into one prompt: source-backed research, controlled browser sessions, skeptical idea review, and reliable multi-step workflows.
 
-Префикс `x9-` отличает мои скиллы от одноимённых навыков в других пакетах и упрощает поиск. Например, в Claude Code достаточно ввести `/x9`, чтобы увидеть их в списке.
+- Verify current claims instead of trusting model memory.
+- Keep authenticated browser work predictable and separate from your own tabs.
+- Give long-running agent workflows checkpoints, stop conditions, and evidence.
 
-*Пишу об искусственном интеллекте, языковых моделях и инструментах для разработчиков. Тестирую модели и сервисы на реальных задачах, а выводами делюсь в [телеграм-канале](https://t.me/+DOZWlhI4r4EyYjgy).*
+The `x9-` prefix keeps the skills easy to find and avoids collisions with similarly named packages. In Claude Code, type `/x9` to see the installed plugin skills.
 
-## Совместимость
+> I share field notes on AI models and developer tools in [Контролируемые галлюцинации](https://t.me/+DOZWlhI4r4EyYjgy), a Russian-language Telegram channel.
 
-Формат не привязан к конкретному приложению. В основе каждого скилла обычная папка с `SKILL.md`, references и scripts, если они нужны. Такой набор может загрузить любой harness с поддержкой Agent Skills: Claude Code, Codex, Cursor, OpenCode, GitHub Copilot, Gemini CLI и другие.
+## Install
 
-Claude Code и Codex проверены живыми запусками и для них есть нативные плагины. В остальные совместимые агенты скиллы ставятся через `npx skills` или копируются вручную.
-
-Большая часть набора переносится между harness без изменений. Исключения подписаны прямо в описаниях: `x9-codex-delegation` работает только из Claude Code, а маршруты браузера и глобальных инструкций надо связать с инструментами и путями конкретного агента.
-
-## Как установить
-
-Здесь нет одного лучшего способа. Выбор зависит от того, нужен тебе отдельный скилл, весь набор или собственный fork.
-
-### Через `skills`: выбрать нужное
-
-Подходит, если ты пользуешься разными агентами, хочешь поставить несколько скиллов или планируешь менять их под себя. CLI найдёт совместимые harness и предложит, куда установить файлы.
+Start with the interactive installer. It lets you choose the skills, target agents, and installation scope:
 
 ```bash
 npx skills add xonika9/agent-skills
 ```
 
-Посмотреть список без установки:
+Some workflows compose multiple skills. If you install selectively, choose the companion skills named in the catalog as well; the installer does not resolve those relationships automatically.
+
+Want to inspect the catalog first?
 
 ```bash
 npx skills add xonika9/agent-skills --list
 ```
 
-Поставить один скилл глобально:
+If you want the complete package as a managed plugin, use the native route for your agent.
 
-```bash
-npx skills add xonika9/agent-skills --skill x9-research -g -y
-```
-
-Поставить весь набор глобально:
-
-```bash
-npx skills add xonika9/agent-skills --all -g
-```
-
-### Как плагин Claude Code: поставить весь набор
-
-Этот вариант удобен, если работаешь в Claude Code и хочешь получать набор как управляемый пакет. Скиллы живут в namespace плагина: например, `/x9-agent-skills:x9-research`.
+<details>
+<summary><strong>Claude Code plugin</strong></summary>
 
 ```bash
 claude plugin marketplace add xonika9/agent-skills
 claude plugin install x9-agent-skills@xonika9
 ```
 
-### Как плагин Codex: поставить весь набор
+Skills use the plugin namespace, for example `/x9-agent-skills:x9-research`.
 
-Плагин для Codex использует те же исходные файлы, но устанавливается через его marketplace.
+</details>
+
+<details>
+<summary><strong>Codex plugin</strong></summary>
 
 ```bash
 codex plugin marketplace add xonika9/agent-skills
 codex plugin add x9-agent-skills@xonika9
 ```
 
-### Вручную или через fork: забрать полный контроль
+</details>
 
-Клонируй репозиторий, если хочешь вести собственную версию, менять структуру или подключить скиллы способом, которого ещё нет в `skills`. Обновления в таком случае придётся переносить самостоятельно.
+Clone or fork the repository only when you want to maintain your own variants. You will then need to merge upstream changes yourself.
 
-| Твоя ситуация                                       | Что выбрать                     | Что учитывать                                    |
-| --------------------------------------------------- | ------------------------------- | ------------------------------------------------ |
-| Нужны отдельные скиллы или несколько разных агентов | `npx skills`                    | Можно выбрать состав и место установки           |
-| Нужен весь набор в Claude Code                      | Claude Code plugin              | Управляемая установка, имена с namespace плагина |
-| Нужен весь набор в Codex                            | Codex plugin                    | Управляемая установка через Codex marketplace    |
-| Хочешь серьёзно переписать скиллы под себя          | Fork или ручная копия           | За обновления отвечаешь сам                      |
-| Harness понимает Agent Skills, но не поддержан CLI  | Ручная копия папок из `skills/` | Пути и runtime-инструменты надо настроить самому |
+## Compatibility
 
-## Зачем нужны эти скиллы
+The skills use the open Agent Skills format and are packaged for Claude Code and Codex. Most also work in other compatible agents. Runtime-specific exceptions are stated in the catalog and inside each skill instead of being hidden behind a broad compatibility claim.
 
-У репозиториев со скиллами есть одна проблема: название выглядит интересно, но непонятно, что изменится после установки. Поэтому ниже не перечень функций, а ситуации, в которых каждый скилл действительно пригождается.
+## Skill catalog
 
-### Агент отвечает уверенно, но не проверяет факты
+| Skill | Use it when | Runtime note |
+| --- | --- | --- |
+| [`x9-research`](skills/x9-research/SKILL.md) | A decision depends on current facts, primary sources, or conflicting evidence. | Portable; browser work follows `x9-browser-session` |
+| [`x9-browser-session`](skills/x9-browser-session/SKILL.md) | Browser automation must preserve authentication without taking over your tabs. | Requires a compatible browser-control route; the included setup covers Chromium via CDP |
+| [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md) | You need a defensible Wildberries shortlist based on the exact variant, seller, price, and relevant reviews. | Wildberries-specific; install `x9-browser-session`; the current Claude Code or Codex runtime executes the workflow directly |
+| [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md) | You explicitly want a red-team review, cheaper alternatives, and disconfirming tests. | The GPT route from Claude Code uses `x9-codex-delegation` |
+| [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md) | Global agent rules, runtime adapters, and task briefs need clear ownership. | Supports Claude Code and Codex instruction files |
+| [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md) | A repository needs a README or agent instructions grounded in its actual commands and structure. | Portable |
+| [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md) | You are creating, auditing, or repairing an Agent Skill and need a verifiable contract. | Portable |
+| [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md) | Claude Code should delegate a bounded task to Codex and verify the real diff and checks afterward. | Claude Code only |
+| [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md) | An evaluator/optimizer loop needs checkpoints, retry limits, recovery, and human gates. | Portable; tool adapters may vary |
+| [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md) | A Markdown knowledge base must gain OKF metadata without silently changing document bodies. | Includes deterministic Python scripts |
 
-Модель легко достраивает ответ по памяти, даже когда данные уже устарели или источники противоречат друг другу. [`x9-research`](skills/x9-research/SKILL.md) заставляет сначала выделить утверждения, от которых зависит вывод, затем открыть актуальные первичные источники, поискать опровержения и честно отметить пробелы. В результате получается не пересказ «из головы», а ответ, который можно перепроверить по ссылкам.
+## Three useful starting points
 
-### Автоматизация браузера теряет сессию или мешает пользователю
+### Research a current question
 
-У агента часто несколько способов открыть веб: connector, встроенный браузер, новый профиль и уже залогиненная сессия. Без правил он прыгает между ними, теряет авторизацию или начинает работать в чужой вкладке. [`x9-browser-session`](skills/x9-browser-session/SKILL.md) выбирает один маршрут, создаёт отдельную рабочую вкладку и сохраняет границы действий.
+Ask the agent to use `x9-research` when the answer needs fresh evidence:
 
-Схема работает с любым Chromium-браузером, который поддерживает CDP: Google Chrome, Microsoft Edge, Brave или Chromium. В [готовой инструкции](skills/x9-browser-session/references/setup.md) разобран Edge на macOS, но браузер, профиль, порт и имя wrapper можно заменить.
+```text
+Use x9-research to compare the current plugin installation models for Claude Code and Codex.
+Prioritize primary sources, show contradictions, and label anything you could not verify.
+```
 
-### Поиск товара выдаёт карточки, а не нормальный выбор
+The workflow identifies the claims that carry the conclusion, opens current sources, looks for disconfirming evidence, and leaves a traceable answer.
 
-На Wildberries рейтинг и название мало что говорят: в одной карточке смешиваются варианты, отзывы относятся к другой упаковке, а продавец меняется. [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md) проверяет конкретный вариант товара, цену, комплектацию, продавца и релевантные отзывы через реальную залогиненную сессию. На выходе остаётся короткий топ с аргументами, ссылками и видимыми рисками.
+### Work in an authenticated browser session
 
-### Агент слишком охотно поддерживает идею
+Use `x9-browser-session` when a task needs your existing login but should not interfere with your active tabs. The skill selects one browser route, opens a dedicated work tab, and keeps the action boundary explicit. The included [setup guide](skills/x9-browser-session/references/setup.md) covers Edge on macOS and explains what can be adapted for other Chromium browsers.
 
-Обычный помощник настроен помогать, поэтому слабая идея быстро обрастает красивым планом. [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md) включается только по прямой просьбе о критике и запускает независимые маршруты Claude и GPT. Он ищет убийственные допущения, более дешёвую альтернативу и тесты, которыми идею можно опровергнуть до больших затрат.
+### Stress-test an idea before building it
 
-### Инструкции расползаются по файлам и начинают спорить друг с другом
+Invoke `x9-idea-critic` explicitly when you want resistance rather than encouragement:
 
-Глобальные правила, контекст репозитория и узкие рабочие процессы часто сваливают в один толстый файл. Через несколько месяцев уже непонятно, где менять правило и какая копия главная.
+```text
+Use x9-idea-critic. Find the assumptions most likely to kill this idea,
+the cheapest credible alternative, and tests that could disprove it this week.
+```
 
-- [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md) раскладывает личные правила, runtime-адаптеры и разовые брифы по правильным владельцам. Он умеет поддерживать общий блок глобальных `CLAUDE.md` и `AGENTS.md`, не затирая остальное.
-- [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md) создаёт README и репозиторные инструкции из реальных команд, CI и структуры проекта. Получается контекст для конкретного репозитория, а не универсальный шаблон. Полезно запустить скилл на уже существующем репозитории.
-- [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md) помогает создавать и проверять сами Agent Skills: когда они должны срабатывать, чего не должны делать, где хранить scripts/references и как доказать, что обещанное поведение работает.
+For longer autonomous work, pair the result with `x9-loop-engineering` so retries, checkpoints, and stop conditions are designed before the loop starts.
 
-### Делегирование и автономные циклы теряют управление
+## Global instruction examples
 
-Передать задачу другому агенту легко. Сложнее передать её без потери границ, затем проверить результат и вовремя остановить повторяющийся процесс.
+[`global-files/AGENTS.md`](global-files/AGENTS.md) and [`global-files/CLAUDE.md`](global-files/CLAUDE.md) contain the shared personal core plus sanitized runtime adapters for Claude Code and Codex. They cover language preferences, authority boundaries, preservation, uncertainty, observable completion, documentation and browser routing, and tested Codex subagent behavior. Machine-specific installation paths are intentionally replaced with skill discovery by name.
 
-[`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md) передаёт из Claude Code в Codex самодостаточный бриф, а после выполнения проверяет настоящий diff и тесты. Этот скилл предназначен только для Claude Code.
+Treat them as examples, not as files to overwrite blindly. A safe request is:
 
-[`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md) нужен для долгих evaluator/optimizer-процессов и других автономных циклов. Он задаёт состояние, checkpoints, права на решения, лимиты повторов, восстановление после сбоя и точки, где без человека продолжать нельзя. Если цикл задаче не нужен, скилл предложит более простой линейный маршрут.
+```text
+Use x9-agent-instructions to review these examples and merge only the rules that fit my setup.
+Preserve my existing instructions, paths, tools, and repository-specific sections.
+```
 
-### Массовая правка Markdown незаметно портит документы
+## What you can verify
 
-Добавить frontmatter в сотню файлов кажется механической задачей, пока не меняются переводы строк, BOM или само тело заметки. [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md) переносит Markdown-базу на OKF v0.1 через inventory, хеши и детерминированные скрипты. После миграции он доказывает, что содержимое документов осталось байт в байт тем же.
+- Every skill has one canonical source under [`skills/`](skills/); the Claude Code and Codex packages point to the same files.
+- CI validates skill structure, runs deterministic regression tests, checks plugin metadata, scans public files for sensitive data, and runs Gitleaks over Git history.
+- User-visible changes are recorded in the [changelog](CHANGELOG.md), and published versions use semver tags and GitHub Releases.
 
-## Глобальные `CLAUDE.md` и `AGENTS.md`
+## Updates
 
-В [`global-files/AGENTS.md`](global-files/AGENTS.md) и [`global-files/CLAUDE.md`](global-files/CLAUDE.md) лежит мой общий personal core для Claude Code и Codex. Это готовая основа для личных глобальных инструкций: язык общения, границы полномочий, сохранение чужих изменений, работа с неопределённостью и проверяемый критерий готовности.
-
-Файлы намеренно одинаковые, чтобы базовое поведение двух агентов не расходилось. Их можно взять целиком или разобрать на отдельные правила под свою конфигурацию.
-
-## Обновление и версии
-
-Обновить один глобальный скилл, установленный через `skills`:
+Update one globally installed skill:
 
 ```bash
 npx skills update x9-research -g
 ```
 
-Обновить все глобальные скиллы:
+Update all globally installed skills:
 
 ```bash
 npx skills update -g
 ```
 
-Изменения записываются в [CHANGELOG.md](CHANGELOG.md). Выпуски получают semver-теги вида `v0.1.0`, поэтому нужную версию можно закрепить или сравнить с текущей.
+Plugin users can update through their agent's marketplace flow. Review [CHANGELOG.md](CHANGELOG.md) before adopting a new version if your workflows depend on runtime-specific behavior.
 
-## Проверка репозитория
+## Contributing and security
 
-```bash
-for skill in skills/*; do
-  python3 skills/x9-skill-creator/scripts/validate.py "$skill"
-done
+Bug reports, focused skill improvements, and reproducible compatibility findings are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. For vulnerabilities or sensitive reports, follow [SECURITY.md](SECURITY.md) instead of creating a public issue. Community conduct is covered by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-python3 skills/x9-skill-creator/scripts/test_validate.py
-python3 skills/x9-okf-adapt/scripts/test_okf.py
-python3 scripts/check_package.py
-python3 scripts/check_public.py
-npx skills add . --list
-```
+If this package saves you time, [star the repository](https://github.com/xonika9/agent-skills) so more people can find it. For new experiments and practical notes, follow [Контролируемые галлюцинации](https://t.me/+DOZWlhI4r4EyYjgy).
 
-Структурная проверка ловит сломанные файлы и манифесты. Поведение, от которого зависит рабочий маршрут, дополнительно проверяется живыми запусками в Claude Code и Codex.
+## License
 
-## Лицензия
-
-[MIT](LICENSE). Можно брать отдельные скиллы, менять их под себя и собирать собственный набор.
+[MIT](LICENSE). Use individual skills, adapt them, or assemble your own package.

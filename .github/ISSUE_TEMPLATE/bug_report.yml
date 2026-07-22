@@ -1,0 +1,57 @@
+name: Bug report
+description: Report reproducible incorrect behavior in a skill, script, or plugin route.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Remove secrets, personal paths, private repository names, cookies, and browser-profile data.
+        Use private vulnerability reporting for sensitive security findings.
+  - type: input
+    id: skill
+    attributes:
+      label: Affected skill or component
+      placeholder: x9-research, Codex plugin installation, scripts/check_package.py
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Agent, version, operating system, and installation model.
+      placeholder: Codex 0.x on macOS, installed through the plugin marketplace
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Include exact prompts or commands after sanitizing them.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Validation and evidence
+      description: Logs, screenshots, or checks that help verify the report.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public data check
+      options:
+        - label: I removed credentials, cookies, private data, and personal paths.
+          required: true

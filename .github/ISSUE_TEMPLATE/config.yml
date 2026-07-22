@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sensitive security report
+    url: https://github.com/xonika9/agent-skills/security/advisories/new
+    about: Report vulnerabilities or private data exposure without creating a public issue.
+  - name: Private abuse report
+    url: https://support.github.com/contact/report-abuse
+    about: Contact GitHub privately when a conduct report concerns the sole maintainer or GitHub policy.
+  - name: Контролируемые галлюцинации
+    url: https://t.me/+DOZWlhI4r4EyYjgy
+    about: Follow the Russian-language Telegram channel for practical notes and discussion.
