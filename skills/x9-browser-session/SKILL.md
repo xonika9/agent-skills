@@ -5,14 +5,16 @@ description: Use when browser work requires choosing between a connector, a loca
 
 # Browser session
 
-Use this skill in Claude Code and Codex. It owns shared route selection, a portable authenticated Chromium/CDP contract, the verified Edge adapter, runtime-specific browser surfaces, and fallbacks. The Edge adapter below was verified on 2026-07-21; re-check installed tool instructions and live schemas when a named surface is absent.
+Use this skill in Claude Code and Codex. It owns shared route selection, a portable authenticated Chromium/CDP contract, the Edge adapter, runtime-specific browser surfaces, and fallbacks. Re-check installed tool instructions and live schemas when a named surface is absent.
 
 ## Choose the surface
 
 1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic operation on the linked resource.
-2. Use the runtime's local-app browser surface for public pages, visual inspection, and UI testing.
-3. Use a dedicated authenticated Chromium automation profile when account state, region, cart, saved data, or private pages matter.
+2. Use the runtime's local-app browser surface or a clean automation browser for public pages, visual inspection, and UI testing. This is the normal route when the task should not depend on personal state.
+3. Use a dedicated authenticated Chromium automation profile for personal automation when account state, region, cart, saved data, personalized feeds, or private pages matter, or when the task-owning skill explicitly requires an authenticated platform interface. This route can produce materially different prices, content, and available actions from a clean browser.
 4. Once selected, keep one browser surface through ordinary stale-reference or timeout errors. Switch only when the surface is unavailable or the user changes the requested browser.
+
+The distinction is task state, not browser brand: a clean browser answers “does this public interface work?”, while an authenticated profile answers “what does this account actually see or allow?”. Do not log a clean test browser into personal services merely to avoid selecting the authenticated route.
 
 ## Authenticated Chromium over CDP
 
@@ -22,7 +24,8 @@ Treat the browser executable, dedicated user-data directory, localhost CDP endpo
 - bind CDP to localhost and do not expose the endpoint to the network;
 - attach controllers to the same existing profile instead of launching a clean browser;
 - create a task-owned page or tab and leave existing browser state untouched;
-- keep credentials, cookies, tokens, local storage, and private page contents inside the browser session.
+- keep credentials, cookies, tokens, and local storage in the dedicated browser profile rather than copying them into prompts or repository files;
+- assume the controller and model can receive inspected page contents and network data; avoid opening unrelated private surfaces, do not capture network headers unless the task requires them, and never echo secret header values into chat, logs, or files.
 
 Do not assume the Edge paths or port below on another machine. Read [references/setup.md](references/setup.md), substitute the local Chromium adapter parameters, and verify the discovery endpoint before browsing.
 
@@ -41,7 +44,7 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 
 ## Claude Code
 
-- Local app UI: Claude Preview when available; otherwise headed `agent-browser`.
+- Local app UI: discover and follow the currently installed in-app browser integration when available; otherwise use headed `agent-browser` for clean public-page or UI-test work.
 - Logged-in Edge: use the `chrome-devtools` MCP from `~/.claude.json`.
 - If its tools are absent after Edge is running, restart Claude Code before using `agent-edge`.
 

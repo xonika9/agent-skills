@@ -1,6 +1,6 @@
 # Authenticated Chromium/CDP setup
 
-Use the portable contract below for any Chromium browser. The complete Microsoft Edge/macOS recipe then reproduces the configuration verified for `x9-browser-session`: a dedicated profile, local CDP on port `9222`, `chrome-devtools` as the primary controller, and `agent-edge` as a fallback attached to the same profile.
+Use the portable contract below for any Chromium browser. The Microsoft Edge/macOS recipe uses a dedicated profile, local CDP on port `9222`, `chrome-devtools` as the primary controller, and `agent-edge` as a fallback attached to the same profile. The configuration intentionally follows `chrome-devtools-mcp@latest`; check its live help before configuring it because supported flags can change.
 
 ## Portable adapter contract
 
@@ -44,7 +44,7 @@ Claude Code, in `~/.claude.json`:
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9222"]
+      "args": ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9222", "--no-usage-statistics", "--no-performance-crux", "--redactNetworkHeaders"]
     }
   }
 }
@@ -55,15 +55,19 @@ Codex, in `~/.codex/config.toml`:
 ```toml
 [mcp_servers.chrome-devtools]
 command = "npx"
-args = ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9222"]
+args = ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9222", "--no-usage-statistics", "--no-performance-crux", "--redactNetworkHeaders"]
 startup_timeout_sec = 120.0
 ```
 
 Restart Claude Code or Codex after changing MCP configuration.
 
+These flags disable the controller's usage statistics and CrUX URL lookup and redact sensitive network headers before returning network data to the client. They reduce exposure but do not make inspected pages private from the controller or model. Use a least-privilege account/profile and avoid opening unrelated private data.
+
+Existing installations are not migrated automatically. If a live Claude Code or Codex configuration omits these flags, update it only with authority to change global runtime configuration, then restart that runtime. Otherwise report the mismatch and keep the browsing result `DEGRADED` for private or authenticated work.
+
 ## 3. Add the fallback wrapper
 
-Install `agent-browser`, then put this executable script on `PATH` as `agent-edge`:
+Install `agent-browser`, confirm that its current `--help` includes the required `--cdp` route, and put this executable script on `PATH` as `agent-edge`:
 
 ```bash
 #!/usr/bin/env bash

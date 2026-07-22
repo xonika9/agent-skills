@@ -1,6 +1,6 @@
 # Adapter — Claude Code
 
-Freshness checked: 2026-07-15. Re-read current Claude Code skill documentation when discovery, metadata, or invocation differs from this adapter.
+Before relying on load-bearing Claude Code discovery, metadata, or invocation details, check the current official documentation or installed runtime surface.
 
 Only what is specific to Claude Code: placement, metadata, triggering. Method and checks live in the core and [quality-rubric.md](quality-rubric.md).
 

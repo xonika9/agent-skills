@@ -25,13 +25,15 @@ Use one canonical owner per fact. A concise summary may appear in another audien
 
 ## Personal cross-runtime convention
 
-In the user's personal repositories, root `AGENTS.md` is the single canonical source of local agent instructions. Root `CLAUDE.md` must contain exactly:
+Agent harnesses do not share one universal repository-context filename. This convention targets Claude Code and `AGENTS.md`-aware harnesses such as Codex; verify another harness's current discovery rules before claiming compatibility. Claude Code reads `CLAUDE.md` and supports importing another file. Keeping two complete copies makes the rules drift, so the user's personal repositories use one source of truth plus a thin compatibility import.
+
+Root `AGENTS.md` is the single canonical source of local agent instructions. Root `CLAUDE.md` must contain exactly:
 
 ```text
 @AGENTS.md
 ```
 
-Keep the final newline. Add and update local rules only in `AGENTS.md` so Codex and Claude Code read the same instructions without duplicate maintenance.
+Keep the final newline. Add and update local rules only in `AGENTS.md` so Claude Code follows the import while Codex and other `AGENTS.md`-aware harnesses read the canonical file directly.
 
 Before replacing an existing `CLAUDE.md` with the import, merge every unique local rule into `AGENTS.md` and verify the combined meaning. If a rule appears genuinely Claude-only or the runtime does not support the import, stop and ask whether this repository is an explicit exception; do not silently retain duplication or delete the rule.
 

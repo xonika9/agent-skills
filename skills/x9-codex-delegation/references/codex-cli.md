@@ -1,6 +1,6 @@
 # Codex CLI delegation adapter
 
-Verified with shell Codex CLI 0.144.6 on 2026-07-21. Re-run `codex exec --help` and `codex exec resume --help` before relying on these flags after an upgrade.
+Run `codex exec --help` and `codex exec resume --help` before relying on the examples below. The CLI surface can change independently of this skill.
 
 ## One-shot execution
 

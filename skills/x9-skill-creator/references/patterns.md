@@ -12,7 +12,7 @@ Better: `description: Use when the user asks to create or audit an Agent Skill â
 
 Bad: one body mixes `~/.claude/skills`, Codex metadata, and exact current CLI flags.
 
-Better: shared method in `SKILL.md`; Claude/Codex mechanics in separate dated adapters selected at runtime.
+Better: shared method in `SKILL.md`; Claude/Codex mechanics in separate runtime adapters that require live verification for load-bearing details.
 
 ## Freedom
 
@@ -36,7 +36,7 @@ Better: inspect the diff and restore only the known generated change from a pre-
 
 Bad: model rankings, temporary experiment counters, and permanent method live together.
 
-Better: durable method in the skill, current routing in a dated runtime adapter, measurements in operational state.
+Better: durable method in the skill, volatile routing behind live discovery in a runtime adapter, measurements in operational state.
 
 ## Progressive disclosure
 

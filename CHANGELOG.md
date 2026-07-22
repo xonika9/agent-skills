@@ -4,9 +4,19 @@
 
 ### Highlights
 
+- Tightened the README by folding validation and security proof into the contribution section instead of a separate internal-facing block.
+- Restored the intended skill contracts for social research, authenticated personal browsing, cross-provider idea critique, cross-harness context files, subscription-aware Codex delegation, and packaging recurring workflows as skills.
+- Replaced the generated-looking skill table with a problem-first guide and a human-readable catalog that explains the story and practical use of every skill.
+
 ### Install / update
 
+- Existing authenticated-browser users should add the privacy flags documented in `x9-browser-session` to their `chrome-devtools-mcp@latest` configuration, then restart Claude Code or Codex.
+
 ### Compatibility
+
+- Added same-task changelog rules, release-time diff reconciliation, and a CI gate that catches release-relevant changes when `Unreleased` is empty.
+- Defined deterministic `PATCH`, `MINOR`, `1.0.0`, and post-1.0 `MAJOR` selection rules for release preparation.
+- Replaced stale-prone tool versions and verification dates in runtime guidance with live `--help`, documentation, schema, and session-metadata checks.
 
 ### Breaking changes
 
@@ -30,7 +40,6 @@
 - Restored a portable authenticated Chromium/CDP contract while retaining the verified Microsoft Edge adapter.
 - Made the global-instructions validator independent of the caller's working directory.
 - Published sanitized Claude Code and Codex runtime adapters alongside the shared global-instructions core, without machine-specific installation paths.
-- Added same-task changelog rules, release-time diff reconciliation, and a CI gate that catches release-relevant changes when `Unreleased` is empty.
 
 ### Breaking changes
 

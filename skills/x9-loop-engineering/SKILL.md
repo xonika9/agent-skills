@@ -1,6 +1,6 @@
 ---
 name: x9-loop-engineering
-description: Use when designing a repeated agent loop, long-running workflow, evaluator/optimizer cycle, or multi-stage autonomous process — «спроектируй агентный цикл», «сделай автономный workflow», "design an agent loop". Do not use for auditing ordinary Agent Skills, one-off tasks, simple linear scripts, or ordinary project planning.
+description: Use when designing a repeated agent loop, long-running workflow, evaluator/optimizer cycle, or multi-stage autonomous process, including turning a recurring multi-step workflow into one reusable skill — «спроектируй агентный цикл», «сделай автономный workflow», «оберни этот повторяющийся процесс в скилл», "design an agent loop". Do not use for auditing ordinary Agent Skills, one-off tasks, simple linear scripts, or ordinary project planning.
 ---
 
 # Loop engineering
@@ -32,6 +32,7 @@ Every production loop needs:
 6. Define retry/non-convergence budgets from cost and failure semantics. Stop when the same cause repeats without new evidence.
 7. Specify recovery, degraded output, and resumption before adding optimization.
 8. Validate the loop on representative tasks, including failure and resume scenarios.
+9. When the requested deliverable is a reusable Agent Skill, hand the validated loop design to `x9-skill-creator`. This skill owns the workflow state machine, authority, checkpoints, and recovery contract; `x9-skill-creator` owns triggering, package structure, progressive disclosure, runtime adapters, and skill validation. Do not duplicate either contract by maintaining two independent designs.
 
 Use [references/harvesting.md](references/harvesting.md) only after real runs exist and a repeated lesson has evidence worth promoting.
 
@@ -42,3 +43,4 @@ Use [references/harvesting.md](references/harvesting.md) only after real runs ex
 - A crash/resume scenario preserves work without relying on conversation memory.
 - A critic failure or exhausted budget yields an honest terminal status.
 - At least one representative success and one failure scenario were executed or clearly marked unverified.
+- When packaging was requested, the resulting Agent Skill preserves the validated loop contract and passes `x9-skill-creator` checks.

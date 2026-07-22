@@ -1,6 +1,6 @@
 # Adapter — Codex
 
-Freshness checked: 2026-07-15. Re-read the current Codex Agent Skills documentation and live tool surface when discovery or metadata differs from this adapter.
+Before relying on load-bearing Codex discovery, metadata, or invocation details, check the current official documentation or installed runtime surface.
 
 Only what is specific to Codex: placement, metadata, init/validate. Method and quality checks live in the core and [quality-rubric.md](quality-rubric.md).
 

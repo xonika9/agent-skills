@@ -11,7 +11,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 ## 2. Runtime and placement `[j+b]`
 
 - Name supported runtimes and canonical placement.
-- Keep shared method in the core; isolate volatile metadata, tool, model, CLI, and browser facts in dated adapters.
+- Keep shared method in the core; isolate volatile metadata, tool, model, CLI, and browser facts in runtime adapters with live-discovery rules.
 - With behavioral evidence, verify a representative run on each claimed runtime or mark the run `DEGRADED`. With static evidence, name unverified runtimes without turning that declared scope boundary into a finding.
 
 ## 3. Degree of freedom `[j]`
@@ -31,7 +31,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 - Every paragraph carries non-obvious behavior; details live in linked references.
 - Use English for machine-facing prose by default; keep literals in the language where exact text matters.
-- Exact models, flags, schemas, versions, ports, rankings, and performance claims have a dated owner or a live-discovery rule.
+- Volatile models, flags, schemas, tool versions, rankings, and performance claims use live discovery before they become load-bearing. A freshness date is not a substitute for current validation.
 - No junk, placeholders, secrets, or temporary experiment state in the skill.
 
 ## 6. Progressive disclosure `[s+j]`

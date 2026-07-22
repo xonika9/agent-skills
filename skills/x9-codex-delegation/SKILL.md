@@ -1,11 +1,13 @@
 ---
 name: x9-codex-delegation
-description: Claude Code only; never use in a Codex session. Use when substantial, well-scoped work should actually be delegated to Codex — «отдай в Codex», «делегируй Codex», "use Codex", implementation, migration, codebase analysis, logged-in browser work, UI verification, or a second-opinion review. Do not use for trivial work, choosing between Claude models, or merely drafting a prompt/brief that is not explicitly being sent to Codex.
+description: Claude Code only; never use in a Codex session. Use when substantial, well-scoped work should actually be delegated to Codex — «отдай в Codex», «делегируй Codex», «передай эту часть работы в Codex, чтобы распределить лимиты», "use Codex", implementation, migration, codebase analysis, logged-in browser work, UI verification, or a second-opinion review. Do not use for checking or planning subscription quotas without a concrete task, trivial work, choosing between Claude models, or merely drafting a prompt/brief that is not explicitly being sent to Codex.
 ---
 
 # Delegate from Claude Code to Codex
 
 Use `x9-browser-session` for browser routing. Use the plugin route when it is available; the raw CLI remains a fallback for an explicitly requested delegation.
+
+When Claude and OpenAI/Codex are backed by separate subscriptions or usage pools, delegation can distribute substantial work instead of exhausting only the Claude allowance. Treat that as a user-specific routing benefit, not a promise of lower cost: API billing, plan limits, and available runtimes vary.
 
 ## Choose the route
 
@@ -16,7 +18,7 @@ Use `x9-browser-session` for browser routing. Use the plugin route when it is av
 
 ## Raw fallback
 
-Read [references/codex-cli.md](references/codex-cli.md) and use its currently verified one-shot or resume recipe. That dated reference owns exact flags and known differences between `exec` and `resume`; this skill owns the delegation contract, not the volatile command surface. Prefer the model configured in `~/.codex/config.toml` unless the user explicitly chooses another.
+Read [references/codex-cli.md](references/codex-cli.md) and use its one-shot or resume recipe after checking the current command help. That reference owns exact flags and known differences between `exec` and `resume`; this skill owns the delegation contract, not the volatile command surface. Prefer the model configured in `~/.codex/config.toml` unless the user explicitly chooses another.
 
 ## Brief contract
 

@@ -22,6 +22,17 @@ For a new or changed skill:
 - Do not claim cross-agent compatibility you have not checked.
 - Update both READMEs and `CHANGELOG.md` when public behavior changes.
 
+## Versioning
+
+Contributors add user-visible changes to `Unreleased`; the maintainer confirms the release version. The strongest change since the latest public tag determines the bump:
+
+- `PATCH`: backward-compatible fixes and corrections only.
+- `MINOR` while the project is `0.x`: new capabilities or any intentional change to public behavior or contracts, including incompatible pre-1.0 changes.
+- `1.0.0`: an explicit maintainer declaration that the public contracts are stable.
+- After `1.0.0`, `MAJOR`: incompatible public-contract changes; `MINOR`: backward-compatible capabilities; `PATCH`: backward-compatible fixes.
+
+The detailed criteria and release authority are defined in [AGENTS.md](AGENTS.md#changelog-and-releases).
+
 ## Validation
 
 Run the focused tests for your change. Before submitting a package-wide change, run:

@@ -68,48 +68,90 @@ Clone or fork the repository only when you want to maintain your own variants. Y
 
 The skills use the open Agent Skills format and are packaged for Claude Code and Codex. Most also work in other compatible agents. Runtime-specific exceptions are stated in the catalog and inside each skill instead of being hidden behind a broad compatibility claim.
 
+## Where to start
+
+You do not need to learn the whole package first. Pick the problem that sounds familiar:
+
+- The agent answers from memory or skims the topic: start with [`x9-research`](skills/x9-research/SKILL.md).
+- The task depends on your login, region, feed, cart, or private pages: add [`x9-browser-session`](skills/x9-browser-session/SKILL.md).
+- You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
+- You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
+- You need a strong prompt or cleaner global agent rules: use [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
+- A new or existing repository needs useful onboarding files: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
+- You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
+- You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
+- You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
+- Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md).
+
 ## Skill catalog
 
-| Skill | Use it when | Runtime note |
-| --- | --- | --- |
-| [`x9-research`](skills/x9-research/SKILL.md) | A decision depends on current facts, primary sources, or conflicting evidence. | Portable; browser work follows `x9-browser-session` |
-| [`x9-browser-session`](skills/x9-browser-session/SKILL.md) | Browser automation must preserve authentication without taking over your tabs. | Requires a compatible browser-control route; the included setup covers Chromium via CDP |
-| [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md) | You need a defensible Wildberries shortlist based on the exact variant, seller, price, and relevant reviews. | Wildberries-specific; install `x9-browser-session`; the current Claude Code or Codex runtime executes the workflow directly |
-| [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md) | You explicitly want a red-team review, cheaper alternatives, and disconfirming tests. | The GPT route from Claude Code uses `x9-codex-delegation` |
-| [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md) | Global agent rules, runtime adapters, and task briefs need clear ownership. | Supports Claude Code and Codex instruction files |
-| [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md) | A repository needs a README or agent instructions grounded in its actual commands and structure. | Portable |
-| [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md) | You are creating, auditing, or repairing an Agent Skill and need a verifiable contract. | Portable |
-| [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md) | Claude Code should delegate a bounded task to Codex and verify the real diff and checks afterward. | Claude Code only |
-| [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md) | An evaluator/optimizer loop needs checkpoints, retry limits, recovery, and human gates. | Portable; tool adapters may vary |
-| [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md) | A Markdown knowledge base must gain OKF metadata without silently changing document bodies. | Includes deterministic Python scripts |
+### Research and personal browser automation
 
-## Three useful starting points
+#### [`x9-research`](skills/x9-research/SKILL.md)
 
-### Research a current question
+Agents often produce a plausible answer from memory and call it research. This skill makes them open current sources, trace the claims that carry the conclusion, look for counter-evidence, and say what could not be verified. X/Twitter is inspected through your authenticated browser; Reddit and forums are used for lived experience, not treated as proof.
 
-Ask the agent to use `x9-research` when the answer needs fresh evidence:
+For a narrow question, the result stays in chat. When you ask to save the work, the skill creates or extends a structured `docs/research/` dossier instead of scattering another report across the repository. Browser work is routed through `x9-browser-session`.
 
-```text
-Use x9-research to compare the current plugin installation models for Claude Code and Codex.
-Prioritize primary sources, show contradictions, and label anything you could not verify.
-```
+#### [`x9-browser-session`](skills/x9-browser-session/SKILL.md)
 
-The workflow identifies the claims that carry the conclusion, opens current sources, looks for disconfirming evidence, and leaves a traceable answer.
+A clean automation browser is enough to test a public website. It is the wrong tool for a personal task where your account, region, saved data, or feed changes the result. This skill chooses between a connector, a clean browser, and a dedicated authenticated Chromium profile, then works in its own tab without taking over yours.
 
-### Work in an authenticated browser session
+The [setup guide](skills/x9-browser-session/references/setup.md) includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. Claude Code and Codex use their current browser integrations where appropriate.
 
-Use `x9-browser-session` when a task needs your existing login but should not interfere with your active tabs. The skill selects one browser route, opens a dedicated work tab, and keeps the action boundary explicit. The included [setup guide](skills/x9-browser-session/references/setup.md) covers Edge on macOS and explains what can be adapted for other Chromium browsers.
+#### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
 
-### Stress-test an idea before building it
+A Wildberries rating rarely tells the whole story: reviews may belong to another variant, the seller may be questionable, and the visible price depends on the account and region. This skill searches through your logged-in session, checks the exact variant, seller, price per unit, fresh and low-rated reviews, recurring risks, and buyer photos when appearance or packaging matters before producing a shortlist.
 
-Invoke `x9-idea-critic` explicitly when you want resistance rather than encouragement:
+It is deliberately Wildberries-specific and runs inside the current Claude Code or Codex session. Install `x9-browser-session` with it.
 
-```text
-Use x9-idea-critic. Find the assumptions most likely to kill this idea,
-the cheapest credible alternative, and tests that could disprove it this week.
-```
+### Ideas and agent behavior
 
-For longer autonomous work, pair the result with `x9-loop-engineering` so retries, checkpoints, and stop conditions are designed before the loop starts.
+#### [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md)
+
+Use this when you want resistance, not another enthusiastic brainstorm. The skill seals the relevant context into a neutral brief and sends the same brief to independent Opus and GPT critics. The main agent then combines agreements, disagreements, fatal assumptions, cheaper alternatives, and the quickest tests that could prove the idea wrong.
+
+The default uses one critic from each provider; focused and deeper panel modes are also available. The GPT route from Claude Code uses `x9-codex-delegation`.
+
+#### [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md)
+
+This is the skill for “write me a prompt for this task.” Describe the outcome in your own words, including through speech-to-text, and it turns that input into a bounded brief with the goal, constraints, evidence, authority, deliverable, and completion bar.
+
+It also audits and edits global `AGENTS.md` and `CLAUDE.md` files. The underlying idea is simple: capable models need clear boundaries and success criteria more than a long script telling them how to think.
+
+### Repositories and reusable workflows
+
+#### [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md)
+
+On a new repository, it creates useful `README.md`, `AGENTS.md`, and `CLAUDE.md` files. On an existing codebase, it reads the real commands, structure, CI, and local constraints before updating them, so the result does not become a generated file tree or a pile of advice the agent could infer itself.
+
+For personal cross-runtime repositories, `AGENTS.md` stays the source of truth and `CLAUDE.md` imports it with `@AGENTS.md`. Claude Code and AGENTS-aware harnesses receive the same context without two copies drifting apart.
+
+#### [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md)
+
+Give it an already understood repeated process to package as an Agent Skill, or hand it an existing skill for an audit. When the idea is underspecified, it asks only the questions that change the design. It then builds or fixes the trigger contract, structure, references, runtime adapters, safety boundaries, and validation. If the process is a multi-stage autonomous loop, design that loop with `x9-loop-engineering` first.
+
+The method applies one cross-runtime quality contract to Claude Code and Codex skills. It supports both static audits and clean-context behavioral evaluation when the extra evidence is worth the cost.
+
+#### [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md)
+
+Some jobs repeat the same cycle: explore, plan, work, review, revise, and preserve what was learned. Instead of manually feeding the next prompt every time, this skill designs a bounded agent loop with durable state, decision rights, checkpoints, stop conditions, recovery, and honest degraded outcomes.
+
+Once the loop has been validated, `x9-skill-creator` can package it as one reusable skill. The resulting workflow is designed to run without constant prompt-feeding while keeping its authority and stopping conditions bounded; the actual runner still depends on the target runtime.
+
+#### [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md)
+
+This narrow bridge lets Claude Code hand a substantial, well-scoped task to Codex and verify the real diff or evidence afterward. It is useful when Codex is a better fit for one part of the work, and it can distribute usage when Claude and OpenAI are backed by separate subscriptions or usage pools.
+
+The skill is Claude Code only. It does not manage quotas by itself and does not delegate trivial work just to add another agent.
+
+### Knowledge bases
+
+#### [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md)
+
+Large Markdown documentation collections become easier for people and agents to navigate when every document describes itself consistently. This skill adapts an existing knowledge base to [OKF v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) frontmatter with a shared set of fields for type, title, description, tags, and freshness.
+
+The migration is intentionally conservative: deterministic scripts add or repair metadata while verifying that document bodies, line endings, and BOMs did not change.
 
 ## Global instruction examples
 
@@ -121,12 +163,6 @@ Treat them as examples, not as files to overwrite blindly. A safe request is:
 Use x9-agent-instructions to review these examples and merge only the rules that fit my setup.
 Preserve my existing instructions, paths, tools, and repository-specific sections.
 ```
-
-## What you can verify
-
-- Every skill has one canonical source under [`skills/`](skills/); the Claude Code and Codex packages point to the same files.
-- CI validates skill structure, runs deterministic regression tests, checks plugin metadata, scans public files for sensitive data, and runs Gitleaks over Git history.
-- User-visible changes are recorded in the [changelog](CHANGELOG.md), and published versions use semver tags and GitHub Releases.
 
 ## Updates
 
@@ -146,7 +182,7 @@ Plugin users can update through their agent's marketplace flow. Review [CHANGELO
 
 ## Contributing and security
 
-Bug reports, focused skill improvements, and reproducible compatibility findings are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. For vulnerabilities or sensitive reports, follow [SECURITY.md](SECURITY.md) instead of creating a public issue. Community conduct is covered by the [Code of Conduct](CODE_OF_CONDUCT.md).
+Bug reports, focused skill improvements, and reproducible compatibility findings are welcome. Before release, CI validates every skill, plugin metadata, regression tests, and public files. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. For vulnerabilities or sensitive reports, follow [SECURITY.md](SECURITY.md) instead of creating a public issue. Community conduct is covered by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 If this package saves you time, [star the repository](https://github.com/xonika9/agent-skills) so more people can find it. For new experiments and practical notes, follow [Контролируемые галлюцинации](https://t.me/+DOZWlhI4r4EyYjgy).
 
