@@ -13,10 +13,29 @@ codex exec -s read-only --skip-git-repo-check "<self-contained prompt>" </dev/nu
 Write-capable:
 
 ```bash
-codex exec -s workspace-write -o /tmp/codex-last.md - <"$PROMPT_FILE"
+codex exec -s workspace-write - <"$DELEGATION_PROMPT_FILE"
 ```
 
-For a multiline or sensitive brief, create `PROMPT_FILE` with `mktemp` outside the repository, restrict it to the current user, and install cleanup before writing the brief. Pass the brief through stdin rather than argv, and verify cleanup after success, failure, or interruption. Never leave the transport file in the repository, logs, or user artifacts.
+The last-message output normally returns through stdout; do not create a separate output artifact unless the caller explicitly needs one.
+
+For a multiline or sensitive brief, create the transport file outside the repository with this lifecycle before writing its contents:
+
+```bash
+umask 077
+DELEGATION_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/x9-codex.XXXXXX")" || exit 1
+DELEGATION_PROMPT_FILE="$DELEGATION_TMP_DIR/prompt.md"
+cleanup_delegation_files() {
+  rm -f -- "$DELEGATION_PROMPT_FILE"
+  rmdir -- "$DELEGATION_TMP_DIR" 2>/dev/null || true
+}
+trap cleanup_delegation_files EXIT
+trap 'exit 130' HUP INT TERM
+chmod 700 "$DELEGATION_TMP_DIR" || exit 1
+: >"$DELEGATION_PROMPT_FILE" || exit 1
+chmod 600 "$DELEGATION_PROMPT_FILE" || exit 1
+```
+
+Write the brief only after the trap and user-only permissions are in place. Pass it through stdin rather than argv. After `codex exec` returns, let the trap remove it and verify that the temporary directory no longer exists. Never reuse a fixed `/tmp` path or leave transport/output files in the repository, logs, or user artifacts.
 
 This protects the transport file and process arguments, not Codex session history: the submitted prompt may still be persisted by the runtime. Do not put credentials or secret values in the brief. Refer to a local credential source that the authorized task can read instead.
 

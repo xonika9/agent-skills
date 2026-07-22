@@ -32,6 +32,7 @@ Ask only when a missing answer is load-bearing. A fully specified request does n
 4. Match freedom to fragility: flexible judgment in prose, repeatable deterministic work in scripts, heavy knowledge in references, output assets in assets.
 5. Preserve the skill's intent and user-owned resources. Escalate only irreversible or materially scope-changing decisions.
 6. Run structural validation and state the evidence tier. Run [behavioral evaluation](references/evals.md) only when behavioral evidence is selected; otherwise record behavioral claims as unverified without treating that deferral as a defect by itself.
+7. Follow [audit reporting](references/audit-reporting.md) for every Audit handoff. Report every retained Blocker, Important, and Minor finding in the user-facing table; `Needs your decision` is a disposition, not a filter.
 
 Audit one target directly. For multiple targets, or when the user explicitly requests a batch audit, read [references/batch-audit.md](references/batch-audit.md) and delegate bounded groups to fresh workers. Batch execution changes only coordination and aggregation; every target still uses the same Audit action, evidence tier, rubric, validation, and verdict contract defined here.
 
@@ -40,11 +41,11 @@ For a genuinely underspecified new skill, use the focused questions in [referenc
 ## Structural check
 
 ```bash
-python3 scripts/validate.py ~/.agents/skills/<name>
-python3 scripts/test_validate.py
+python3 <resolved-x9-skill-creator-directory>/scripts/validate.py <absolute-target-skill-directory>
+python3 <resolved-x9-skill-creator-directory>/scripts/test_validate.py
 ```
 
-The validator checks the shared structural contract; it cannot prove triggering, runtime-specific semantics, or output quality. Verify platform-specific metadata in the target runtime during behavioral evaluation.
+Resolve the creator directory from the loaded skill resource and the target from the actual project/personal source under review; do not substitute a globally installed copy for a package-owned target. The first command validates that target. The second checks validator regression scenarios and is not a substitute for target validation. Structural checks cannot prove triggering, runtime-specific semantics, or output quality; verify platform-specific metadata in the target runtime during behavioral evaluation.
 
 ## Optional behavioral check
 
@@ -62,6 +63,7 @@ For stable or release-gated substantive changes, compare old/new or with-skill/w
 
 - Structural validation exits 0 without unexplained warnings.
 - The judge checklist in the rubric passes.
-- The handoff states the action and evidence tier and does not claim evidence outside that scope.
+- The handoff states the action and evidence tier, does not claim evidence outside that scope, and follows the single or batch table contract in [audit reporting](references/audit-reporting.md).
+- Every retained Blocker, Important, and Minor finding is visible in the final response. In batch mode, the orchestrator has quality-checked worker findings and removed unsupported or duplicate recommendations before presenting them.
 - If behavioral evidence was selected, representative scenarios show correct trigger, boundary, failure, and completion behavior.
 - Static evidence may support a `clean` audit without live evaluation; unverified behavioral claims remain explicit follow-up evidence, not an automatic finding.

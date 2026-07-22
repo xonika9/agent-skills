@@ -7,6 +7,14 @@ description: Use when creating, auditing, or updating repository-level AGENTS.md
 
 Create concise, evidence-backed onboarding files for two audiences: agents (`AGENTS.md`/`CLAUDE.md`) and humans (`README.md`). Existing files are user-owned inputs, not blank templates.
 
+## Select the action
+
+- **Create or update:** an explicit request to create, update, fix, or rewrite a context file authorizes the requested in-scope edits; do not ask for the same permission again.
+- **Audit:** an explicit audit/check request is read-only. Report findings and proposed changes, then ask once whether to apply them.
+- **Bare skill invocation:** inspect the current repository read-only by default. If changes would help, show the proposal and ask once before editing.
+
+Infer the action from the whole request, not only trigger words. When an authorized edit reveals an additional normalization outside the requested change, ask once before applying that extra change.
+
 ## Workflow
 
 1. Read current repository instructions and README completely enough to preserve non-inferable rules. Inspect actual commands, manifests, CI, and representative code before writing.
@@ -14,11 +22,11 @@ Create concise, evidence-backed onboarding files for two audiences: agents (`AGE
    - Agent file: commands, dangerous gotchas, local constraints, non-inferable conventions, and verification contracts.
    - README: purpose, setup, normal usage, and links to deeper material.
 3. Keep one canonical owner for each fact. A short audience-specific summary is allowed when it changes behavior; link to the owner instead of copying full detail.
-4. In the user's personal repositories, make root `AGENTS.md` the single canonical local instruction file and root `CLAUDE.md` exactly `@AGENTS.md` plus a final newline, unless the user explicitly declares an exception. Put every new local rule in `AGENTS.md`. Before normalizing an existing `CLAUDE.md`, merge its unique rules into `AGENTS.md`; never discard them silently or preserve a duplicate copy by default.
+4. Make root `AGENTS.md` the single canonical local instruction file and root `CLAUDE.md` exactly `@AGENTS.md` plus a final newline, unless the repository or user declares an exception. Put every new local rule in `AGENTS.md`. Before normalizing an existing `CLAUDE.md`, merge its unique rules into `AGENTS.md`; never discard them silently or preserve a duplicate copy by default. Apply this normalization immediately when it was explicitly requested or already required by repository policy; otherwise propose it and ask once before editing.
 5. Treat an existing `AGENTS.md`, `CLAUDE.md`, or `README.md` as merge-only unless the user explicitly requests replacement. Show a diff for substantive rewrites.
 6. Include architecture only when the rationale or boundary cannot be recovered cheaply from code and materially affects decisions. Avoid generated file trees and generic overviews.
 7. Use English for machine-facing instructions by default; follow repository/user language when human maintenance or domain literals make that clearer.
-8. Run every command you present when safe and available. Label unverified commands rather than guessing.
+8. Run commands you present only when they are safe, local, and within the requested repository scope. Read-only inspection and ordinary local validation are allowed by default. Destructive, external, costly, deployment, migration, production-data, account-mutating, or credential-changing commands require explicit user authority; otherwise preserve the command and label it unverified with the reason.
 
 Read [references/agents-md.md](references/agents-md.md) when editing agent files, [references/readme.md](references/readme.md) for README work, and [references/research-basis.md](references/research-basis.md) when judging how much inferred architecture belongs in context.
 
@@ -32,7 +40,7 @@ Read [references/agents-md.md](references/agents-md.md) when editing agent files
 ## Done
 
 - Existing non-inferable rules are preserved or intentionally changed with user authority.
-- In a personal repository without an explicit exception, `CLAUDE.md` contains only `@AGENTS.md` and all local instructions are owned by `AGENTS.md`.
+- When canonical-file normalization was authorized and no exception applies, `CLAUDE.md` contains only `@AGENTS.md` and all local instructions are owned by `AGENTS.md`.
 - Commands and paths trace to the current repository.
 - Agent and human files contain only behavior-changing audience-specific material.
 - A fresh-context reader can start the project without inventing a command.

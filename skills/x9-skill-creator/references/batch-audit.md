@@ -2,7 +2,7 @@
 
 Use this reference when several project-owned skills must be audited against one installed `x9-skill-creator` contract. It changes only how audits are discovered, delegated, persisted, and summarized. It does not define a second audit contract.
 
-Each worker applies the Audit action, selected evidence tier, [quality rubric](quality-rubric.md), validator, and verdict rules from the installed skill. Proposed fixes remain report-only until the user starts a separate Fix action and approves the relevant changes.
+Each worker applies the Audit action, selected evidence tier, [quality rubric](quality-rubric.md), validator, and verdict rules from the installed skill. The orchestrator then applies [audit reporting](audit-reporting.md) to quality-check and consolidate the raw findings. Proposed fixes remain report-only until the user starts a separate Fix action and approves the relevant changes.
 
 ## Contents
 
@@ -12,6 +12,7 @@ Each worker applies the Audit action, selected evidence tier, [quality rubric](q
 - [Worker contract](#worker-contract)
 - [Report contract](#report-contract)
 - [Worker response](#worker-response)
+- [Orchestrator QA and consolidated report](#orchestrator-qa-and-consolidated-report)
 - [Final response](#final-response)
 
 ## Invocation
@@ -44,14 +45,17 @@ Do not audit a globally installed copy merely because it is reachable from the p
 
 ## Orchestrator contract
 
-The orchestrator does not audit target skills itself. It must:
+The orchestrator does not repeat each target's full rubric audit from scratch, but it owns cross-report QA and the final judgment. It must:
 
 - select `Audit` and one evidence tier for the whole batch;
 - split the resolved targets into bounded groups sized so each worker can read every relevant reachable resource;
 - assign every group to a fresh worker and use the parent agent's current model unless the user explicitly selected another;
-- keep chat context lean by requiring only one Verdict block per target from each worker;
-- wait for every group, verify that every expected report exists, and verify that every returned Verdict contains all required fields;
+- keep chat context lean by requiring only the report path, finding counts, and one Verdict block per target from each worker;
+- wait for every group, verify that every expected report exists, and verify that every returned response contains the report path, severity counts, and all required Verdict fields;
 - retry a failed or non-compliant bounded group with a fresh worker rather than silently omitting a target;
+- read every complete worker report, check every finding against its cited source and declared intent, merge duplicates, filter unsupported claims, and recompute target status from retained findings;
+- retain every evidence-backed Blocker, Important, and Minor finding regardless of whether it needs a user decision;
+- write the consolidated report and mirror its complete findings table in the final chat response;
 - stop with an explicit degraded or blocked result when the same underlying failure prevents complete coverage after a reasonable retry.
 
 Full evidence belongs in report files, not worker chat. Workers may write only the authorized audit reports; they must not modify target skills or their resources.
@@ -67,7 +71,7 @@ For every assigned target, the worker must:
 5. Audit all 10 rubric dimensions and complete all 8 judge-checklist items.
 6. Keep claims within the selected evidence tier. Under `Static`, mark behavioral claims `NOT_PROVEN` where relevant without treating the absence of live evaluation as a finding by itself. Under `Behavioral`, record scenarios, assertions, and evidence paths; report an unavailable required route as `DEGRADED`.
 7. Do not modify the audited skill or any of its resources. Describe proposed fixes only in the report and put irreversible or load-bearing choices under `Needs your decision`.
-8. Write the full report and return only its final Verdict block in chat.
+8. Write the full report and return its path, severity counts, and final Verdict block in chat.
 
 ## Report contract
 
@@ -101,8 +105,10 @@ Because the action is Audit, `Decided here` is normally `None — Audit only`. U
 Return only this block for each assigned target:
 
 ```text
-<project-relative-target>
+Target: <project-relative-target>
+Report: docs/skill-audits/<date>/<report-name>.md
 Status:
+Findings: Blocker <n> | Important <n> | Minor <n>
 Decided here:
 Needs your decision:
 Remaining/deferred:
@@ -110,11 +116,36 @@ Remaining/deferred:
 
 Do not return analysis, summaries, validator logs, or report contents in worker chat.
 
+## Orchestrator QA and consolidated report
+
+After every worker report exists, the orchestrator must follow the batch QA procedure in [audit reporting](audit-reporting.md):
+
+1. Read every complete worker report rather than relying on the Verdict block or severity counts.
+2. Open the cited source for every finding and confirm that the evidence and impact support the proposed severity.
+3. Compare the claim with the skill's explicit intent, current maintainer decisions, repository policy, and selected evidence tier.
+4. Merge duplicate findings. Filter unsupported, non-operational, out-of-scope, or intent-contradicting recommendations; never filter solely because severity is Minor.
+5. Recompute each target status from retained findings.
+6. Write one consolidated report to `docs/skill-audits/<local-date-yyyy-mm-dd>/summary.md`. Preserve an existing file by choosing a non-colliding name unless the user authorized replacement.
+
+The consolidated report contains:
+
+- the required findings table from [audit reporting](audit-reporting.md), including one accounting row for every clean target;
+- selected evidence tier and validation coverage;
+- decisions requested, with a recommended default and concrete alternatives;
+- deferred or unavailable behavioral evidence;
+- a short `Filtered out by orchestrator QA` appendix containing finding identifier, target, and dismissal reason.
+
 ## Final response
 
-After all targets are accounted for, return only:
+After all targets are accounted for and QA is complete, return:
 
-1. A table with `Skill | Status | Full report`.
-2. One consolidated `Needs your decision` list with links to the corresponding reports. Write `None` when the list is empty.
+1. The complete table below, with one row per retained Blocker, Important, and Minor finding and one accounting row for every clean skill:
 
-Do not imply that proposed fixes were applied. Applying approved changes is a separate `Fix` action.
+```text
+| Skill | Status | Severity | Area | Finding | Evidence / impact | Recommendation | Decision | Full report |
+```
+
+2. A concise `Needs your decision` section for rows marked `User decision`; include the recommended default and concrete alternatives. Write `None` when there are no such rows.
+3. The selected evidence tier, validation coverage, deferred or unavailable behavioral evidence, and a link to the consolidated report.
+
+Do not expose only statuses or decision-required findings. Do not copy filtered findings into the chat table. Do not imply that proposed fixes were applied; applying approved changes is a separate `Fix` action.

@@ -9,6 +9,10 @@ import tempfile
 from pathlib import Path
 
 VALIDATOR = Path(__file__).with_name("validate.py")
+SKILL_ROOT = Path(__file__).parent.parent
+SKILL_FILE = SKILL_ROOT / "SKILL.md"
+REPORTING = SKILL_ROOT / "references" / "audit-reporting.md"
+BATCH_AUDIT = SKILL_ROOT / "references" / "batch-audit.md"
 
 
 def run(root: Path):
@@ -67,6 +71,22 @@ def main():
         result = run(graph)
         expect("balanced link resolves", "file(name).md" not in result.stdout, result.stdout)
         expect("unreachable reference cycle", result.returncode != 0 and "orphan reference" in result.stdout, result.stdout)
+
+    skill_text = SKILL_FILE.read_text(encoding="utf-8")
+    reporting_text = REPORTING.read_text(encoding="utf-8")
+    batch_text = BATCH_AUDIT.read_text(encoding="utf-8")
+    table_header = "| Skill | Status | Severity | Area | Finding | Evidence / impact | Recommendation | Decision | Full report |"
+    for label, fragment, text in (
+        ("core links the audit reporting contract", "references/audit-reporting.md", skill_text),
+        ("reporting defines the complete findings table", table_header, reporting_text),
+        ("reporting accounts for clean targets", "No retained findings", reporting_text),
+        ("reporting retains every severity", "Blocker, Important, and Minor", reporting_text),
+        ("batch requires reading every worker report", "Read every complete worker report", batch_text),
+        ("batch writes a consolidated report", "summary.md", batch_text),
+        ("batch records filtered QA claims", "Filtered out by orchestrator QA", batch_text),
+        ("batch final response uses the complete table", table_header, batch_text),
+    ):
+        expect(label, fragment in text)
 
     print("PASS: validator regression scenarios")
 

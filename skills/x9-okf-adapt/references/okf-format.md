@@ -20,7 +20,7 @@ timestamp: 2026-07-15T12:00:00+03:00
 - `title`: non-empty human display title.
 - `description`: one non-empty line specific enough to distinguish the file from siblings.
 - `tags`: 2–5 unique English kebab-case strings.
-- `timestamp`: ISO 8601 with timezone; update on substantive edits, including a metadata repair that changes meaning.
+- `timestamp`: ISO 8601 with timezone. Preserve it for formatting-only normalization. When an existing header receives a repair that adds or changes the meaning of `type`, `title`, `description`, or `tags`, the migration script sets one operation timestamp automatically; the agent does not ask for timestamp permission file by file.
 
 Unknown fields are preserved unless they conflict with the repository's OKF contract. Duplicate YAML keys, invalid types, and partial headers are errors.
 

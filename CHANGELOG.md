@@ -7,7 +7,8 @@
 - Tightened the README by folding validation and security proof into the contribution section instead of a separate internal-facing block.
 - Restored the intended skill contracts for social research, authenticated personal browsing, cross-provider idea critique, cross-harness context files, subscription-aware Codex delegation, and packaging recurring workflows as skills.
 - Replaced the generated-looking skill table with a problem-first guide and a human-readable catalog that explains the story and practical use of every skill.
-- Added a batch-audit recipe that discovers project-owned skills from flexible paths, delegates the existing audit contract to fresh workers, and preserves one evidence-backed report per target before any fixes are authorized.
+- Added a batch-audit recipe that discovers project-owned skills from flexible paths, delegates bounded audits to fresh workers, preserves raw evidence per target, and requires orchestrator QA plus a consolidated table containing every retained Blocker, Important, and Minor finding.
+- Hardened delegation temporary-file and opt-in telemetry handling; defined read-only/default and authorized context-file actions; added OKF dependency preflight and automatic semantic-repair timestamps; corrected single-target skill validation; and made Wildberries search breadth converge with explicit account actions and risk-based independent verification.
 
 ### Install / update
 

@@ -1,6 +1,6 @@
 ---
 name: x9-agent-instructions
-description: Use when drafting a one-off prompt/task brief for another agent without executing it, or when creating, auditing, or editing global personal agent instructions — «напиши промпт для агента», «поправь глобальные правила», «обнови CLAUDE.md/AGENTS.md», "write an agent prompt", "edit my global instructions". Do not use for repository onboarding files (x9-context-files-generator), skill authoring (x9-skill-creator), ordinary prose, or actually delegating a task to Codex.
+description: Use when drafting a one-off prompt/task brief for another agent without executing it, or when creating, auditing, or editing global personal agent instructions — «напиши промпт для агента», «мне нужен промпт», «поправь глобальные правила», «обнови CLAUDE.md/AGENTS.md», "write an agent prompt", "edit my global instructions". Do not use for repository onboarding files (x9-context-files-generator), skill authoring (x9-skill-creator), ordinary prose, or actually delegating a task to Codex.
 ---
 
 # Agent instructions

@@ -195,6 +195,59 @@ timestamp: '2026-07-01T10:00:00+03:00'
             and "Replacement title" not in preserve_text,
             preserve_apply,
         )
+
+        repair_root = Path(tmp) / "semantic-repair"
+        repair_root.mkdir()
+        repair_file = repair_root / "repair.md"
+        repair_file.write_text("""---
+type: Analysis
+title: Repair title
+timestamp: '2020-01-02T03:04:05+00:00'
+---
+# Repair
+""", encoding="utf-8")
+        repair_inventory = Path(tmp) / "repair-inventory.json"
+        expect("semantic repair inventory created", run(INSERT, repair_root, "--inventory-out", repair_inventory).returncode == 0)
+        repair_manifest = Path(tmp) / "repair-manifest.json"
+        repair_manifest.write_text(json.dumps({"repair.md": meta("Repair title", "Added semantic description")}), encoding="utf-8")
+        repair_apply = run(INSERT, repair_root, "--manifest", repair_manifest, "--inventory", repair_inventory)
+        repair_text = repair_file.read_text(encoding="utf-8")
+        expect(
+            "meaning-changing repair updates a valid timestamp automatically",
+            repair_apply.returncode == 0
+            and "Added semantic description" in repair_text
+            and "2020-01-02T03:04:05+00:00" not in repair_text,
+            repair_apply,
+        )
+
+        stable_inventory = Path(tmp) / "stable-inventory.json"
+        expect("stable metadata inventory created", run(INSERT, preserve_root, "--inventory-out", stable_inventory).returncode == 0)
+        stable_manifest = Path(tmp) / "stable-manifest.json"
+        stable_meta = {
+            "type": "Analysis",
+            "title": "Existing title",
+            "description": "Existing description",
+            "tags": ["existing-tag", "preservation"],
+            "timestamp": "2030-01-01T00:00:00+00:00",
+        }
+        stable_manifest.write_text(json.dumps({"preserve.md": stable_meta}), encoding="utf-8")
+        stable_apply = run(
+            INSERT,
+            preserve_root,
+            "--manifest",
+            stable_manifest,
+            "--inventory",
+            stable_inventory,
+            "--replace-existing-metadata",
+        )
+        expect(
+            "formatting-only metadata apply preserves a valid timestamp",
+            stable_apply.returncode == 0
+            and "2026-07-01T10:00:00+03:00" in preserve_file.read_text(encoding="utf-8")
+            and "2030-01-01T00:00:00+00:00" not in preserve_file.read_text(encoding="utf-8"),
+            stable_apply,
+        )
+
         replacement_inventory = Path(tmp) / "replacement-inventory.json"
         expect("replacement inventory created", run(INSERT, preserve_root, "--inventory-out", replacement_inventory).returncode == 0)
         replacement_apply = run(
@@ -208,7 +261,9 @@ timestamp: '2026-07-01T10:00:00+03:00'
         )
         expect(
             "explicit replacement can change valid core metadata",
-            replacement_apply.returncode == 0 and "Replacement title" in preserve_file.read_text(encoding="utf-8"),
+            replacement_apply.returncode == 0
+            and "Replacement title" in preserve_file.read_text(encoding="utf-8")
+            and "2026-07-01T10:00:00+03:00" not in preserve_file.read_text(encoding="utf-8"),
             replacement_apply,
         )
 

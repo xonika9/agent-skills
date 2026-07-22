@@ -40,13 +40,15 @@ Stop retrying when the same blocking cause repeats, the budget is exhausted, or 
 
 ## Record the delegation
 
-After every actual Claude-to-Codex delegation, append one row to `~/.local/share/x9/codex-delegation-log.md`. Create the parent directory and initialize a small Markdown table when the file does not exist; preserve an existing file or symlink. Read its current table header before writing. Record the route, actual model/effort when observable, wall-clock time, Codex tokens, whether rework was needed, and the outcome or failure. Use `н/д` for unavailable data and `?` when rework is not known yet; never invent telemetry.
+Logging is off by default. Append to `~/.local/share/x9/codex-delegation-log.md` only when the user explicitly opts in for the current task/session or an existing user-owned policy records that choice. Delegation must work normally without a log; do not ask again when the current scope already contains the answer.
 
-The log is permanent operational history, not a temporary experiment or a completion gate. A missing or unwritable log must be reported but must not fail the delegated task.
+When logging is enabled, read the current table header before writing and keep each row to minimal non-sensitive telemetry: route, actual model/effort when observable, wall-clock time, Codex tokens, whether rework was needed, and a generic success/failure outcome. Never record task content, secrets, repository names, or personal paths. Use `н/д` for unavailable data and `?` when rework is not known yet; never invent telemetry. Do not replace an existing file or follow a symlink; report that logging was skipped instead.
+
+The log is optional permanent operational history, not a completion gate. A missing or unwritable log must not fail the delegated task.
 
 ## Done
 
 - The actual Codex model/runtime is inherited or explicitly confirmed when load-bearing.
 - Tool failures and degraded results are visible.
 - Write results have orchestrator-owned diff review and verification evidence.
-- The delegation is recorded when the log is available; a logging failure is visible.
+- When logging was enabled, the minimal telemetry row is recorded or the logging failure is visible.

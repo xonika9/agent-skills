@@ -20,6 +20,7 @@ DEFAULT_EXCLUDES = {
 }
 EXCLUDED_FILES = {"AGENTS.md", "CLAUDE.md", "GEMINI.md", "README.md"}
 REQUIRED = ("type", "title", "description", "tags", "timestamp")
+SEMANTIC_FIELDS = ("type", "title", "description", "tags")
 TAG_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 DEFAULT_TYPES = {"Dossier", "Research Note", "Analysis", "Plan", "Playbook", "Reference"}
 
@@ -101,17 +102,31 @@ def valid_core_value(key: str, value, catalog: set[str]):
     return False
 
 
-def merge_existing_meta(meta: dict, header: bytes, catalog: set[str], replace_existing: bool):
+def merge_existing_meta(
+    meta: dict,
+    header: bytes,
+    catalog: set[str],
+    replace_existing: bool,
+    operation_timestamp: str,
+):
     merged = dict(meta)
     preserved = []
-    if replace_existing or not header:
+    if not header:
         return merged, preserved
     existing = parsed_header(header)
-    for key in REQUIRED:
+    for key in SEMANTIC_FIELDS:
         value = existing.get(key)
-        if valid_core_value(key, value, catalog) and merged[key] != value:
+        if not replace_existing and valid_core_value(key, value, catalog) and merged[key] != value:
             merged[key] = value
             preserved.append(key)
+    meaning_changed = any(existing.get(key) != merged[key] for key in SEMANTIC_FIELDS)
+    existing_timestamp = existing.get("timestamp")
+    if valid_timestamp(existing_timestamp):
+        if meaning_changed:
+            merged["timestamp"] = operation_timestamp
+        elif merged["timestamp"] != existing_timestamp:
+            merged["timestamp"] = existing_timestamp
+            preserved.append("timestamp")
     return merged, preserved
 
 
@@ -260,6 +275,7 @@ def main():
         raise SystemExit("--inventory is required when applying a manifest")
     before = json.loads(args.inventory.read_text(encoding="utf-8")).get("files", {})
     manifest = load_manifest(args.manifest)
+    operation_timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
     pending = []
     preserved_by_file = {}
     for rel, meta in manifest.items():
@@ -287,7 +303,11 @@ def main():
             raise SystemExit(f"frontmatter changed since inventory: {rel}")
         try:
             effective_meta, preserved = merge_existing_meta(
-                meta, existing_header, catalog, args.replace_existing_metadata
+                meta,
+                existing_header,
+                catalog,
+                args.replace_existing_metadata,
+                operation_timestamp,
             )
             validate_manifest_meta(effective_meta, catalog)
         except ValueError as exc:

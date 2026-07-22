@@ -2,6 +2,22 @@
 
 Use every dimension when creating, auditing, or fixing a skill. Structural checks are marked `[s]`; judgment and behavior checks are `[j]` and `[b]`.
 
+## Contents
+
+- [Triggering and scope](#1-triggering-and-scope-sjb)
+- [Runtime and placement](#2-runtime-and-placement-jb)
+- [Degree of freedom](#3-degree-of-freedom-j)
+- [Authority and preservation](#4-authority-and-preservation-jb)
+- [Context cost and freshness](#5-context-cost-and-freshness-sj)
+- [Progressive disclosure](#6-progressive-disclosure-sj)
+- [Observable completion](#7-observable-completion-jb)
+- [Behavioral evidence](#8-behavioral-evidence-b)
+- [Stop and degradation](#9-stop-and-degradation-jb)
+- [Clarity and questions](#10-clarity-and-questions-sj)
+- [Audit severity and verdict](#audit-severity-and-verdict)
+- [Finding acceptance and final QA](#finding-acceptance-and-final-qa)
+- [Judge checklist](#judge-checklist)
+
 ## 1. Triggering and scope `[s+j+b]`
 
 - `description` says when to use the skill, includes realistic trigger phrases and a near-miss, and does not summarize the workflow.
@@ -72,12 +88,20 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 - **Important:** likely mis-trigger, undelivered contract, stale adapter, required-but-missing behavioral evidence, or fragile prose operation.
 - **Minor:** real lower-risk clarity, duplication, or maintenance issue.
 
+## Finding acceptance and final QA
+
+Rubric findings are raw claims until the responsible main agent checks their cited evidence, operational impact, severity, and fit with the skill's explicit intent and current user or repository policy. Follow [audit reporting](audit-reporting.md) to classify each claim as retained, user-decision, or filtered out.
+
+Filter unsupported, duplicate, out-of-scope, purely stylistic, intent-contradicting, or evidence-tier-exceeding claims. Do not filter a real finding because it is Minor, inconvenient, or costly. In batch mode workers preserve raw findings in per-target reports; the orchestrator owns final QA, deduplication, status recomputation, and the user-facing table.
+
 End audits with:
 
 - `Status`: `clean`, `needs your decision`, or `work remaining`.
 - `Decided here`: safe reasoned fixes already made.
 - `Needs your decision`: only irreversible or load-bearing choices.
 - `Remaining/deferred`: every unapplied item with reason and rough effort.
+
+The Verdict block is report metadata, not a sufficient user-facing audit. The final handoff must also expose every retained Blocker, Important, and Minor finding through [audit reporting](audit-reporting.md).
 
 ## Judge checklist
 
