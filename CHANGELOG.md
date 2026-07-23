@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- Made the published global-instruction examples keep Russian as the carrier language of technical explanations while separating exact English identifiers and reference names from narrative prose.
+
 ### Install / update
 
 ### Compatibility
