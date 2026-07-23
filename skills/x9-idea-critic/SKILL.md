@@ -47,6 +47,7 @@ Use the current configured model unless the user selected an exact available ver
 - If every requested route fails or no critic can inspect the load-bearing evidence, return `BLOCKED` with verdict `NOT_PROVEN`; do not manufacture a substantive verdict from the orchestrator's prior beliefs.
 - Keep attribution: show which critic raised each invalidating point and whether the other independently agreed.
 - Resolve duplicate wording, not disagreement. Surface material conflicts and judge them against evidence.
+- Keep the synthesis concise by grouping overlap and separating required changes from optional improvements, not by dropping findings or dependencies that could change the verdict.
 
 ## Output
 
@@ -56,7 +57,7 @@ Use the current configured model unless the user selected an exact available ver
 4. Serious/minor risks.
 5. Cheapest tests that could falsify the remaining assumptions.
 6. Missing evidence and unresolved disagreement.
-7. For `REVISE` or `SURVIVES`, up to three concrete changes that address the most serious findings. For `KILL`, do not manufacture a rescue plan.
+7. For `REVISE`, give a concrete revision agenda covering all findings upheld during synthesis. Distinguish changes required to address `KILLER` and `SERIOUS` findings from optional improvements, accepted risks, or deferred work associated with `MINOR` findings. Group overlapping work and show dependencies; do not cap the number of changes or omit necessary architecture work for brevity. For `SURVIVES`, recommend only changes justified by the findings and distinguish them from risks that can reasonably be accepted. For `KILL`, do not manufacture a rescue plan.
 
 `COMPLETE` requires every critic requested by the selected mode and traceable evidence for factual claims. Never silently substitute a different route or fewer critics.
 When a CLI transport file was used, completion also requires confirming that it no longer exists.
