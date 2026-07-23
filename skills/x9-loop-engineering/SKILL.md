@@ -26,47 +26,49 @@ Add a node only when it provides distinct context, tools, authority, evidence, o
 
 Every production loop needs:
 
-- a typed decision contract and explicit authority for each decision;
-- a minimal declared topology in which every node has a demonstrated responsibility;
-- a typed handoff contract for every edge that can change downstream work;
-- explicit ownership for shared state and every contended artifact;
-- durable state sufficient to resume without reconstructing hidden context;
+- an explicit outcome, decision contract, and authority for each load-bearing decision;
+- the smallest sufficient topology, with a demonstrated responsibility for every added stage or node;
+- a boundary contract and receiving-side acceptance check for every handoff that can change downstream work;
+- explicit ownership for every shared state field and contended resource that exists;
+- durable state sufficient to resume without reconstructing hidden context when work must survive interruption;
 - an observable completion condition plus a bounded non-convergence condition;
-- independent evidence for consequential decisions;
-- a runtime trace sufficient to compare the declared topology with the work that actually ran;
+- evidence proportional to the consequence, independent when self-certification would be unsafe;
 - a human gate before irreversible or externally consequential actions unless standing authority explicitly covers them;
 - an honest terminal status such as `COMPLETE`, `DEGRADED`, `NOT_PROVEN`, or `BLOCKED`.
+
+For multi-node workflows, add only the node, edge, ownership, failure-propagation, observation, and shared-budget contracts required by the selected topology and demonstrated failure modes. Do not require graph artifacts for a single-agent loop or linear workflow unless they change routing, recovery, verification, or cost control.
 
 ## Design method
 
 1. Confirm that a reusable loop or orchestrated workflow is justified. Define the outcome, unit of work, consumers, and observable completion evidence.
 2. Choose the smallest sufficient topology: single agent, linear workflow, static graph, or dynamic graph.
-3. For multi-node work, read [references/topology.md](references/topology.md), draw the declared graph, and define its nodes, edges, joins, gates, and terminal states.
-4. Define every node's responsibility, inputs, outputs, tools, state access, decision authority, completion evidence, and failure statuses.
-5. Define every load-bearing edge's trigger, typed payload, provenance, receiving-side acceptance check, invalidation rule, and failure route.
-6. Draw decision rights: what an executor may decide, what a critic may only recommend, and what requires a human. Give critics access to the real artifacts they must judge; model diversity alone is not independent evidence.
-7. Assign one authoritative writer for each shared state field or contended artifact. Declare how concurrent work is merged or serialized.
-8. Choose durable checkpoints appropriate to the runtime and record both declared topology and realized work. Never assume commit authority, Git availability, or conversation memory.
-9. Define failure propagation: which downstream decisions become stale, which branches may continue, and who may reopen accepted work.
-10. Set node-level and graph-wide budgets for fan-out, depth, concurrency, retries, tool calls, cost, and non-convergence. Stop when repeated work produces no new evidence.
-11. Specify recovery, degraded output, resumption, and orphaned-work handling before adding optimization.
-12. Select only the patterns that address demonstrated failure modes. Read [references/principles.md](references/principles.md) as a pattern catalog, not a mandatory checklist.
-13. Validate representative success, partial failure, stale dependency, duplicate delivery, crash/resume, and budget-exhaustion scenarios in proportion to the selected topology.
-14. When the requested deliverable is a reusable Agent Skill, hand one validated workflow contract to `x9-skill-creator`. This skill owns topology, node and edge contracts, workflow state, authority, checkpoints, budgets, and recovery; `x9-skill-creator` owns triggering, package structure, progressive disclosure, runtime adapters, and skill validation. Do not maintain two independent designs.
+3. For resumable or mutating work, start and resume by reconciling the durable contract, current artifacts or Git state, live owner state, and current evidence. Adopt valid completed or partial work; do not redispatch it merely because the orchestrator restarted.
+4. For graph-shaped multi-node work, read [references/topology.md](references/topology.md), draw the declared graph, and define its nodes, edges, joins, gates, and terminal states. For a linear workflow, define only the ordered stage boundaries, gates, and terminal states unless graph mechanics change a decision.
+5. Define each stage or direct owner's responsibility, boundary inputs and outputs, tools, state access, decision authority, completion evidence, and failure statuses. Let a direct owner manage its own nested workers unless cross-boundary coordination requires escalation.
+6. Define every load-bearing handoff's trigger, payload or artifact contract, provenance, receiving-side acceptance check, invalidation rule, and failure route. Require a schema only when machine validation or replay needs one.
+7. Draw decision rights: what an executor may decide, what a critic may only recommend, and what requires a human. Give critics access to the real artifacts they must judge; model diversity alone is not independent evidence.
+8. Assign one authoritative writer for each shared state field or contended resource. Default one active task to one execution context; isolate another working copy or execution context only for a separate concurrent task or a proven ownership conflict. Declare how contended integration is serialized.
+9. Choose durable checkpoints appropriate to the runtime. For dynamic or recovery-sensitive multi-node work, record enough realized work to explain consequential routing, retries, cancellations, and replacements. Never assume commit authority, Git availability, or conversation memory.
+10. Define failure propagation: which downstream decisions become stale, which branches may continue, and who may reopen accepted work. Bind accepted evidence to the current contract, source or artifact identity, producing attempt, claim, and system boundary; invalidate and repeat only dependent proof after a relevant change.
+11. Bound retries and non-convergence at the narrowest useful boundary. Charge a semantic engineering retry only when the evidence, input, hypothesis, or method changes. Track protocol repair, runtime or tool recovery, capacity backpressure, crash reconciliation, and safe replacement separately. Add graph-wide fan-out, depth, concurrency, tool, time, or cost budgets only when nested, parallel, or dynamic work consumes a shared budget.
+12. Specify recovery, degraded output, resumption, pause, cancellation, switching, and orphaned-work handling only for lifecycle operations the runtime actually exposes.
+13. Select only the patterns that address demonstrated failure modes. Read [references/principles.md](references/principles.md) as a pattern catalog, not a mandatory checklist.
+14. Validate representative success and failure scenarios in proportion to the selected topology. Add stale-dependency, duplicate-delivery, crash/resume, lifecycle, and budget-exhaustion scenarios only when those mechanisms exist.
+15. When the requested deliverable is a reusable Agent Skill, hand one validated workflow contract to `x9-skill-creator`. This skill owns topology, boundary contracts, workflow state, authority, checkpoints, budgets, and recovery; `x9-skill-creator` owns triggering, package structure, progressive disclosure, runtime adapters, and skill validation. Do not maintain two independent designs.
 
-Use [references/harvesting.md](references/harvesting.md) only after real runs exist and a repeated lesson has evidence worth promoting.
+Use [references/harvesting.md](references/harvesting.md) only after real runs exist: record significant candidate lessons, and promote them only after representative repeated evidence.
 
 ## Done
 
 - The design states why a loop is justified; an unqualified process is rejected or simplified.
 - The selected topology is the smallest one that satisfies the contract, and every additional node has a stated justification.
 - Every state transition, decision owner, stop condition, and irreversible gate is explicit.
-- Every load-bearing edge has a typed payload, receiving-side acceptance check, invalidation rule, and failure route.
-- Shared state and contended artifacts have explicit writers and merge or serialization rules.
-- A crash/resume scenario preserves work without relying on conversation memory.
-- The run record shows realized work, including skipped, retried, cancelled, and dynamically created nodes or edges.
-- A node failure cannot leave dependent downstream decisions silently accepted.
-- Graph-wide fan-out, concurrency, retry, and cost budgets terminate honestly when exhausted.
-- A critic failure or exhausted budget yields an honest terminal status.
+- Every load-bearing handoff has an explicit payload or artifact contract, receiving-side acceptance check, invalidation rule, and failure route.
+- Shared state and contended resources have explicit writers and merge or serialization rules.
+- When work is resumable, crash/resume preserves valid completed or partial work without relying on conversation memory.
+- A failed or changed dependency cannot leave downstream decisions silently accepted on stale evidence.
+- Selected retry and non-convergence budgets terminate honestly; recovery classes do not silently consume the wrong budget.
+- A failed verification route or exhausted budget yields an honest terminal status.
 - At least one representative success and one failure scenario were executed or clearly marked unverified.
+- For multi-node work, the run record explains consequential realized work, and shared graph-wide budgets exist only where fan-out, concurrency, or dynamic mutation creates shared risk.
 - When packaging was requested, the resulting Agent Skill preserves the validated workflow contract and passes `x9-skill-creator` checks.
