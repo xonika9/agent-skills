@@ -5,7 +5,7 @@ description: Use when drafting a one-off prompt/task brief for another agent wit
 
 # Agent instructions
 
-Own global behavioral policy in `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and bounded briefs handed to another agent. Write machine-facing instructions in English; preserve literal user phrases in their original language.
+Own global behavioral policy in `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and bounded briefs handed to another agent. Keep the skill itself and standing machine-facing policy in English by default. Write a one-off brief in the user's language so the user can read and verify it before sending; for a Russian-language request, default to Russian. Preserve identifiers, commands, file paths, UI labels, literal configuration values, and quotations in their exact original form. Use English for the whole brief only when the user explicitly requests it or the receiving agent or runtime has a load-bearing English-only requirement; state that reason.
 
 ## Classify before editing
 
@@ -39,11 +39,14 @@ System and developer instructions remain higher authority than user, repository,
 - Runtime fact changes → update one adapter and its freshness marker, not every skill.
 - Shared policy changes → both global copies match; runtime-specific sections may differ deliberately.
 - One-off brief has a load-bearing ambiguity → ask one question; otherwise proceed with a stated assumption.
+- Russian-language request for a one-off prompt → return the complete brief in Russian while preserving exact technical literals.
+- Target explicitly requires English → return the brief in English and state why the normal user-language default was overridden.
 
 ## Done
 
 - Every added standing rule changes likely behavior or prevents a documented failure; generic advice was left out.
 - The rule has one canonical owner and no accidental contradiction.
 - Shared global policy passes `python3 <skill-directory>/scripts/check_globals.py` from an unrelated working directory.
+- A one-off brief uses the user's language unless an explicit request or a documented target constraint requires another language.
 - At least one positive and one boundary scenario were checked in a fresh context for substantive changes.
 - The handoff names changed files and validation performed.
