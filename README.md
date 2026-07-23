@@ -91,7 +91,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 
 Agents often produce a plausible answer from memory and call it research. This skill makes them open current sources, trace the claims that carry the conclusion, look for counter-evidence, and say what could not be verified. X/Twitter is inspected through your authenticated browser; Reddit and forums are used for lived experience, not treated as proof.
 
-For a narrow question, the result stays in chat. When you ask to save the work, the skill creates or extends a structured `docs/research/` dossier instead of scattering another report across the repository. Browser work is routed through `x9-browser-session`.
+Plain research requests stay in chat. Ask to save the work or create it in a folder and the skill writes a Markdown work file inside the matching long-lived `docs/research/` subject area. Ask to update research and it resolves the existing file through OKF frontmatter, refreshes its evidence, and automatically synchronizes a same-basename HTML presentation when one already exists. Explicitly requesting HTML creates or updates that reader-facing companion beside the Markdown file; the two formats share an identity but not the same composition. Browser work is routed through `x9-browser-session`.
 
 #### [`x9-browser-session`](skills/x9-browser-session/SKILL.md)
 

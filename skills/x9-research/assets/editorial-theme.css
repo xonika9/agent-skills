@@ -1,0 +1,379 @@
+/*
+  X9 research report theme.
+
+  This file defines visual tokens and optional components, not an HTML layout.
+  Inline the relevant rules into each standalone report and design the document
+  structure around the research question.
+*/
+
+:root {
+  color-scheme: light;
+
+  --report-bg: #f4f0e7;
+  --report-surface: #fffdf8;
+  --report-text: #18201d;
+  --report-text-soft: #5f6963;
+  --report-accent: #1d6651;
+  --report-accent-soft: #dcebe4;
+  --report-line: rgba(24, 32, 29, 0.14);
+  --report-shell: rgba(24, 32, 29, 0.055);
+
+  --report-font-display:
+    "Iowan Old Style", "Baskerville", "Palatino Linotype", Georgia, serif;
+  --report-font-body:
+    "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
+  --report-font-code:
+    "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --report-reading-width: 72ch;
+  --report-page-width: 1040px;
+  --report-radius-small: 12px;
+  --report-radius-medium: 20px;
+  --report-radius-large: 28px;
+  --report-shadow:
+    0 18px 52px rgba(39, 46, 42, 0.08);
+
+  --report-space-1: 0.5rem;
+  --report-space-2: 0.75rem;
+  --report-space-3: 1rem;
+  --report-space-4: 1.5rem;
+  --report-space-5: 2rem;
+  --report-space-6: 3rem;
+  --report-space-7: 4rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(
+      circle at 82% 4%,
+      rgba(29, 102, 81, 0.08),
+      transparent 30rem
+    ),
+    var(--report-bg);
+  color: var(--report-text);
+  font: 1.0625rem/1.68 var(--report-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Optional page wrapper. Do not force every report into the same section grid. */
+.report-page {
+  width: min(var(--report-page-width), calc(100% - 2.5rem));
+  margin-inline: auto;
+}
+
+.report-header {
+  padding-block: clamp(2.75rem, 6vw, 4.5rem) var(--report-space-6);
+}
+
+.report-kicker {
+  margin: 0 0 var(--report-space-4);
+  color: var(--report-accent);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+:where(h1, h2, h3) {
+  margin-block: 0;
+  color: var(--report-text);
+  font-family: var(--report-font-display);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+h1 {
+  max-width: 22ch;
+  font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+
+h2 {
+  max-width: 28ch;
+  font-size: clamp(1.65rem, 2.8vw, 2.35rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+  line-height: 1.18;
+}
+
+.report-lead {
+  max-width: 58ch;
+  margin: var(--report-space-4) 0 0;
+  color: #3b4641;
+  font-family: var(--report-font-display);
+  font-size: clamp(1.15rem, 1.8vw, 1.35rem);
+  line-height: 1.48;
+}
+
+p,
+ul,
+ol,
+blockquote {
+  max-width: var(--report-reading-width);
+}
+
+a {
+  color: var(--report-accent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+code,
+pre {
+  font-family: var(--report-font-code);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--report-space-4);
+  border-radius: var(--report-radius-small);
+  background: #202722;
+  color: #f7f5ed;
+  font-size: 0.9rem;
+}
+
+/* Compact metadata can be a row, a card, or omitted when the report is short. */
+.report-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--report-space-2);
+  margin-top: var(--report-space-5);
+}
+
+.report-meta-item {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--report-radius-small);
+  background: var(--report-shell);
+  color: var(--report-text-soft);
+  font-size: 0.875rem;
+}
+
+.report-meta-item strong {
+  color: var(--report-text);
+}
+
+/* Horizontal anchor navigation requested for long reports. */
+.report-nav {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 2;
+  display: flex;
+  gap: 0.25rem;
+  width: min(var(--report-page-width), calc(100% - 1.5rem));
+  margin: 0 auto var(--report-space-6);
+  padding: 0.375rem;
+  overflow-x: auto;
+  border-radius: 999px;
+  background: rgba(244, 240, 231, 0.94);
+  box-shadow:
+    0 12px 36px rgba(32, 42, 37, 0.1),
+    inset 0 0 0 1px rgba(24, 32, 29, 0.08);
+  backdrop-filter: blur(16px);
+  scrollbar-width: none;
+}
+
+.report-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.report-nav a {
+  flex: none;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  color: var(--report-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.report-nav a[aria-current="true"],
+.report-nav a:first-child {
+  background: var(--report-accent);
+  color: #ffffff;
+}
+
+.report-section {
+  padding-block: var(--report-space-6);
+  border-top: 1px solid var(--report-line);
+  scroll-margin-top: 5.75rem;
+}
+
+.report-section > h2 {
+  margin-bottom: var(--report-space-5);
+}
+
+/*
+  Optional surfaces. Use them only when they clarify hierarchy; ordinary prose
+  should remain ordinary prose.
+*/
+.report-panel,
+.report-card {
+  background: var(--report-surface);
+  box-shadow: var(--report-shadow);
+}
+
+.report-panel {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: var(--report-radius-large);
+}
+
+.report-card {
+  padding: var(--report-space-4);
+  border-radius: var(--report-radius-medium);
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: var(--report-space-3);
+}
+
+.report-callout {
+  max-width: var(--report-reading-width);
+  padding: var(--report-space-4);
+  border-left: 0.25rem solid var(--report-accent);
+  border-radius: 0 var(--report-radius-small) var(--report-radius-small) 0;
+  background: var(--report-accent-soft);
+}
+
+.report-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--report-radius-medium);
+  background: var(--report-surface);
+  box-shadow: var(--report-shadow);
+}
+
+table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 1rem 1.125rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--report-line);
+}
+
+th {
+  color: var(--report-text-soft);
+  font-size: 0.75rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+details {
+  max-width: var(--report-reading-width);
+  margin-top: var(--report-space-3);
+  padding: var(--report-space-3) var(--report-space-4);
+  border-radius: var(--report-radius-small);
+  background: rgba(29, 102, 81, 0.07);
+}
+
+summary {
+  cursor: pointer;
+  color: var(--report-accent);
+  font-weight: 700;
+}
+
+details > :last-child {
+  margin-bottom: 0;
+}
+
+.report-footer {
+  padding-block: var(--report-space-6) var(--report-space-7);
+  color: var(--report-text-soft);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --report-space-6: 2.25rem;
+    --report-space-7: 3rem;
+  }
+
+  .report-page {
+    width: min(100% - 1.5rem, var(--report-page-width));
+  }
+
+  .report-header {
+    padding-top: 2.75rem;
+  }
+
+  h1 {
+    max-width: 22ch;
+    font-size: clamp(2rem, 9vw, 2.65rem);
+  }
+
+  h2 {
+    font-size: clamp(1.6rem, 7vw, 2rem);
+  }
+
+  .report-nav {
+    width: calc(100% - 1rem);
+    margin-bottom: var(--report-space-5);
+  }
+
+  .report-panel {
+    padding: 1.25rem;
+    border-radius: var(--report-radius-medium);
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    font-size: 11pt;
+  }
+
+  .report-nav {
+    display: none;
+  }
+
+  .report-page {
+    width: 100%;
+  }
+
+  .report-header {
+    padding-top: 0;
+  }
+
+  .report-panel,
+  .report-card,
+  .report-table-wrap {
+    box-shadow: none;
+  }
+
+  .report-panel,
+  .report-card,
+  details {
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit;
+  }
+}

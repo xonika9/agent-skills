@@ -1,6 +1,6 @@
 ---
 name: x9-research
-description: Use when the user wants a genuinely researched answer based on current or primary sources, including what people are saying on X/Twitter or Reddit — «разберись в вопросе», «изучи тему», «что сейчас с…», «собери факты», «посмотри, что пишут в Twitter/Reddit», "research this", "verify this claim". Do not use for library/API documentation (find-docs), product search owned by another skill, personal advice, or questions answerable from stable supplied context.
+description: Use when the user wants a genuinely researched answer from current or primary sources, including X/Twitter or Reddit — «разберись в вопросе», «изучи тему», «собери факты», "research this", "verify this claim". Also use for durable research intent in varied wording — «создай ресерч в папке», «сохрани исследование», «обнови ресерч», "save/update this research" — and for explicit HTML delivery — «ресерч по теме X + html», «подготовь HTML-отчёт с источниками», «нужна HTML-версия», "research X and deliver it as HTML". Infer semantic intent rather than requiring an exact trigger phrase. Do not use for library/API documentation (find-docs), product search owned by another skill, personal advice, or questions answerable from stable supplied context. Mentioning HTML only as the research subject does not request HTML files.
 ---
 
 # Research
@@ -26,13 +26,17 @@ Use the live tools exposed by the current runtime; do not assume Claude-only nam
 
 Research X/Twitter through the authenticated-browser route so posts, threads, replies, quote posts, and the user's account-visible state are inspected in the platform interface. This is an intentional platform-specific exception to the normal clean-browser route owned by `x9-browser-session`. Ordinary web search may discover candidate URLs, but it does not replace opening them in X. Reddit and public forums normally use the open web unless the requested evidence depends on logged-in state.
 
-## Deliver in chat or a dossier
+## Route the result
 
-- For a quick or narrow question, answer in chat with sources near the claims. Do not create a dossier by default.
-- When the user asks to save the research, or repository rules make a durable artifact part of the workflow, create or extend a `docs/research/` dossier under those repository rules.
-- Before creating a dossier, inspect existing research folders and search their names and headings. Extend the related dossier instead of creating a new folder for a follow-up to the same decision area.
+- A plain request to research or investigate returns the sourced answer in chat and creates no files.
+- A request to save the research, create it in a folder, or update an existing research file enables durable Markdown mode.
+- An explicit HTML output request enables durable Markdown plus HTML mode; HTML adds a reader presentation and never replaces the agent work file.
+- Updating research changes the existing Markdown. If a same-basename HTML file already exists, synchronize it automatically unless the user explicitly says to leave HTML unchanged. Do not create a missing HTML file during a Markdown-only update.
+- Updating only the HTML presentation rebuilds it from the current Markdown evidence without claiming that the underlying research was refreshed.
 
-A research request authorizes gathering and answering, not persistent file creation by itself. When a dossier is authorized, preserve its local format, index, freshness metadata, and update log rather than imposing a new generic template.
+Read [references/delivery-modes.md](references/delivery-modes.md) for intent classification, OKF-frontmatter discovery, creation, ambiguity, and update rules. When HTML is selected, also read [references/html-reports.md](references/html-reports.md) and use [assets/editorial-theme.css](assets/editorial-theme.css) for shared visual tokens and optional components, never as a layout template.
+
+A plain research request authorizes gathering and answering, not persistent file creation. Save, folder, update, or HTML-output intent authorizes the corresponding safe local dossier writes and necessary index/log maintenance, but not publication or unrelated changes.
 
 ## Failure behavior
 
@@ -45,6 +49,9 @@ A research request authorizes gathering and answering, not persistent file creat
 
 - Every load-bearing current claim traces to a source opened in this run.
 - Evidence strength matches claim risk; contradictions and freshness are visible.
-- Persistent artifacts were created only with authority.
+- The selected chat, Markdown, Markdown-plus-HTML, or update mode matches the user's persistence and format intent.
+- Persistent artifacts were created only with authority and were routed through existing OKF metadata before names or body text.
+- A new HTML request produced a same-basename Markdown/HTML pair. A research update synchronized an already existing same-basename HTML file but did not create a missing one without HTML intent.
+- Visible Russian HTML prose passed the language and `humanizer-ru` workflow, then a fact/citation lock; unavailable editing or visual-render routes are reported as `DEGRADED`.
 - X/Twitter or Reddit evidence followed the platform-specific route and sampling limits in `references/sources.md`.
 - High-stakes or durable conclusions received a fresh independent check.

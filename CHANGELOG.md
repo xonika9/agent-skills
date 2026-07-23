@@ -10,6 +10,28 @@
 
 ### Breaking changes
 
+## 1.2.0 - 2026-07-23
+
+### Highlights
+
+- Added explicit research delivery routing: plain requests stay in chat, save or folder requests persist Markdown, and HTML requests add a same-basename reader presentation without replacing the evidence-oriented work file.
+- Added OKF-frontmatter discovery for existing subject areas and research files, including automatic synchronization of an existing same-basename HTML presentation when the underlying research is updated.
+- Added a reusable responsive light editorial theme without imposing one report layout, plus a Russian HTML editing pipeline with `humanizer-ru` and a post-edit fact and citation check.
+- Made one-off agent briefs follow the user's language by default while preserving exact technical literals and documented target-language constraints.
+
+### Install / update
+
+- Existing users can update through their current Agent Skills, Claude Code, or Codex installation route without migration steps.
+
+### Compatibility
+
+- Existing plain research requests remain chat-only. Existing saved research remains Markdown-first; a missing HTML file is created only when HTML output is explicit, while an already paired HTML file follows later research updates automatically.
+- Existing skill names and installation routes are unchanged. Standing machine-facing policy remains English by default; only one-off brief language selection was clarified.
+
+### Breaking changes
+
+- None.
+
 ## 1.1.0 - 2026-07-23
 
 ### Highlights
