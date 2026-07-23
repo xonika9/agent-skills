@@ -4,13 +4,31 @@
 
 ### Highlights
 
-- Made the published global-instruction examples keep Russian as the carrier language of technical explanations while separating exact English identifiers and reference names from narrative prose.
-
 ### Install / update
 
 ### Compatibility
 
 ### Breaking changes
+
+## 1.1.0 - 2026-07-23
+
+### Highlights
+
+- Made idea-critique synthesis preserve every verdict-changing finding while turning upheld issues into a complete, dependency-aware revision agenda.
+- Refined loop engineering around the smallest sufficient topology, hierarchical ownership, proportional contracts and evidence, durable resumption, lifecycle handling, and correctly classified retry budgets.
+- Made the published global-instruction examples keep Russian as the carrier language of technical explanations while separating exact English identifiers and reference names from narrative prose.
+
+### Install / update
+
+- Existing users can update through their current Agent Skills, Claude Code, or Codex installation route without migration steps.
+
+### Compatibility
+
+- Kept existing skill names and installation routes unchanged while expanding the public guidance and output contracts for idea critique and loop engineering.
+
+### Breaking changes
+
+- None.
 
 ## 1.0.0 - 2026-07-22
 
