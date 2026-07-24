@@ -4,20 +4,32 @@
 
 ### Highlights
 
-- Updated browser routing: both runtimes use their in-app browser for local development and explicit in-app requests; other Codex work defaults to its Edge extension, while other Claude Code work defaults to `chrome-devtools` MCP.
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 1.3.0 - 2026-07-24
+
+### Highlights
+
+- Clarified browser routing for both runtimes: local web development and explicit in-app requests use the runtime's in-app browser, while every other browser task uses the runtime-specific default — its Edge extension in Codex and `chrome-devtools` MCP in Claude Code — with `agent-edge` reserved as an unattended fallback.
+- Expanded the `x9-browser-session` skill with sticky explicit-surface selection, shared Edge focus-safety and task-tab isolation rules, and defined runtime-specific fallback chains.
 - Synchronized the sanitized global instruction examples with the runtime-specific routes and their explicit in-app browser boundaries.
 
 ### Install / update
 
-- Existing users should keep the Edge extension and local CDP endpoint configured as described in the `x9-browser-session` setup guide.
+- Existing users should keep the Edge extension and local CDP endpoint configured as described in the `x9-browser-session` setup guide. No migration steps are required.
 
 ### Compatibility
 
-- Local web development now selects the runtime's in-app browser by default. Explicit requests for an in-app or built-in browser remain sticky. The `agent-edge` route remains an unattended fallback for periods when the user is not working in Edge.
+- Local web development and explicit in-app or built-in browser requests continue to use the runtime's in-app browser, and that explicit choice stays sticky through connection failures.
+- Other browser work now follows a defined runtime-specific default and fallback chain instead of a generic runtime selection. The `agent-edge` route remains an unattended fallback for periods when the user is not working in Edge.
 
 ### Breaking changes
 
-- Claude Code no longer selects its browser extension automatically. Codex no longer leaves its non-development browser route to the runtime's generic browser selection.
+- None.
 
 ## 1.2.0 - 2026-07-23
 
