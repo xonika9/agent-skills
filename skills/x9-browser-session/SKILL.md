@@ -5,54 +5,109 @@ description: Use when browser work requires choosing between a connector, a loca
 
 # Browser session
 
-Use this skill in Claude Code and Codex. It owns shared route selection, a portable authenticated Chromium/CDP contract, the Edge adapter, runtime-specific browser surfaces, and fallbacks. Re-check installed tool instructions and live schemas when a named surface is absent.
+Use this skill in Claude Code and Codex. It owns shared route selection, the verified
+Edge adapter, runtime-specific extension and in-app surfaces, CDP fallbacks, task-tab
+isolation, and focus safety. Re-check installed tool instructions and live schemas when
+a named surface is absent.
 
 ## Choose the surface
 
-1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic operation on the linked resource.
-2. Use the runtime's local-app browser surface or a clean automation browser for public pages, visual inspection, and UI testing. This is the normal route when the task should not depend on personal state.
-3. Use a dedicated authenticated Chromium automation profile for personal automation when account state, region, cart, saved data, personalized feeds, or private pages matter, or when the task-owning skill explicitly requires an authenticated platform interface. This route can produce materially different prices, content, and available actions from a clean browser.
-4. Once selected, keep one browser surface through ordinary stale-reference or timeout errors. Switch only when the surface is unavailable or the user changes the requested browser.
+1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic
+   operation. An explicit request to open, inspect, or operate a browser UI overrides
+   this preference.
+2. If the user explicitly requests the runtime's in-app browser, use it immediately.
+   That explicit choice is sticky: do not substitute Edge or another browser after an
+   authentication or connection failure unless the user approves the switch.
+3. For local web development and previews, use the runtime's in-app browser unless the
+   user explicitly requests Edge:
+   - Codex: its in-app browser;
+   - Claude Code: its Browser pane.
+4. For every other browser-control task, use the runtime-specific default:
+   - Codex: its browser extension in the verified Edge profile;
+   - Claude Code: `chrome-devtools` MCP against that Edge profile. Do not use the
+     Claude browser extension unless the user explicitly requests it.
+5. In Codex, if the extension is unavailable, disconnected, or lacks a required
+   DevTools capability, retry its documented recovery once and then use
+   `chrome-devtools` MCP against the same Edge profile.
+6. If MCP cannot attach or cannot perform the required operation, use `agent-edge`,
+   which connects `agent-browser` to the same Edge profile. Because the current
+   `agent-browser` brings newly created and selected tabs to the foreground, use this
+   fallback only when the user is not simultaneously working in Edge. If that condition
+   is unknown and the fallback would require creating or switching tabs, ask one short
+   question instead of taking over the window.
+7. Once a controller works, keep it through ordinary stale-reference, redraw, and
+   timeout errors. Do not alternate controllers on the same task tab.
 
-The distinction is task state, not browser brand: a clean browser answers “does this public interface work?”, while an authenticated profile answers “what does this account actually see or allow?”. Do not log a clean test browser into personal services merely to avoid selecting the authenticated route.
+The in-app browser remains the isolated route for an explicit request and for local
+web development in both runtimes. It has a separate profile and does not carry the
+user's Edge extensions. Use Edge when exact account state, region, cart, saved data,
+personalized content, ad blocking, or another installed extension matters.
 
-## Authenticated Chromium over CDP
+## Shared Edge safety
 
-Treat the browser executable, dedicated user-data directory, localhost CDP endpoint, launcher, primary controller, and fallback controller as adapter parameters. Chrome, Edge, Brave, and other Chromium browsers can use the same contract when they support remote debugging:
+Treat the executable, profile, extensions, localhost CDP endpoint, launcher, and
+controllers as adapter parameters. On another machine, substitute and verify them
+instead of copying the Edge-specific values below.
 
-- use a dedicated automation profile rather than the user's default live profile;
-- bind CDP to localhost and do not expose the endpoint to the network;
-- attach controllers to the same existing profile instead of launching a clean browser;
-- create a task-owned page or tab and leave existing browser state untouched;
+- use the dedicated, continuously used automation profile rather than the browser's
+  default profile;
+- attach every controller to that same existing Edge profile rather than launching a
+  clean browser;
+- create a task-owned background tab; never assume the user's active tab is the task tab;
+- with an extension, use its session-owned logical task tab and leave it inactive;
+- with `chrome-devtools`, create the page with `background: true`, select it with
+  `bringToFront: false`, and never invoke `Page.bringToFront` or
+  `Target.activateTarget`;
+- never control one tab through the extension and CDP at the same time;
 - keep credentials, cookies, tokens, and local storage in the dedicated browser profile rather than copying them into prompts or repository files;
 - assume the controller and model can receive inspected page contents and network data; avoid opening unrelated private surfaces, do not capture network headers unless the task requires them, and never echo secret header values into chat, logs, or files.
 
-Do not assume the Edge paths or port below on another machine. Read [references/setup.md](references/setup.md), substitute the local Chromium adapter parameters, and verify the discovery endpoint before browsing.
+Do not run browser-wide HAR or broad network capture in the personal Edge profile. Use
+a clean standalone `agent-browser` session for that work.
 
 ## Verified Edge adapter
 
 - Profile: `~/Library/Application Support/Microsoft Edge Automation`.
 - Launcher: `~/Applications/Edge (Agent).app` with remote-debugging port `9222`.
-- Primary: `chrome-devtools` MCP configured with `--browserUrl http://127.0.0.1:9222`.
-- Fallback only when that MCP is not attached: `agent-edge`, which wraps `agent-browser --cdp 9222` against the same profile.
-- With `chrome-devtools`, call `new_page`, select that page, and operate only there. With `agent-edge`, create a task tab before the first snapshot.
+- Codex primary outside the local-development and explicit in-app exceptions: the
+  ChatGPT browser extension installed in this Edge.
+- Claude Code primary outside the local-development exception: `chrome-devtools` MCP.
+- Codex first fallback: `chrome-devtools` MCP configured with
+  `--browserUrl http://127.0.0.1:9222`.
+- Last fallback: `agent-edge`, which wraps `agent-browser --cdp 9222` against the same
+  profile.
 - Leave pre-existing tabs, windows, downloads, bookmarks, and settings untouched.
 - Re-snapshot after navigation, filtering, modal changes, and redraws because element references become stale.
-- If neither route attaches, launch `Edge (Agent).app` or ask the user to do so, then retry the same surface.
+- If an Edge route cannot attach, confirm that `Edge (Agent).app` is running before
+  declaring that controller unavailable.
 
 Read before mutating. Posting, purchasing, sending, deleting, or changing account data still requires authority from the user's request.
 
 ## Claude Code
 
-- Local app UI: discover and follow the currently installed in-app browser integration when available; otherwise use headed `agent-browser` for clean public-page or UI-test work.
-- Logged-in Edge: use the `chrome-devtools` MCP from `~/.claude.json`.
-- If its tools are absent after Edge is running, restart Claude Code before using `agent-edge`.
+- For local web development, previews, and an explicit request for the built-in
+  browser, use the Claude Code Browser pane according to the current global
+  `CLAUDE.md`. This exception remains primary for that scope.
+- For other browser work, use the `chrome-devtools` MCP from `~/.claude.json` with the
+  shared focus-safe rules. Do not initialize or fall back to the Claude browser
+  extension unless the user explicitly requests that extension.
+- If MCP tools are absent after Edge is running, restart Claude Code once. Use
+  `agent-edge` only under the shared unattended-Edge condition.
 
 ## Codex
 
-- In-app browser: read and follow the installed `browser:control-in-app-browser` skill. It owns its current initialization and selection APIs.
-- Logged-in Edge: use the `chrome-devtools` MCP from `~/.codex/config.toml`.
-- If its tools are absent after Edge is running, restart Codex before using `agent-edge`.
+- For local web development, previews, and an explicit request for the in-app browser,
+  read and follow `browser:control-in-app-browser` and select its distinct in-app
+  binding immediately. This exception remains primary for that scope.
+- For other browser work, select the Edge extension directly. Do not let
+  `getDefault()` or `getForUrl()` silently choose the in-app browser. Read and follow
+  the installed `chrome:control-chrome` skill; it owns the current setup and extension
+  APIs.
+- If the Edge extension remains unavailable after its documented troubleshooting,
+  use the `chrome-devtools` MCP from `~/.codex/config.toml` with the shared focus-safe
+  rules.
+- If MCP tools are absent after Edge is running, restart Codex once. Use `agent-edge`
+  only under the shared unattended-Edge condition.
 
 ## Install an adapter
 
@@ -60,8 +115,17 @@ Read [references/setup.md](references/setup.md) for the portable adapter contrac
 
 ## Failure behavior
 
-Report cancelled or failed browser calls as failures. Do not substitute remembered data, a public page, or another browser when the task required the authenticated source. Return `DEGRADED` or `BLOCKED` with the failed route and missing prerequisite when the documented retry cannot attach.
+Report cancelled or failed browser calls as failures. For an implicit/default Edge
+selection, use the runtime-specific chain: Codex extension → MCP → `agent-edge`;
+Claude Code MCP → `agent-edge`. For an explicit in-app choice, do not enter an Edge
+chain without approval. If an implicitly selected local-development browser is
+unavailable, use the runtime's Edge chain and report the fallback. Do not substitute
+remembered data or a public page when the task required the authenticated source.
+Return `DEGRADED` or `BLOCKED` with the failed route and missing prerequisite when the
+permitted chain is exhausted.
 
 ## Done
 
-Report the surface used, the task-owned tab or page, the requested result, and any checks that could not be completed. For mutating work, verify the resulting UI state or server response before claiming completion.
+Report the runtime, browser surface, controller, task-owned tab or page, requested
+result, and any checks that could not be completed. For mutating work, verify the
+resulting UI state or server response before claiming completion.

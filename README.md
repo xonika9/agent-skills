@@ -97,7 +97,7 @@ Plain research requests stay in chat. Ask to save the work or create it in a fol
 
 A clean automation browser is enough to test a public website. It is the wrong tool for a personal task where your account, region, saved data, or feed changes the result. This skill chooses between a connector, a clean browser, and a dedicated authenticated Chromium profile, then works in its own tab without taking over yours.
 
-The [setup guide](skills/x9-browser-session/references/setup.md) includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. Claude Code and Codex use their current browser integrations where appropriate.
+The [setup guide](skills/x9-browser-session/references/setup.md) includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. Both runtimes use their in-app browser for local web development and explicit in-app requests. Other Codex browser work defaults to its Edge extension; other Claude Code browser work defaults to MCP. Both reserve `agent-edge` for unattended fallback.
 
 #### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
 

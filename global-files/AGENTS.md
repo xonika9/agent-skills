@@ -46,8 +46,8 @@ Inspect relevant context before acting. Treat prior beliefs as hypotheses when t
 ### Documentation and browser tools
 
 - Use `find-docs` with Context7 for library documentation, setup guides, API references, and framework-specific behavior.
-- For in-app browser work, use the installed `browser:control-in-app-browser` skill and follow its current setup instructions; discover the `node_repl js` tool if it is deferred. Do not copy its initialization API into this always-on file because plugin versions change it.
-- Before the first browser action, load and follow the installed `x9-browser-session` skill. It owns authenticated Chromium mechanics and the Codex route; do not hard-code its installation path.
+- Before the first browser action, load and follow the installed `x9-browser-session` skill. For local web development, previews, or an explicit request for the in-app browser, use that in-app browser immediately. For every other browser task, the Codex default is the Edge browser extension; do not let the browser runtime silently choose the in-app browser by URL or default selection. Do not hard-code the skill's installation path.
+- For in-app work, use the installed `browser:control-in-app-browser` skill and its distinct in-app binding. Discover the `node_repl js` tool if it is deferred. Do not copy initialization APIs into this always-on file because plugin versions change them.
 
 ### Subagent routing
 

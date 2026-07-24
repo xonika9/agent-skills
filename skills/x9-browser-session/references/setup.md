@@ -1,6 +1,22 @@
 # Authenticated Chromium/CDP setup
 
-Use the portable contract below for any Chromium browser. The Microsoft Edge/macOS recipe uses a dedicated profile, local CDP on port `9222`, `chrome-devtools` as the primary controller, and `agent-edge` as a fallback attached to the same profile. The configuration intentionally follows `chrome-devtools-mcp@latest`; check its live help before configuring it because supported flags can change.
+Use the portable contract below for any Chromium browser. The Microsoft Edge/macOS
+recipe uses a dedicated profile, the Codex browser extension as the Codex primary
+outside local web development and explicit in-app requests,
+local CDP on port `9222` as the Claude Code primary and Codex fallback, and
+`agent-edge` as the last fallback attached to the same profile. The configuration intentionally follows
+`chrome-devtools-mcp@latest`; check its live help before configuring it because
+supported flags can change.
+
+## Contents
+
+- [Portable adapter contract](#portable-adapter-contract)
+- [Verified Microsoft Edge adapter on macOS](#verified-microsoft-edge-adapter-on-macos)
+  - [1. Create the automation profile and launcher](#1-create-the-automation-profile-and-launcher)
+  - [2. Verify the Codex extension](#2-verify-the-codex-extension)
+  - [3. Configure the Claude primary and Codex fallback](#3-configure-the-claude-primary-and-codex-fallback)
+  - [4. Add the last-resort wrapper](#4-add-the-last-resort-wrapper)
+  - [5. Verify without touching existing tabs](#5-verify-without-touching-existing-tabs)
 
 ## Portable adapter contract
 
@@ -9,17 +25,24 @@ Choose these values for the target machine instead of copying the Edge-specific 
 | Parameter | Requirement |
 |---|---|
 | Browser executable | A locally installed Chromium browser that supports remote debugging |
-| User-data directory | A dedicated automation profile, separate from the default daily profile |
+| User-data directory | A dedicated, continuously used agent profile, separate from the browser vendor's default profile; it may also be the user's regular working profile |
+| Codex extension | The installed extension and its local native host |
 | CDP endpoint | A localhost-only port or browser WebSocket endpoint |
 | Launcher | Starts that executable with the dedicated profile and remote debugging enabled |
-| Primary controller | Attaches to the existing CDP endpoint and can create a new page |
-| Fallback controller | Attaches to the same endpoint; it must not launch a clean browser |
+| Codex Edge primary | Outside local web development and explicit in-app requests, uses the Codex extension and creates a session-owned background tab |
+| Claude primary / Codex fallback | Attaches to the existing CDP endpoint and creates a background page |
+| Last fallback | Attaches to the same endpoint; it must not launch a clean browser |
 
-Before adding runtime configuration, launch the browser and verify its local CDP discovery endpoint. If the browser exposes only a WebSocket endpoint, configure a controller that accepts that endpoint directly; do not assume `http://127.0.0.1:9222` works for every Chromium version. Keep the endpoint local, open a task-owned page for verification, and close only pages created by the check.
+Before adding runtime configuration, verify that the Codex extension is connected and
+that the browser's local CDP discovery endpoint responds. If the browser exposes only a
+WebSocket endpoint, configure a controller that accepts that endpoint directly; do not
+assume `http://127.0.0.1:9222` works for every Chromium version. Keep the endpoint local,
+open a task-owned background page for verification, and close only pages created by the
+check.
 
 ## Verified Microsoft Edge adapter on macOS
 
-## 1. Create the automation profile and launcher
+### 1. Create the automation profile and launcher
 
 Create `~/Applications/Edge (Agent).app` in Script Editor and save it as an Application with this AppleScript:
 
@@ -33,9 +56,21 @@ Launch the app once. Edge creates the profile at:
 ~/Library/Application Support/Microsoft Edge Automation
 ```
 
-Sign in to the services the agent may use. Keep this profile separate from the normal daily profile.
+Sign in to the services the agent may use. Use this same profile continuously so its
+sessions stay current. It may be your regular
+working Edge profile; keep it distinct from Edge's original default profile.
 
-## 2. Configure `chrome-devtools`
+### 2. Verify the Codex extension
+
+In the Edge Automation profile, verify that the ChatGPT extension can connect to Codex.
+Follow Codex's current extension troubleshooting instructions; do not replace them with
+copied initialization APIs. The Claude extension is not part of the default Claude Code
+route.
+
+The extension verification passes when it can create and operate a task-owned inactive
+tab without changing the user's visible tab.
+
+### 3. Configure the Claude primary and Codex fallback
 
 Claude Code, in `~/.claude.json`:
 
@@ -65,7 +100,7 @@ These flags disable the controller's usage statistics and CrUX URL lookup and re
 
 Existing installations are not migrated automatically. If a live Claude Code or Codex configuration omits these flags, update it only with authority to change global runtime configuration, then restart that runtime. Otherwise report the mismatch and keep the browsing result `DEGRADED` for private or authenticated work.
 
-## 3. Add the fallback wrapper
+### 4. Add the last-resort wrapper
 
 Install `agent-browser`, confirm that its current `--help` includes the required `--cdp` route, and put this executable script on `PATH` as `agent-edge`:
 
@@ -85,13 +120,17 @@ exec agent-browser --cdp "$PORT" "$@"
 
 The wrapper must attach to the existing Edge profile. It must not launch a separate Chromium session.
 
-## 4. Verify without touching existing tabs
+### 5. Verify without touching existing tabs
 
 1. Launch `~/Applications/Edge (Agent).app`.
-2. Confirm that `http://127.0.0.1:9222/json/version` responds locally.
-3. Attach with `chrome-devtools` and create a new page.
-4. Navigate that page to a harmless public URL and take a fresh snapshot.
-5. Repeat the read with `agent-edge --session main tab new` and `agent-edge --session main snapshot` only if fallback verification is needed.
+2. For Codex, verify its extension by creating an inactive task tab, navigating it to
+   a harmless public URL, and confirming that the user's visible tab does not change.
+3. Confirm that `http://127.0.0.1:9222/json/version` responds locally.
+4. Attach with `chrome-devtools`, create a page with `background: true`, select it with
+   `bringToFront: false`, navigate it, and confirm that the visible tab does not change.
+5. Verify `agent-edge` only while the user is not working in Edge; its current
+   `tab new` and `tab switch` behavior can foreground the task tab.
 6. Close only pages created by the check.
 
-The setup passes when both controllers attach to the same profile and all pre-existing tabs remain unchanged.
+The setup passes when the Codex extension and MCP attach to the same profile, both
+complete the read without stealing focus, and all pre-existing tabs remain unchanged.

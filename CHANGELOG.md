@@ -4,11 +4,20 @@
 
 ### Highlights
 
+- Updated browser routing: both runtimes use their in-app browser for local development and explicit in-app requests; other Codex work defaults to its Edge extension, while other Claude Code work defaults to `chrome-devtools` MCP.
+- Synchronized the sanitized global instruction examples with the runtime-specific routes and their explicit in-app browser boundaries.
+
 ### Install / update
+
+- Existing users should keep the Edge extension and local CDP endpoint configured as described in the `x9-browser-session` setup guide.
 
 ### Compatibility
 
+- Local web development now selects the runtime's in-app browser by default. Explicit requests for an in-app or built-in browser remain sticky. The `agent-edge` route remains an unattended fallback for periods when the user is not working in Edge.
+
 ### Breaking changes
+
+- Claude Code no longer selects its browser extension automatically. Codex no longer leaves its non-development browser route to the runtime's generic browser selection.
 
 ## 1.2.0 - 2026-07-23
 
