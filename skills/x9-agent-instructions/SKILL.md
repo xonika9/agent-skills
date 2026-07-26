@@ -1,52 +1,87 @@
 ---
 name: x9-agent-instructions
-description: Use when drafting a one-off prompt/task brief for another agent without executing it, or when creating, auditing, or editing global personal agent instructions — «напиши промпт для агента», «мне нужен промпт», «поправь глобальные правила», «обнови CLAUDE.md/AGENTS.md», "write an agent prompt", "edit my global instructions". Do not use for repository onboarding files (x9-context-files-generator), skill authoring (x9-skill-creator), ordinary prose, or actually delegating a task to Codex.
+description: Use when writing a prompt or task brief for another agent without executing it, or when reviewing and improving an existing prompt or agent-instruction file — «напиши промпт», «нужен промпт под задачу», «посмотри инструкции в этом файле и предложи правки», «поправь глобальные правила», "write an agent prompt", "review these agent instructions". Global CLAUDE.md and AGENTS.md are one review target among others. Do not use for repository onboarding files (x9-context-files-generator), skill authoring (x9-skill-creator), ordinary prose, or actually handing a task to Codex (x9-codex-delegation).
 ---
 
 # Agent instructions
 
-Own global behavioral policy in `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and bounded briefs handed to another agent. Keep the skill itself and standing machine-facing policy in English by default. Write a one-off brief in the user's language so the user can read and verify it before sending; for a Russian-language request, default to Russian. Preserve identifiers, commands, file paths, UI labels, literal configuration values, and quotations in their exact original form. Use English for the whole brief only when the user explicitly requests it or the receiving agent or runtime has a load-bearing English-only requirement; state that reason.
+Own the prompt as an artifact: a one-off brief handed to another agent or a new chat, and the instructional content of files that hold prompts or agent instructions. One rubric drives both — writing applies it forward, review applies it backward.
 
-## Classify before editing
+Write this skill and standing machine-facing policy in English. Write a one-off prompt in the user's language, and keep identifiers, commands, paths, UI labels, literal configuration values, and quotations exactly as they are. Use another language for the whole prompt only when the receiving runtime has a load-bearing requirement for it; say why.
 
-Place each rule in the narrowest owner that can reliably enforce it:
+## Modes
 
-- **Stable personal policy:** authority, preservation, uncertainty, completion, communication → mirrored shared core in both global files.
-- **Runtime adapter:** current models, tools, CLI flags, browser and subagent schemas → a runtime-specific global section or a user-owned adapter outside the reusable skill.
-- **Repository context:** commands and local constraints → repository `AGENTS.md`/`CLAUDE.md`, owned by `x9-context-files-generator`.
-- **Domain behavior:** situation-specific method → the relevant skill.
-- **Operational state:** rankings, measurements, experiments, freshness dates → a dated state/log file, not standing policy.
-- **One-off task:** goal, constraints, evidence, authority, deliverable, and observable completion bar → the task brief.
+**Write.** Produce the prompt. Do not carry out the task it describes.
 
-System and developer instructions remain higher authority than user, repository, or skill instructions. Never write a lower layer as though it can override a higher one.
+**Review.** Read the target in full, judge it against the rubric below, and report what to change, why, and the resulting diff. Edit only after approval, and leave unrelated content untouched. Judge also whether a rule belongs in this file at all: a rule with a canonical owner elsewhere should point there instead of being restated, and runtime facts, repository commands, and dated operational state age faster than the file holding them. If a target file or a required script cannot be read or run, report that and stop rather than working from a remembered version.
 
-## Editing contract
+## What the prompt carries
 
-1. Read both global files and any runtime adapter affected by the change.
-2. Add a standing rule only when omitting it would make a capable agent materially likely to behave differently or repeat a known failure. Do not spend always-loaded context on generic advice the model already follows.
-3. Identify the canonical owner. Allow a short audience-specific summary elsewhere only when it changes behavior; point back to the owner.
-4. Preserve unrelated user content. Replace only the intended bounded section when markers exist.
-5. Keep the shared block between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->` byte-identical in both global files.
-6. State hard negative boundaries explicitly when safety or preservation depends on them. Prefer positive target behavior for ordinary guidance.
-7. Specify process only when the path is part of correctness: dependencies, approval gates, deterministic transformations, state/checkpoints, or known failure modes.
-8. Resolve the installed `x9-agent-instructions` directory from the loaded `SKILL.md`, then run `python3 <skill-directory>/scripts/check_globals.py`. Do not resolve the script from the caller's current working directory. Exercise the behavior scenarios below; a prose reread alone is not validation.
+Completeness of the specification helps; completeness of the path hurts. Describe the task fully and leave the executor to choose how.
 
-## Behavior scenarios
+- **Goal** — one statement of what must be true when the work is done, not a list of activities.
+- **Facts the executor cannot derive** — state, paths, commits, what is already done, what is known broken, decisions taken elsewhere. Length is not a concern here; nothing else can supply this.
+- **Constraints and scope fence** — what is forbidden and what is deliberately out of scope. Agents widen scope on their own, so leaving the fence implicit is how it happens.
+- **Required evidence** — what counts as proof: tests, a build, a reproduced scenario, a diff, a log.
+- **Completion bar** — an observable condition the executor and a third party can both check.
+- **Authority, stated once** — what proceeds without asking (reading, in-scope local edits, tests) and what needs confirmation (external writes, irreversible or destructive actions, purchases, scope expansion). Repeating "ask first" produces needless approval requests on safe actions.
+- **Output contract** — one line, or a pointer to whoever owns the format.
+- **References to real artifacts** — point at the code, test, spec, or component that shows what is wanted. Source beats description, and a module in another language still conveys the semantics.
+- **Reasons behind constraints** — a rule with its motive generalizes to cases nobody enumerated; a bare prohibition does not.
+- **Structure** — separate blocks for background, task, constraints, and output; long inputs first and the task after them.
+- **Layer discipline** — system and developer instructions outrank user, repository, and skill instructions. Never write a lower layer as though it overrides a higher one.
 
-- Answer/review request → inspect and report; no edits.
-- Explicit build/fix request → safe in-scope local edits and tests proceed; external, destructive, costly, or expanded actions require confirmation.
-- Required tool fails → report the failure; no from-memory substitution.
-- Runtime fact changes → update one adapter and its freshness marker, not every skill.
-- Shared policy changes → both global copies match; runtime-specific sections may differ deliberately.
-- One-off brief has a load-bearing ambiguity → ask one question; otherwise proceed with a stated assumption.
-- Russian-language request for a one-off prompt → return the complete brief in Russian while preserving exact technical literals.
-- Target explicitly requires English → return the brief in English and state why the normal user-language default was overridden.
+## What to leave out
+
+- **A prescribed path** derivable from the goal and the constraints. It adds no knowledge and removes the executor's room to deviate. A sequence that appears in the request is not evidence that the order is load-bearing: before writing any numbered step, name the invariant that makes a wrong order impossible and write that instead.
+- **Verification instructions** — "add a final check", "double-check yourself", "have a subagent verify". Agents verify their own work; these buy extra passes, not quality. Naming required evidence is a different thing and stays.
+- **Anything said twice.** One rule, one place.
+- **Contradictions.** Reconciling conflicting requirements consumes reasoning, and two rules that cannot both hold are worse than neither.
+- **Retellings of what the executor will load anyway** — a skill, plan, spec, or contract it is going to read. Give the path and only the deltas.
+- **Pressure formatting** — caps, "CRITICAL", "you MUST". Written against under-triggering, now a cause of over-triggering.
+- **Anti-laziness padding** — "be thorough", "when in doubt, use the tool".
+- **A prescribed line of reasoning.** A general direction outperforms a hand-written thinking plan.
+- **Filters that lower a review's yield** — "only report critical issues", "be conservative" are followed literally.
+- **Vague brevity requests.** Name what must survive shortening instead: conclusion, evidence, material caveats, next step.
+
+## Where prescription belongs
+
+- **Order or completeness is the correctness property** — irreversible sequences, approval gates, deterministic transformations, recovery from a known-bad state.
+- **Safety and irreversibility.** Hard prohibitions stay for destructive, irreversible, and externally visible actions. Reversibility is the dividing line, and a destructive shortcut is never an acceptable way past an obstacle.
+- **A cold start with no history.** "Run `pwd`", "read the progress notes, the test state, and the git log" earn their place when the executor begins with nothing.
+
+## Unknowns
+
+Over- and under-specifying fail in opposite directions: too specific and the executor follows the letter where it should have turned, too vague and it substitutes an industry default that does not fit. Neither is cured by changing length.
+
+Before writing, look for what is missing — what the author knows but never wrote down because it seems obvious, and what the author has not settled yet. Resolve it from available context, or ask for the missing facts: one question when one answer is enough, the smallest sufficient set when it is not. A prompt delivered with blanks for the requester to fill in is not a finished prompt.
+
+Where a path would have been prescribed, give a deviation rule instead: when reality forces a departure, take the conservative option, record it, and continue.
+
+Lead a plan with the decisions most likely to change — data models, interfaces, user-facing flow — and leave mechanical work last.
+
+## Checks
+
+- A reader with no context could follow it.
+- Every line states the goal, supplies a fact the executor cannot derive, sets a boundary, defines the completion bar, or names an owner to load.
+- No requirement appears twice, and no two requirements conflict.
+- Nothing a competent executor would do unprompted is spelled out.
+- For each numbered step: when an invariant makes the wrong order impossible, the invariant replaces the step; the step survives only where a wrong order cannot be undone.
+
+## Global instruction files
+
+`~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` are review targets with one extra invariant: the block between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->` is byte-identical in both. Read both before changing either.
+
+A standing rule earns always-loaded context only when omitting it would make a capable agent behave differently or repeat a known failure.
+
+Resolve this skill's directory from the loaded `SKILL.md`, not from the caller's working directory, and run:
+
+```bash
+python3 <skill-directory>/scripts/check_globals.py
+```
 
 ## Done
 
-- Every added standing rule changes likely behavior or prevents a documented failure; generic advice was left out.
-- The rule has one canonical owner and no accidental contradiction.
-- Shared global policy passes `python3 <skill-directory>/scripts/check_globals.py` from an unrelated working directory.
-- A one-off brief uses the user's language unless an explicit request or a documented target constraint requires another language.
-- At least one positive and one boundary scenario were checked in a fresh context for substantive changes.
-- The handoff names changed files and validation performed.
+- Every check above passes on the delivered artifact.
+- `check_globals.py` passes from an unrelated working directory whenever the global files changed.
+- The handoff names the files changed and what was verified.

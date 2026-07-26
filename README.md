@@ -76,7 +76,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - The task depends on your login, region, feed, cart, or private pages: add [`x9-browser-session`](skills/x9-browser-session/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
-- You need a strong prompt or cleaner global agent rules: use [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
+- You need a strong prompt, or a second look at instructions you already wrote: use [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
 - A new or existing repository needs useful onboarding files: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
@@ -117,7 +117,7 @@ The default uses one critic from each provider; focused and deeper panel modes a
 
 This is the skill for “write me a prompt for this task.” Describe the outcome in your own words, including through speech-to-text, and it turns that input into a bounded brief with the goal, constraints, evidence, authority, deliverable, and completion bar.
 
-It also audits and edits global `AGENTS.md` and `CLAUDE.md` files. The underlying idea is simple: capable models need clear boundaries and success criteria more than a long script telling them how to think.
+It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included — and comes back with what to change, why, and the diff. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
 
 ### Repositories and reusable workflows
 
