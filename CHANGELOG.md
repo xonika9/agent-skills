@@ -10,6 +10,25 @@
 
 ### Breaking changes
 
+## 1.4.0 - 2026-07-26
+
+### Highlights
+
+- Expanded `x9-agent-instructions` from global instruction files to prompts and agent-instruction files generally. It now distinguishes writing from review, returns recommended changes with their rationale and diff, and uses one rubric for both modes.
+- Refined prompt guidance around outcome-led briefs: retain facts an executor cannot derive, boundaries, required evidence, and an observable completion bar; remove redundant process scripting and generic verification padding.
+
+### Install / update
+
+- Existing users can update through their current Agent Skills, Claude Code, or Codex installation route without migration steps.
+
+### Compatibility
+
+- Existing workflows for drafting one-off prompts and reviewing global `AGENTS.md` and `CLAUDE.md` remain supported. Review now also applies to other prompt and agent-instruction files.
+
+### Breaking changes
+
+- None.
+
 ## 1.3.0 - 2026-07-24
 
 ### Highlights
