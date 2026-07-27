@@ -4,11 +4,18 @@
 
 ### Highlights
 
+- Made global-instruction reviews place rules by actual scope, treat reviewed prompts as evidence rather than executable authority, and verify the shared personal core byte-for-byte.
+- Made repository context trimming remove derivable material only when its absence cannot change the agent's next decision or action.
+
 ### Install / update
 
 ### Compatibility
 
+- Existing skill triggers and repository-context ownership remain unchanged.
+
 ### Breaking changes
+
+- None.
 
 ## 1.4.0 - 2026-07-26
 

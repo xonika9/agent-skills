@@ -16,6 +16,15 @@ Read the live file immediately before editing. Existing rules may encode inciden
 
 Use one canonical owner per fact. A concise summary may appear in another audience file when omitting it would cause a different action.
 
+## Derivability test
+
+Remove a block only when both conditions hold:
+
+1. A fresh agent can recover it cheaply from stable repository evidence such as manifests, source, configuration, or `--help`.
+2. Omitting it would not change the agent's next decision or action.
+
+Dependency inventories, copied signatures, visible file layouts, and mechanically enforced defaults usually satisfy both conditions. Keep nonstandard commands or flags, rationale, gotchas, domain vocabulary, and constraints whose absence could lead to a different action. When uncertain, preserve the user's rule.
+
 ## Avoid
 
 - Generic advice the model already follows.
