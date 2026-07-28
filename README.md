@@ -18,7 +18,7 @@ Practical [Agent Skills](https://agentskills.io/) for work that rarely fits into
 - Keep authenticated browser work predictable and separate from your own tabs.
 - Give long-running agent workflows checkpoints, stop conditions, and evidence.
 
-The `x9-` prefix keeps the skills easy to find and avoids collisions with similarly named packages. In Claude Code, type `/x9` to see the installed plugin skills.
+The `x9-` prefix keeps the skills easy to find and avoids collisions with similarly named packages. In Claude Code or Codex, type `/x9` to see the installed plugin skills.
 
 > I share field notes on AI models and developer tools in [Контролируемые галлюцинации](https://t.me/+DOZWlhI4r4EyYjgy), a Russian-language Telegram channel.
 
@@ -66,7 +66,7 @@ Clone or fork the repository only when you want to maintain your own variants. Y
 
 ## Compatibility
 
-The skills use the open Agent Skills format and are packaged for Claude Code and Codex. Most also work in other compatible agents. Runtime-specific exceptions are stated in the catalog and inside each skill instead of being hidden behind a broad compatibility claim.
+The skills use the open Agent Skills format and are packaged for Claude Code and Codex. Most also work in other compatible agents. Runtime-specific exceptions are stated in the catalog and inside each skill.
 
 ## Where to start
 
@@ -77,7 +77,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - You need a strong prompt, or a second look at instructions you already wrote: use [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
-- A new or existing repository needs useful onboarding files: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
+- A new or existing repository needs `AGENTS.md` and `CLAUDE.md`: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
@@ -97,7 +97,7 @@ Plain research requests stay in chat. Ask to save the work or create it in a fol
 
 A clean automation browser is enough to test a public website. It is the wrong tool for a personal task where your account, region, saved data, or feed changes the result. This skill chooses between a connector, a clean browser, and a dedicated authenticated Chromium profile, then works in its own tab without taking over yours.
 
-The [setup guide](skills/x9-browser-session/references/setup.md) includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. Both runtimes use their in-app browser for local web development and explicit in-app requests. Other Codex browser work defaults to its Edge extension; other Claude Code browser work defaults to MCP. Both reserve `agent-edge` for unattended fallback.
+The [setup guide](skills/x9-browser-session/references/setup.md), which you can hand directly to an agent, includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. Both runtimes use their in-app browser for local web development and explicit in-app requests. Other Codex browser work defaults to its Edge extension; other Claude Code browser work defaults to MCP. Both reserve `agent-edge` for unattended fallback.
 
 #### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
 
@@ -109,7 +109,7 @@ It is deliberately Wildberries-specific and runs inside the current Claude Code 
 
 #### [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md)
 
-Use this when you want resistance, not another enthusiastic brainstorm. The skill seals the relevant context into a neutral brief and sends the same brief to independent Opus and GPT critics. The main agent then combines agreements, disagreements, fatal assumptions, cheaper alternatives, and the quickest tests that could prove the idea wrong.
+Use this when you want resistance, not another enthusiastic brainstorm. The skill sends a neutral brief to independent Opus and GPT critics. The main agent then combines agreements, disagreements, fatal assumptions, cheaper alternatives, and the quickest tests that could prove the idea wrong.
 
 The default uses one critic from each provider; focused and deeper panel modes are also available. The GPT route from Claude Code uses `x9-codex-delegation`.
 
@@ -118,6 +118,14 @@ The default uses one critic from each provider; focused and deeper panel modes a
 This is the skill for “write me a prompt for this task.” Describe the outcome in your own words, including through speech-to-text, and it turns that input into a bounded brief with the goal, constraints, evidence, authority, deliverable, and completion bar.
 
 It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included — and comes back with what to change, why, and the diff. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
+
+Based on:
+
+- [Prompting best practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices)
+- [Prompting Claude Fable 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5)
+- [Prompting Claude Opus 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5)
+- [The new rules of context engineering for Claude 5 generation models](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models)
+- [Using GPT-5.6](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-5.6)
 
 ### Repositories and reusable workflows
 
@@ -141,7 +149,7 @@ Once the loop has been validated, `x9-skill-creator` can package it as one reusa
 
 #### [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md)
 
-This narrow bridge lets Claude Code hand a substantial, well-scoped task to Codex and verify the real diff or evidence afterward. It is useful when Codex is a better fit for one part of the work, and it can distribute usage when Claude and OpenAI are backed by separate subscriptions or usage pools.
+This narrow bridge lets Claude Code hand a substantial, well-scoped task to Codex and verify the real diff or evidence afterward. It is useful when Codex is a better fit for one part of the work, and it helps spread work across subscription limits.
 
 The skill is Claude Code only. It does not manage quotas by itself and does not delegate trivial work just to add another agent.
 
@@ -155,7 +163,7 @@ The migration is intentionally conservative: deterministic scripts add or repair
 
 ## Global instruction examples
 
-[`global-files/AGENTS.md`](global-files/AGENTS.md) and [`global-files/CLAUDE.md`](global-files/CLAUDE.md) contain the shared personal core plus sanitized runtime adapters for Claude Code and Codex. They cover language preferences, authority boundaries, preservation, uncertainty, observable completion, documentation and browser routing, and tested Codex subagent behavior. Machine-specific installation paths are intentionally replaced with skill discovery by name.
+[`global-files/AGENTS.md`](global-files/AGENTS.md) and [`global-files/CLAUDE.md`](global-files/CLAUDE.md) contain the shared personal core plus sanitized runtime adapters for Claude Code and Codex. They cover language preferences, authority boundaries, preservation, uncertainty, observable completion, documentation and browser routing, and tested subagent behavior. Machine-specific installation paths are intentionally replaced with skill discovery by name.
 
 Treat them as examples, not as files to overwrite blindly. A safe request is:
 

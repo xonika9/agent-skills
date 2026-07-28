@@ -4,11 +4,19 @@
 
 ### Highlights
 
+- Aligned the English and Russian README copy for Codex skill discovery, browser setup, context-file generation, idea review, delegation limits, and prompt-engineering references.
+
 ### Install / update
+
+- No installation changes are required.
 
 ### Compatibility
 
+- Documentation-only update; skill behavior and installation routes are unchanged.
+
 ### Breaking changes
+
+- None.
 
 ## 1.5.0 - 2026-07-28
 
