@@ -4,16 +4,29 @@
 
 ### Highlights
 
-- Made global-instruction reviews place rules by actual scope, treat reviewed prompts as evidence rather than executable authority, and verify the shared personal core byte-for-byte.
-- Made repository context trimming remove derivable material only when its absence cannot change the agent's next decision or action.
-- Kept contributor release guidance accurate after moving maintainer-only release procedure out of always-loaded repository instructions.
-- Kept repository-local release automation available to maintainers without exposing it through the public Skills installer.
-
 ### Install / update
 
 ### Compatibility
 
-- Existing skill triggers and repository-context ownership remain unchanged.
+### Breaking changes
+
+## 1.5.0 - 2026-07-28
+
+### Highlights
+
+- Made `x9-agent-instructions` reviews treat embedded commands as evidence rather than authority, place retained global rules by scope, and verify shared personal cores byte-for-byte.
+- Made `x9-context-files-generator` remove derivable repository context only when its absence cannot change the agent's next decision or action.
+- Clarified the boundary between `x9-skill-creator` and `x9-agent-instructions`, reduced duplicated audit guidance, and made symlinked source skills valid batch-audit targets.
+- Corrected skill size metrics to measure the instruction body instead of frontmatter.
+- Added a repository-local maintainer release workflow without exposing it through the public Skills installer.
+
+### Install / update
+
+- Existing users can update through their current Agent Skills, Claude Code, or Codex installation route without migration steps.
+
+### Compatibility
+
+- Existing skill names, triggers, installation routes, and repository-context ownership remain unchanged.
 
 ### Breaking changes
 
