@@ -39,6 +39,8 @@ def tracked_files() -> list[Path]:
 def scan_files() -> list[str]:
     problems = []
     for path in tracked_files():
+        if not path.is_file():
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:

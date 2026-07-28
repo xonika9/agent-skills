@@ -31,7 +31,7 @@ Contributors add user-visible changes to `Unreleased`; the maintainer confirms t
 - `1.0.0`: an explicit maintainer declaration that the public contracts are stable.
 - After `1.0.0`, `MAJOR`: incompatible public-contract changes; `MINOR`: backward-compatible capabilities; `PATCH`: backward-compatible fixes.
 
-The detailed criteria and release authority are defined in [AGENTS.md](AGENTS.md#changelog-and-releases).
+Release metadata and publication are enforced by [`scripts/prepare_release.py`](scripts/prepare_release.py), the [validation workflow](.github/workflows/validate.yml), and the [release workflow](.github/workflows/release.yml).
 
 ## Validation
 

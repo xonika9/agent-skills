@@ -27,43 +27,13 @@ This is the public source of truth for the `x9-*` Agent Skills. The package targ
 - Keep the plugin name `x9-agent-skills` and marketplace name `xonika9` synchronized with `scripts/check_package.py`.
 - Run `claude plugin validate .claude-plugin/marketplace.json`, `claude plugin validate .claude-plugin/plugin.json`, and `python3 scripts/check_package.py` after changing manifests or marketplace files. The repository script is the reproducible Claude/Codex package gate; a runtime-bundled Codex validator may be used as an additional local check.
 
-## Changelog and releases
+## Changelog
 
 - Update `CHANGELOG.md` in the same task as every user-visible change, before reporting completion. Describe the outcome, not the implementation steps. Do not defer changelog reconstruction to release day.
-- Keep an `Unreleased` section with `Highlights`, `Install / update`, `Compatibility`, and `Breaking changes`. When preparing a release, an agent must turn that section into concise release notes, state `None` explicitly when there are no breaking changes, and restore an empty `Unreleased` template.
-- Before preparing a release, compare the complete diff from the latest public tag to `HEAD` with the candidate release notes. Reconcile every user-visible change, including changes omitted from `Unreleased`; review the `AUDIT` file list printed by `scripts/prepare_release.py --check` before publication.
-- `scripts/prepare_release.py --check` also blocks post-release changes to public skills, installation surfaces, manifests, global examples, community documents, or identity assets when `Unreleased` is empty. This gate is a backstop, not a substitute for the semantic diff review.
-- Choose the release version from the strongest change since the latest public tag; mixed releases use the highest applicable bump:
-  - `PATCH` (`0.2.0` → `0.2.1`): backward-compatible fixes and corrections that do not intentionally change a skill's capability, trigger, workflow, output contract, installation route, or supported runtime behavior. Examples: typos, broken links, documentation corrections, and packaging or release bug fixes.
-  - `MINOR` while the project is `0.x` (`0.2.0` → `0.3.0`): a new skill or capability, or any intentional change to public behavior or contracts, including triggers, workflows, outputs, installation or update routes, and runtime support. Record incompatible changes explicitly under `Breaking changes`.
-  - `1.0.0`: only after an explicit maintainer decision that public skill names, installation and update routes, and supported behavior are stable enough for normal compatibility guarantees. Do not infer `1.0.0` from project age, release count, stars, or installations.
-  - After `1.0.0`, use `MAJOR` for incompatible removals, renames, or changes to public skill, installation, update, or behavior contracts; use `MINOR` for backward-compatible capabilities and `PATCH` for backward-compatible fixes.
-- During release preparation, the agent must propose the bump, cite the changes that determine it, and get the maintainer's confirmation before editing release versions. Scripts validate version format and consistency; they do not decide the bump.
-- Treat «подготовь релиз» or an equivalent request as authorization to prepare release files only after the version is confirmed: update `CHANGELOG.md`, synchronize both plugin manifests, and run the full verification set. Stop before commit or push unless the user also requests publication.
-- Treat «подготовь и выпусти релиз», «выпусти релиз», or another explicit publication request as authorization to prepare, commit, and push the release, then monitor both the validation and release workflows until the GitHub Release is visible or a concrete failure is reported.
-- Before a release, set the release date, bump both plugin manifests to the same `X.Y.Z`, and make sure the changelog has a matching version heading.
-- A successful push to `main` triggers `.github/workflows/release.yml` after validation. It creates annotated tag `vX.Y.Z` and the matching GitHub Release only when that version has not already been released.
-- Never rewrite or move an existing public tag. Fix a released mistake with a new version.
+- Keep an `Unreleased` section with `Highlights`, `Install / update`, `Compatibility`, and `Breaking changes`.
+- `scripts/prepare_release.py --check` blocks changes to release-relevant public files when `Unreleased` is empty.
 
 ## Verification
 
-Run the focused checks for the files changed. Before release, run the full set:
-
-```bash
-for skill in skills/*; do
-  python3 skills/x9-skill-creator/scripts/validate.py "$skill"
-done
-
-python3 skills/x9-skill-creator/scripts/test_validate.py
-python3 skills/x9-okf-adapt/scripts/test_okf.py
-python3 scripts/check_package.py
-python3 scripts/check_public.py
-python3 scripts/test_prepare_release.py
-python3 scripts/prepare_release.py --check
-claude plugin validate .claude-plugin/marketplace.json
-claude plugin validate .claude-plugin/plugin.json
-npx skills add . --list
-git diff --check
-```
-
+Run the focused checks for the files changed.
 Confirm that root `CLAUDE.md` contains exactly `@AGENTS.md` plus a final newline.
