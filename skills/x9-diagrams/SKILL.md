@@ -58,12 +58,11 @@ When trigger ownership is ambiguous, use `x9-diagrams` only if the task needs it
 
 ## Completion gate
 
-The result is complete only when:
+Match completion evidence to the requested action:
 
-1. the chosen view answers the stated question for the intended audience;
-2. the requested native source parses or opens and remains editable;
-3. a compatible renderer or editor produced the actual view;
-4. that view was inspected at delivery size for legibility, hierarchy, crossings, clipping, and misleading structure;
-5. important semantics survived any conversion.
+- **Format selection:** name the view and delivery format, connect the choice to the user's constraints, state material limitations, and identify whether a compatible validator, renderer, or editor is available.
+- **Creation or material revision:** the chosen view answers the stated question; the native source parses or opens and remains editable; a compatible renderer or editor produced the actual view; and that view was inspected at delivery size for legibility, hierarchy, crossings, clipping, and misleading structure.
+- **Conversion:** meet the creation evidence and confirm that important semantics survived; state any loss in layout, styling, pages, layers, containers, or notation.
+- **Review only:** distinguish native-structure findings from rendered-composition findings and cite the inspected evidence without rewriting the artifact.
 
-If step 2 or 3 cannot be performed, report `DEGRADED` with the exact missing validator, renderer, or editor. Excalidraw checker regression tests live in `scripts/test_check_scene.py`.
+If any evidence required for the active action cannot be obtained, report `DEGRADED` with the exact missing check, validator, renderer, editor, or source artifact. Excalidraw checker regression tests live in `scripts/test_check_scene.py`.

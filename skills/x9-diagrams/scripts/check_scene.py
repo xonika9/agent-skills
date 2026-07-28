@@ -80,6 +80,7 @@ ARROWHEADS = {
     "cardinality_zero_or_many",
 }
 SKILL_FONTS = {5, 6}
+BASIC_ELEMENT_TYPES = {"rectangle", "diamond", "ellipse", "text", "line", "arrow"}
 
 
 def _number(value: Any) -> bool:
@@ -178,6 +179,11 @@ def validate_scene(
             errors.append(f"{element_id} missing common fields: {', '.join(missing)}")
 
         element_type = element.get("type")
+        if element_type not in BASIC_ELEMENT_TYPES:
+            errors.append(
+                f"{element_id}.type is outside the supported basic subset: "
+                f"{element_type!r}"
+            )
         for field in ("x", "y", "width", "height", "angle", "strokeWidth",
                       "roughness", "opacity", "seed", "version",
                       "versionNonce", "updated"):
@@ -336,9 +342,16 @@ def validate_scene(
                     f"{element_id}.boundElements reference does not resolve: "
                     f"{bound.get('id')!r}"
                 )
-            if bound.get("type") not in {"arrow", "text"}:
+            bound_type = bound.get("type")
+            if bound_type not in {"arrow", "text"}:
                 errors.append(
                     f"{element_id}.boundElements type must be 'arrow' or 'text'"
+                )
+            elif target is not None and target.get("type") != bound_type:
+                errors.append(
+                    f"{element_id}.boundElements declares {bound.get('id')!r} "
+                    f"as {bound_type!r}, but the target type is "
+                    f"{target.get('type')!r}"
                 )
 
         if element.get("type") == "text" and element.get("containerId"):

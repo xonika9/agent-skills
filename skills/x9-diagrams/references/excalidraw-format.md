@@ -24,7 +24,7 @@ Native text elements serialize `fontFamily` as a number. The current [`FONT_FAMI
 | Excalifont | `5` |
 | Nunito | `6` |
 
-This skill emits new human-facing diagram text with Excalifont `5` and Nunito `6`; it treats Virgil `1` as legacy input to replace. Excalifont is also the current application default.
+This skill uses Excalifont `5` for short display text and Nunito `6` for prose, identifiers, and connector labels; a simple scene may need only one of those roles. It treats Virgil `1` as legacy input to replace. Excalifont is also the current application default.
 
 The official [Excalifont font source](https://github.com/excalidraw/excalidraw/blob/1acf66edabc2ac5bbd4aed0714aed7dca7cc2aab/packages/excalidraw/fonts/Excalifont/index.ts) includes a Cyrillic range, and the [Nunito source](https://github.com/excalidraw/excalidraw/blob/1acf66edabc2ac5bbd4aed0714aed7dca7cc2aab/packages/excalidraw/fonts/Nunito/index.ts) registers Cyrillic and Cyrillic Extended faces. This makes both suitable for mixed Russian and Latin content, subject to checking the actual render for fallback or metric changes.
 
@@ -124,13 +124,15 @@ REST wrappers may instead use `label`, `start`, and `end`, and may encode enums 
 
 ## Structural verification
 
-Run the bundled checker for the basic diagram subset:
+The bundled checker deliberately covers the basic diagram subset: `rectangle`, `diamond`, `ellipse`, `text`, `line`, and `arrow`. Use the target Excalidraw version to validate scenes containing frames, images, embeds, freehand elements, or other types.
+
+Run the checker:
 
 ```bash
 python3 ../scripts/check_scene.py diagram.excalidraw \
-  --viewport-width 1600 \
-  --require-font-family 5 \
-  --require-font-family 6
+  --viewport-width 1600
 ```
+
+Add `--require-font-family 5` or `--require-font-family 6` only when the diagram's assigned text roles require that family; repeat the option when both roles are present.
 
 Then open or faithfully render the scene. The checker cannot prove text metrics, z-order appearance, connector paths, contrast, or composition.

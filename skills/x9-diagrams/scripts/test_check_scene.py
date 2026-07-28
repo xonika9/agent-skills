@@ -127,6 +127,20 @@ class ValidateSceneTests(unittest.TestCase):
         errors, _ = validate_scene(candidate)
         self.assertTrue(any("Excalifont" in error for error in errors))
 
+    def test_rejects_unknown_element_type(self):
+        candidate = scene()
+        candidate["elements"][0]["type"] = "definitely-not-an-excalidraw-type"
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("supported basic subset" in error for error in errors))
+
+    def test_rejects_bound_element_type_mismatch(self):
+        candidate = scene()
+        candidate["elements"][0]["boundElements"].append(
+            {"id": "right", "type": "text"}
+        )
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("target type is 'rectangle'" in error for error in errors))
+
     def test_rejects_legacy_binding(self):
         candidate = scene()
         candidate["elements"][-1]["startBinding"] = {

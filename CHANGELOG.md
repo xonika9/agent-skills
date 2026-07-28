@@ -4,10 +4,21 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 2.1.0 - 2026-07-29
+
+### Highlights
+
 - Renamed `x9-excalidraw-diagrams` to `x9-diagrams` and expanded it into one research-backed method for choosing, creating, reviewing, and converting native Excalidraw, Mermaid, and draw.io diagrams.
 - Added format-specific Mermaid and draw.io adapters while preserving the native Excalidraw checker, current font/binding rules, and regression tests.
 - Kept the distributed skill focused on operational guidance by removing the maintainer-only research ledger.
 - Added a constraint-based format matrix, explicit ownership boundary with specialized Mermaid-only skills, and separate structural plus rendered completion gates for all supported formats.
+- Split completion evidence by selection, creation, conversion, and review; tightened degraded-result reporting and the Excalidraw basic-subset checker without requiring both supported fonts in every scene.
 
 ### Install / update
 
