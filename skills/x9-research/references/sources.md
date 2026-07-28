@@ -14,7 +14,7 @@ Search-result snippets are discovery aids, not evidence. Open the source page or
 
 ## Browser
 
-Follow `x9-browser-session` before browser work. Use a task-owned tab and leave existing tabs untouched. Authentication failure is a retrieval failure; do not switch to an unrelated public source and imply the requested account data was checked.
+Follow `x9-browser-session` before browser work; it owns controller selection, task-tab isolation, private-surface safety, and browser-route failure.
 
 ## Social search
 
@@ -27,7 +27,7 @@ Follow `x9-browser-session` before browser work. Use a task-owned tab and leave 
 
 Use `x9-browser-session` and the user's authenticated browser for X/Twitter research. Open-web search may locate candidate posts, but inspect the original posts, threads, replies, and quote posts in the X interface before using them as evidence. This keeps login-gated and account-visible context available and prevents search snippets from standing in for the source.
 
-The account, locale, follows, and platform ranking can shape what is visible. Prefer targeted searches over the home feed, record the query and ordering, and disclose this personalization when it limits the conclusion. Stay on task-owned search/post tabs; do not inspect direct messages, notifications, account settings, or unrelated profile-adjacent content unless the user explicitly asks.
+The account, locale, follows, and platform ranking can shape what is visible. Prefer targeted searches over the home feed, record the query and ordering, and disclose this personalization when it limits the conclusion.
 
 Search deliberately instead of scrolling an algorithmic feed blindly:
 
@@ -36,8 +36,6 @@ Search deliberately instead of scrolling an algorithmic feed blindly:
 - open relevant threads in full and inspect replies and quote posts for counter-evidence;
 - record the author, post date, query/window, and why the account is informative;
 - treat engagement as reach, not independent agreement, and corroborate load-bearing factual claims off-platform.
-
-If the authenticated route fails, report that failure. Do not substitute generic search results and claim that the user's feed or account-visible material was checked.
 
 ### Reddit and forums
 
@@ -48,3 +46,7 @@ Reddit and forums are useful for lived experience, recurring complaints, workaro
 ## Freshness
 
 Capture publication/effective dates and the date accessed. Re-check volatile tables, tool lists, prices, versions, schedules, and policies on every substantive use.
+
+## Completion
+
+Social or community evidence records its platform, time window, query terms, ordering, sample limits, and observed disagreement. X/Twitter evidence comes from opened original posts through the authenticated route; Reddit or forum evidence comes from opened original threads. Corroborate every load-bearing factual claim with a source that owns the fact.

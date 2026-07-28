@@ -5,7 +5,7 @@ Read this reference after [delivery routing](delivery-modes.md) selects HTML cre
 ## Contents
 
 - [HTML is the reader presentation](#html-is-the-reader-presentation)
-- [Russian editing pipeline](#russian-editing-pipeline)
+- [Language editing pipeline](#language-editing-pipeline)
 - [Validate the pair](#validate-the-pair)
 - [HTML failure behavior](#html-failure-behavior)
 
@@ -30,9 +30,9 @@ The asset contains no HTML skeleton and defines no required section order. Desig
 
 Keep the main conclusion, confidence, and verdict-changing limitations expanded. Collapse only secondary material. Put source links near the claims they support; a source list at the end is supplementary, not a substitute for claim-level traceability.
 
-## Russian editing pipeline
+## Language editing pipeline
 
-Apply this ordered pipeline to visible Russian prose in the HTML only:
+Set the document `lang` attribute to its actual carrier language. When that language is Russian, apply this ordered pipeline to visible prose only:
 
 1. Draft from the checked Markdown evidence, preserving exact facts and uncertainty.
 2. Record a fact lock: names, numbers, dates, units, official titles, quotations, qualifiers, confidence, and claim-to-source links.
@@ -45,14 +45,20 @@ If `humanizer-ru` is unavailable, do not imply it ran. Perform the best manual R
 
 ## Validate the pair
 
-Before reporting completion:
+Run [the deterministic checker](../scripts/validate_html.py), resolving it from this skill's loaded directory:
 
-- confirm both same-basename files exist beside each other;
-- parse the HTML and check that every internal anchor resolves;
-- remove placeholder tokens and accidental chat/tool citation markers;
-- confirm there are no external runtime assets or scripts;
-- confirm `<html lang="ru">`, UTF-8, viewport metadata, light color scheme, responsive rules, and print rules;
-- verify links preserve the researched source URLs;
+```bash
+python3 <x9-research-directory>/scripts/validate_html.py \
+  --language <actual-bcp47-language-tag> \
+  <research.md> <research.html>
+```
+
+Completion requires exit status `0`. The validator owns pair identity, HTML structure, internal anchors, placeholder and chat-citation markers, external runtime dependencies, language metadata, UTF-8, viewport metadata, inline light-theme CSS, responsive/print rules, and preservation of Markdown source URLs.
+
+Then perform the checks that require judgment:
+
+- confirm visible prose uses the declared carrier language;
+- confirm the HTML preserves the Markdown facts, qualifiers, confidence, and claim-to-source relationships;
 - render the real HTML in a clean local browser at a wide and narrow viewport;
 - inspect hierarchy, overflow, tables, navigation, and `<details>`;
 - report if rendering was unavailable rather than claiming visual verification.
@@ -61,6 +67,7 @@ Structural parsing cannot prove readable design, factual fidelity, or successful
 
 ## HTML failure behavior
 
-- Humanizer unavailable: deliver `DEGRADED` with the manual language pass.
+- Python or the bundled checker unavailable: keep the Markdown evidence file, label HTML delivery `DEGRADED`, and do not claim that the pair passed deterministic validation.
+- Russian carrier language with Humanizer unavailable: deliver `DEGRADED` with the manual language pass.
 - Browser rendering unavailable: keep the valid pair but report that visual verification was not completed.
 - Load-bearing research evidence unavailable: follow the core research failure state; polished HTML must not disguise `BLOCKED/NOT_PROVEN`.

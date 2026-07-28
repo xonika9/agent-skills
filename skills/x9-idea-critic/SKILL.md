@@ -16,9 +16,9 @@ For `/x9-idea-critic [mode] [idea]`, treat the first argument as a mode only whe
 | default / omitted | «раскритикуй идею», «проверь на прочность» | one fresh Opus critic and one fresh GPT critic |
 | `opus` | «раскритикуй опусом» | one fresh Opus critic |
 | `gpt` | «спроси GPT», «раскритикуй через GPT» | one fresh GPT critic through Codex |
-| `full` | «разнеси по полной», «панель критиков» | 2–3 critics from each provider with distinct lenses |
+| `full` | «разнеси по полной», «панель критиков» | one critic from each provider for each of 2–3 declared lenses |
 
-For `full`, use feasibility/execution, user or market demand, and devil's-advocate/simpler-alternative lenses as applicable. Tell the user that this mode is slower and heavier, then start as much parallel work as the host capacity permits.
+For `full`, select and declare exactly two or three applicable lenses before dispatch from feasibility/execution, user or market demand, and devil's-advocate/simpler alternative. Tell the user that this mode is slower and heavier, then start one critic per declared lens/provider pair as host capacity permits. That declared matrix is the completion boundary.
 
 ## Sealed brief
 
@@ -34,10 +34,10 @@ Exclude advocacy and solution-selling from the critic's role, but do not omit fa
 
 ## Runtime routes
 
-- **From Claude Code:** run the Opus route in a fresh Opus agent with only the sealed brief. Run the GPT route through `x9-codex-delegation`; it owns the current Codex mechanics and delegation log.
-- **From Codex:** run the Opus route in a fresh non-persistent Claude CLI session when available and explicitly pass `--effort high`; do not inherit Codex's bounded-worker effort or the user's Claude CLI effort setting. When the CLI accepts the brief on stdin, materialize only the sealed brief in an OS temporary file created with `mktemp`, restrict it to the current user, and pass it through stdin rather than argv. Install cleanup with a shell trap or equivalent `finally` block before writing the brief, then verify the file is gone after success, failure, or interruption. Never store this transport file in the repository, logs, or user artifacts. Run the GPT route through the native subagent interface after following the active global subagent contract; use `fork_turns: "none"` and request a supported model/effort only when exposed by the live schema.
+- **From Claude Code:** read [the Claude Code adapter](references/claude-code.md).
+- **From Codex:** read [the Codex adapter](references/codex.md).
 
-Use the current configured model unless the user selected an exact available version. Do not pass the surrounding conversation. Pass only the sealed brief and explicit evidence locations. Do not disable tools when repository or source verification is load-bearing; grant only the read surfaces needed.
+Both adapters must select a currently available model from the promised provider family. Honor an exact user-selected version only when live discovery confirms it; otherwise fail that route rather than silently substituting another family. Pass only the sealed brief and explicit evidence locations, and grant only the read surfaces needed to inspect load-bearing evidence.
 
 ## Failure and synthesis
 
@@ -58,6 +58,3 @@ Use the current configured model unless the user selected an exact available ver
 5. Cheapest tests that could falsify the remaining assumptions.
 6. Missing evidence and unresolved disagreement.
 7. For `REVISE`, give a concrete revision agenda covering all findings upheld during synthesis. Distinguish changes required to address `KILLER` and `SERIOUS` findings from optional improvements, accepted risks, or deferred work associated with `MINOR` findings. Group overlapping work and show dependencies; do not cap the number of changes or omit necessary architecture work for brevity. For `SURVIVES`, recommend only changes justified by the findings and distinguish them from risks that can reasonably be accepted. For `KILL`, do not manufacture a rescue plan.
-
-`COMPLETE` requires every critic requested by the selected mode and traceable evidence for factual claims. Never silently substitute a different route or fewer critics.
-When a CLI transport file was used, completion also requires confirming that it no longer exists.

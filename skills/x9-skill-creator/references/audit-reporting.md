@@ -2,6 +2,28 @@
 
 Use this contract for every Audit handoff. Full evidence may live in persistent reports, but the user-facing response must remain useful without opening those files.
 
+## Contents
+
+- [Report language](#report-language)
+- [Finding lifecycle](#finding-lifecycle)
+- [Required findings table](#required-findings-table)
+- [Why these changes help](#why-these-changes-help)
+- [Single-target handoff](#single-target-handoff)
+- [Batch handoff](#batch-handoff)
+- [Filtered findings](#filtered-findings)
+
+## Report language
+
+Select one BCP 47 report-language tag before producing audit output. Use, in order: the language explicitly requested by the user; the primary carrier language of the audit request; the current conversation language. Ask one short question only when those signals still leave a genuinely ambiguous choice. Never derive the report language from the audited skill, its source files, or the repository's documentation language.
+
+The main auditor selects the tag for a single-target audit. In batch mode, the orchestrator selects it once and passes the same exact `Report language: <tag>` to every worker. Record that line in every persistent report under `docs/skill-audits/`.
+
+Write headings, table labels, findings, impact, recommendations, rationale, checklist answers, decisions, deferred evidence, and filtered-finding explanations in the selected language. Localize the human-facing labels of the findings table and final verdict block while preserving their field order and meaning.
+
+Keep exact identifiers, status and severity tokens, paths, commands, code, source quotations, and validator output unchanged. Keep the worker-response protocol literal so the orchestrator can validate it mechanically.
+
+End every persistent per-target report with localized labels for exactly these four semantic fields: `Status`, `Decided here`, `Needs your decision`, and `Remaining/deferred`. For an Audit action, the localized `Decided here` value is normally the equivalent of `None — Audit only`; do not add, remove, or reorder fields.
+
 ## Finding lifecycle
 
 A finding begins as a raw auditor or worker claim. Before the final response, the responsible main agent must review its cited evidence, impact, severity, proposed fix, and fit with the skill's declared intent and current user or repository policy.

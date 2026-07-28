@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- Made `x9-idea-critic` select the promised provider family explicitly, isolate volatile Claude Code and Codex mechanics in runtime adapters, and declare a reproducible lens/provider matrix for `full` mode.
+- Made `x9-research` leave an inspectable independent-review disposition, assign browser and delivery rules to one owner, support correct HTML language metadata, and validate deterministic Markdown/HTML requirements with a bundled regression-tested checker.
 - Made `x9-skill-creator` structural validation runtime-aware for portable Agent Skills, Claude Code, and Codex, with stricter frontmatter constraints, duplicate-key detection, and complete bundled-resource reachability checks.
 - Updated the Claude Code adapter for current trigger and frontmatter behavior, and removed duplicated judge-checklist cardinality from batch audits.
 - Made `x9-agent-instructions` reviews report-first, pair every retained change with a concise practical rationale, and apply only explicitly approved recommendations.
@@ -11,9 +13,11 @@
 - Made `x9-agent-instructions` reference installed skills by discoverable name, reject machine-specific `SKILL.md` paths, and omit redundant requests to read repository context already injected by the runtime.
 - Made `x9-context-files-generator` load `x9-agent-instructions` as a bounded companion rubric for agent-facing prose while keeping repository structure, preservation, and README work under its own contract.
 - Added `x9-excalidraw-diagrams`, a research-backed workflow for native, editable Excalidraw scenes with fit-to-view legibility, role-based typography, controlled routing, a render-and-inspect completion gate, and structural detection of clipped explicit text lines.
+- Made persistent `x9-skill-creator` audit reports follow the user's requested or request-carrier language through one batch-wide `Report language` tag while preserving exact technical literals, source quotations, and validator output.
 
 ### Install / update
 
+- Existing `x9-idea-critic` and `x9-research` users can update in place; no dossier migration is required.
 - Structural validation now accepts repeatable `--runtime portable|claude|codex` flags; omitting the flag keeps the portable profile as the default.
 - The full plugin already installs both required skills. Users who copy individual skills should install `x9-skill-creator` together with `x9-agent-instructions`.
 - Users who copy `x9-context-files-generator` individually should install `x9-agent-instructions` alongside it for complete agent-file creation and review.
@@ -21,6 +25,8 @@
 
 ### Compatibility
 
+- `x9-idea-critic` still supports Claude Code and Codex, but unavailable provider-family selection now fails the affected route instead of silently substituting another model.
+- `x9-research` HTML delivery now requires Python 3 for deterministic pair validation and accepts the document's actual BCP 47 language tag instead of forcing Russian metadata.
 - `x9-skill-creator` now declares its existing Python 3 and Ruby/Psych validation dependency explicitly. Existing portable skills remain valid, while runtime-specific frontmatter must be checked with the matching profile.
 - Without `x9-agent-instructions`, `x9-skill-creator` can still run structural checks but reports full Create, Audit, and Fix work on agent-facing prose as degraded.
 - Without `x9-agent-instructions`, `x9-context-files-generator` keeps README, repository-evidence, and structural work available but reports agent-file instruction quality as degraded.
@@ -28,6 +34,7 @@
 
 ### Breaking changes
 
+- `x9-research` HTML delivery now requires Python 3; without it the Markdown evidence remains usable, but HTML validation is reported as degraded instead of complete.
 - Validation is intentionally stricter: unsupported runtime fields, non-string portable metadata values, overlong `compatibility`, and unreachable bundled resources now fail instead of passing silently.
 - A standalone `x9-skill-creator` installation now requires `x9-agent-instructions` before it can claim a complete instruction-quality review.
 - A standalone `x9-context-files-generator` installation now requires `x9-agent-instructions` before it can claim a complete or clean agent-file result; README-only work is unchanged.

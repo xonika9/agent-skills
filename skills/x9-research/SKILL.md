@@ -1,6 +1,7 @@
 ---
 name: x9-research
 description: Use when the user wants a genuinely researched answer from current or primary sources, including X/Twitter or Reddit — «разберись в вопросе», «изучи тему», «собери факты», "research this", "verify this claim". Also use for durable research intent in varied wording — «создай ресерч в папке», «сохрани исследование», «обнови ресерч», "save/update this research" — and for explicit HTML delivery — «ресерч по теме X + html», «подготовь HTML-отчёт с источниками», «нужна HTML-версия», "research X and deliver it as HTML". Infer semantic intent rather than requiring an exact trigger phrase. Do not use for library/API documentation (find-docs), product search owned by another skill, personal advice, or questions answerable from stable supplied context. Mentioning HTML only as the research subject does not request HTML files.
+compatibility: Requires Python 3 for deterministic HTML output validation.
 ---
 
 # Research
@@ -24,19 +25,11 @@ Read [references/methodology.md](references/methodology.md) for evidence thresho
 
 Use the live tools exposed by the current runtime; do not assume Claude-only names. Prefer purpose-built connectors/APIs for structured resources. Before browser work, follow `x9-browser-session`.
 
-Research X/Twitter through the authenticated-browser route so posts, threads, replies, quote posts, and the user's account-visible state are inspected in the platform interface. This is an intentional platform-specific exception to the normal clean-browser route owned by `x9-browser-session`. Ordinary web search may discover candidate URLs, but it does not replace opening them in X. Reddit and public forums normally use the open web unless the requested evidence depends on logged-in state.
+Read [references/sources.md](references/sources.md) before browser or social research. It owns source selection, platform sampling, and the intentional authenticated-browser exception for X/Twitter; `x9-browser-session` owns controller selection, task-tab isolation, private-surface safety, and browser-route failure.
 
 ## Route the result
 
-- A plain request to research or investigate returns the sourced answer in chat and creates no files.
-- A request to save the research, create it in a folder, or update an existing research file enables durable Markdown mode.
-- An explicit HTML output request enables durable Markdown plus HTML mode; HTML adds a reader presentation and never replaces the agent work file.
-- Updating research changes the existing Markdown. If a same-basename HTML file already exists, synchronize it automatically unless the user explicitly says to leave HTML unchanged. Do not create a missing HTML file during a Markdown-only update.
-- Updating only the HTML presentation rebuilds it from the current Markdown evidence without claiming that the underlying research was refreshed.
-
-Read [references/delivery-modes.md](references/delivery-modes.md) for intent classification, OKF-frontmatter discovery, creation, ambiguity, and update rules. When HTML is selected, also read [references/html-reports.md](references/html-reports.md) and use [assets/editorial-theme.css](assets/editorial-theme.css) for shared visual tokens and optional components, never as a layout template.
-
-A plain research request authorizes gathering and answering, not persistent file creation. Save, folder, update, or HTML-output intent authorizes the corresponding safe local dossier writes and necessary index/log maintenance, but not publication or unrelated changes.
+Return a sourced answer in chat unless the request conveys persistence, update, or HTML-output intent. For any such intent, read [references/delivery-modes.md](references/delivery-modes.md); it owns classification, OKF discovery, artifact lifecycle, authority, ambiguity, and completion. When it selects HTML, also read [references/html-reports.md](references/html-reports.md) and use [assets/editorial-theme.css](assets/editorial-theme.css) for shared visual tokens and optional components, never as a layout template.
 
 ## Failure behavior
 
@@ -49,9 +42,5 @@ A plain research request authorizes gathering and answering, not persistent file
 
 - Every load-bearing current claim traces to a source opened in this run.
 - Evidence strength matches claim risk; contradictions and freshness are visible.
-- The selected chat, Markdown, Markdown-plus-HTML, or update mode matches the user's persistence and format intent.
-- Persistent artifacts were created only with authority and were routed through existing OKF metadata before names or body text.
-- A new HTML request produced a same-basename Markdown/HTML pair. A research update synchronized an already existing same-basename HTML file but did not create a missing one without HTML intent.
-- Visible Russian HTML prose passed the language and `humanizer-ru` workflow, then a fact/citation lock; unavailable editing or visual-render routes are reported as `DEGRADED`.
-- X/Twitter or Reddit evidence followed the platform-specific route and sampling limits in `references/sources.md`.
-- High-stakes or durable conclusions received a fresh independent check.
+- The applicable completion contract passes in [delivery modes](references/delivery-modes.md), [HTML reports](references/html-reports.md), and [source selection](references/sources.md).
+- High-stakes or durable conclusions include the independent-review disposition required by [the methodology](references/methodology.md).

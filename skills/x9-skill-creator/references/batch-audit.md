@@ -48,10 +48,11 @@ The installed `x9-skill-creator` is the audit contract; the resolved source dire
 The orchestrator does not repeat each target's full rubric audit from scratch, but it owns cross-report QA and the final judgment. It must:
 
 - select `Audit` and one evidence tier for the whole batch;
+- select one report language by the precedence in [audit reporting](audit-reporting.md) and pass its exact `Report language: <tag>` to every worker;
 - split the resolved targets into bounded groups sized so each worker can read every relevant reachable resource;
 - assign every group to a fresh worker and use the parent agent's current model unless the user explicitly selected another;
 - keep chat context lean by requiring only the report path, finding counts, instruction-rubric result, and one Verdict block per target from each worker;
-- wait for every group, verify that every expected report exists, and verify that every returned response contains the report path, severity counts, instruction-rubric result, and all required Verdict fields;
+- wait for every group, verify that every expected report exists, and verify that every returned response contains the report path, the assigned report-language tag, severity counts, instruction-rubric result, and all required Verdict fields;
 - retry a failed or non-compliant bounded group with a fresh worker rather than silently omitting a target;
 - read every complete worker report, check every finding against its cited source and declared intent, merge duplicates, filter unsupported claims, and recompute target status from retained findings;
 - retain every evidence-backed Blocker, Important, and Minor finding regardless of whether it needs a user decision;
@@ -65,14 +66,15 @@ Full evidence belongs in report files, not worker chat. Workers may write only t
 For every assigned target, the worker must:
 
 1. Load the installed `x9-skill-creator/SKILL.md` and resolve its installation directory from the loaded resource. Do not assume a home-directory location or resolve its scripts relative to the caller's working directory.
-2. Load and apply `x9-agent-instructions` before judging agent-facing instructional prose. If it is unavailable, continue the remaining checks, record `Instruction rubric: degraded`, and do not return a `clean` full audit; use `not applicable` only when the assigned scope contains no agent-facing prose.
-3. Read `references/quality-rubric.md` completely. When the selected tier is `Behavioral`, also read and follow `references/evals.md`.
-4. Read the target `SKILL.md` completely and inspect every reachable resource relevant to its declared contract.
-5. Run `python3 <resolved-x9-skill-creator-directory>/scripts/validate.py --runtime <target-runtime> <absolute-target-skill-directory>` with one `--runtime` per claimed target runtime, and record the command, exit status, and relevant output.
-6. Audit all rubric dimensions and complete every item in the judge checklist from [quality-rubric.md](quality-rubric.md).
-7. Keep claims within the selected evidence tier. Under `Static`, mark behavioral claims `NOT_PROVEN` where relevant without treating the absence of live evaluation as a finding by itself. Under `Behavioral`, record scenarios, assertions, and evidence paths; report an unavailable required route as `DEGRADED`.
-8. Do not modify the audited skill or any of its resources. Describe proposed fixes only in the report and put irreversible or load-bearing choices under `Needs your decision`.
-9. Write the full report and return its path, severity counts, instruction-rubric result, and final Verdict block in chat.
+2. Use the exact assigned `Report language: <tag>` for all report prose and localized labels. Do not infer another language from the target, repository, or worker context.
+3. Load and apply `x9-agent-instructions` before judging agent-facing instructional prose. If it is unavailable, continue the remaining checks, record `Instruction rubric: degraded`, and do not return a `clean` full audit; use `not applicable` only when the assigned scope contains no agent-facing prose.
+4. Read `references/quality-rubric.md` completely. When the selected tier is `Behavioral`, also read and follow `references/evals.md`.
+5. Read the target `SKILL.md` completely and inspect every reachable resource relevant to its declared contract.
+6. Run `python3 <resolved-x9-skill-creator-directory>/scripts/validate.py --runtime <target-runtime> <absolute-target-skill-directory>` with one `--runtime` per claimed target runtime, and record the command, exit status, and relevant output.
+7. Audit all rubric dimensions and complete every item in the judge checklist from [quality-rubric.md](quality-rubric.md).
+8. Keep claims within the selected evidence tier. Under `Static`, mark behavioral claims `NOT_PROVEN` where relevant without treating the absence of live evaluation as a finding by itself. Under `Behavioral`, record scenarios, assertions, and evidence paths; report an unavailable required route as `DEGRADED`.
+9. Do not modify the audited skill or any of its resources. Describe proposed fixes only in the report and put irreversible or load-bearing choices under `Needs your decision`.
+10. Write the full report and return its path, report-language tag, severity counts, instruction-rubric result, and final Verdict block in chat.
 
 ## Report contract
 
@@ -84,23 +86,18 @@ docs/skill-audits/<local-date-yyyy-mm-dd>/<skill-name>.md
 
 If two targets have the same skill name, add the shortest project-relative parent segment needed to make their report filenames unique. If a destination already exists, preserve it and choose a non-colliding filename unless the user explicitly authorized updating that report.
 
-Each report must identify the project-relative target, selected evidence tier, and `Instruction rubric: applied|not applicable|degraded`, then contain:
+Write the report using the assigned language and the persistent-report contract in [audit reporting](audit-reporting.md). Preserve exact commands, paths, source quotations, validator output, status tokens, and severity tokens.
+
+Each report must record `Report language: <tag>`, identify the project-relative target and selected evidence tier in that language, and contain:
 
 - the validator command, exit status, and relevant output;
-- one section for each of the 10 rubric dimensions, containing either `ok` or concrete findings;
+- one section for each of the 10 rubric dimensions, containing a localized no-finding statement or concrete findings;
 - severity, evidence, impact, and a concrete proposed fix for every finding;
-- `Why these changes help`, with the concise explanation required by [audit reporting](audit-reporting.md) for every retained finding;
-- the complete judge checklist from [quality-rubric.md](quality-rubric.md), with `yes` or `no` and a concrete fix for every `no`;
-- a final Verdict block with exactly these fields:
+- a localized `Why these changes help` section, with the concise explanation required by [audit reporting](audit-reporting.md) for every retained finding;
+- the complete judge checklist from [quality-rubric.md](quality-rubric.md), with localized yes/no answers and a concrete fix for every negative answer;
+- the localized persistent-report verdict block defined by [audit reporting](audit-reporting.md).
 
-```text
-Status:
-Decided here:
-Needs your decision:
-Remaining/deferred:
-```
-
-Because the action is Audit, `Decided here` is normally `None — Audit only`. Use the status meanings defined by [audit reporting](audit-reporting.md). Failed required structural validation is a blocker, and a target cannot be `clean` when required evidence or the required instruction rubric could not be collected.
+Use the status meanings defined by [audit reporting](audit-reporting.md). Failed required structural validation is a blocker, and a target cannot be `clean` when required evidence or the required instruction rubric could not be collected.
 
 ## Worker response
 
@@ -109,6 +106,7 @@ Return only this block for each assigned target:
 ```text
 Target: <project-relative-target>
 Report: docs/skill-audits/<date>/<report-name>.md
+Report language: <tag>
 Status:
 Findings: Blocker <n> | Important <n> | Minor <n>
 Instruction rubric: applied|not applicable|degraded
@@ -124,21 +122,23 @@ Do not return analysis, summaries, validator logs, or report contents in worker 
 After every worker report exists, the orchestrator must follow the batch QA procedure in [audit reporting](audit-reporting.md):
 
 1. Read every complete worker report rather than relying on the Verdict block or severity counts.
-2. Open the cited source for every finding and confirm that the evidence and impact support the proposed severity.
-3. Compare the claim with the skill's explicit intent, current maintainer decisions, repository policy, and selected evidence tier.
-4. Merge duplicate findings. Filter unsupported, non-operational, out-of-scope, or intent-contradicting recommendations; never filter solely because severity is Minor.
-5. Recompute each target status from retained findings.
-6. Write one consolidated report to `docs/skill-audits/<local-date-yyyy-mm-dd>/summary.md`. Preserve an existing file by choosing a non-colliding name unless the user authorized replacement.
+2. Verify that every report records the assigned `Report language: <tag>` and uses that language for its prose and localized labels; retry a non-compliant report instead of translating it during consolidation.
+3. Open the cited source for every finding and confirm that the evidence and impact support the proposed severity.
+4. Compare the claim with the skill's explicit intent, current maintainer decisions, repository policy, and selected evidence tier.
+5. Merge duplicate findings. Filter unsupported, non-operational, out-of-scope, or intent-contradicting recommendations; never filter solely because severity is Minor.
+6. Recompute each target status from retained findings.
+7. Write one consolidated report to `docs/skill-audits/<local-date-yyyy-mm-dd>/summary.md`. Preserve an existing file by choosing a non-colliding name unless the user authorized replacement.
 
 The consolidated report contains:
 
-- the required findings table from [audit reporting](audit-reporting.md), including one accounting row for every clean target;
-- `Why these changes help`, with one concise explanation for every retained finding;
+- `Report language: <tag>` matching the worker assignments;
+- the localized persistent-report findings table from [audit reporting](audit-reporting.md), including one accounting row for every clean target;
+- a localized `Why these changes help` section, with one concise explanation for every retained finding;
 - selected evidence tier and validation coverage;
 - instruction-rubric coverage and any degraded targets;
 - decisions requested, with a recommended default and concrete alternatives;
 - deferred or unavailable behavioral evidence;
-- a short `Filtered out by orchestrator QA` appendix containing finding identifier, target, and dismissal reason.
+- a localized `Filtered out by orchestrator QA` appendix containing finding identifier, target, and dismissal reason.
 
 ## Final response
 
