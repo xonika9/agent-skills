@@ -46,17 +46,19 @@ Inspect relevant context before acting. Treat prior beliefs as hypotheses when t
 ### Documentation and browser tools
 
 - Use `find-docs` with Context7 for library documentation, setup guides, API references, and framework-specific behavior.
-- Before the first browser action, load and follow the installed `x9-browser-session` skill. For local web development, previews, or an explicit request for the in-app browser, use that in-app browser immediately. For every other browser task, the Codex default is the Edge browser extension; do not let the browser runtime silently choose the in-app browser by URL or default selection. Do not hard-code the skill's installation path.
+- Before the first browser action, read and follow `/Users/xonika/.agents/skills/x9-browser-session/SKILL.md`. For local web development, previews, or an explicit request for the in-app browser, use that in-app browser immediately. For every other browser task, the Codex default is the Edge browser extension; do not let the browser runtime silently choose the in-app browser by URL or default selection.
 - For in-app work, use the installed `browser:control-in-app-browser` skill and its distinct in-app binding. Discover the `node_repl js` tool if it is deferred. Do not copy initialization APIs into this always-on file because plugin versions change them.
 
 ### Subagent routing
 
 The rules below describe observed Codex Desktop behavior. Tool schemas and runtime behavior can change; verify live session metadata when routing details are load-bearing instead of relying on the visible JSON schema alone.
 
-- Default bounded worker settings unless the user or a task-specific skill says otherwise: inherit the parent model, use `reasoning_effort: "medium"`, and use `fork_turns: "none"`.
-- `model` and `reasoning_effort` overrides work with `fork_turns: "none"`; confirm the actual model and effort in child session metadata when they matter.
+- Default bounded worker settings: inherit the parent model, use `reasoning_effort: "medium"`, and use `fork_turns: "none"`.
+- The reasoning effort for every Codex subagent is fixed at `reasoning_effort: "medium"`. Pass it explicitly on every `spawn_agent` call, recursively; do not inherit reasoning effort from the parent.
+- Task risk, worker role, workflow stage, review type, project or personal skills, and one-off task briefs must not select another reasoning effort. To use another value, change this global policy first. A higher-priority system or developer instruction may supersede this rule.
+- Model routing is independent from reasoning effort. Unless the current user or an applicable task-specific skill explicitly requires a supported model override, inherit the parent model. Confirm the actual model and effort in child session metadata when routing is load-bearing.
 - `agent_type` may be accepted even when omitted from the visible schema. A live `agent_type: "explorer"` probe recorded `agent_role: "explorer"` in session metadata.
-- Numeric recent-history forks such as `fork_turns: "1"` work. A full-history fork accepted a model override but silently kept the parent model, so never rely on model or effort overrides with `fork_turns: "all"`.
+- Numeric recent-history forks such as `fork_turns: "1"` work. A full-history fork accepted a model override but silently kept the parent model, so never rely on model overrides with `fork_turns: "all"`.
 - `service_tier` was accepted by the tool surface but not exposed in child metadata; treat exact tier routing as unverified unless another live signal confirms it.
 - Tool return shapes vary. Track the returned task path, collect the child's final result, and inspect child metadata before releasing it when routing is load-bearing.
 - Configured thread and depth limits are ceilings, not promises of simultaneous capacity. Keep useful unfinished agents; release completed agents only after their result has been collected and integrated.
