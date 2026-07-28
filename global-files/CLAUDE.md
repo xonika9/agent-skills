@@ -25,7 +25,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - State load-bearing assumptions. Push back when the request is infeasible, unsafe, or has a materially simpler path.
 
 **Contract first, adaptive path.**
-- Give a capable agent the outcome, constraints, evidence sources, authority boundary, and observable completion bar; let it choose the path.
+- Work from the outcome, constraints, evidence sources, authority boundary, and observable completion bar; choose the path adaptively.
 - Prescribe steps when order, completeness, approval gates, deterministic transformation, durable state, or known failure modes are part of correctness.
 - Prefer the smallest solution that meets the contract. Avoid unrequested features, abstractions, and adjacent cleanup.
 
@@ -36,19 +36,18 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 **Plan proportionally.**
 - For non-trivial work, state a brief plan first; for simple work, proceed directly.
+
+## Shared tool routing
+
+- Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
+- Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
 <!-- END SHARED PERSONAL CORE -->
 
 ## Claude Code runtime
 
-### Documentation and browser tools
-
-- Use `find-docs` with Context7 for library documentation, setup guides, API references, and framework-specific behavior.
-- For local web development or an explicit request for the built-in browser, use the Claude Code Browser pane (`mcp__Claude_Browser__*`). Start the dev server with `preview_start` `{name}` from `.claude/launch.json` (create it if missing; never run dev servers via Bash), or open an external URL with `preview_start` `{url}`. Verify with `read_page`/`find`, console and network logs (`read_console_messages`, `read_network_requests`, `preview_logs`), interactions via `computer`/`form_input`, and screenshots.
-- Before the first browser action, load and follow the installed `x9-browser-session` skill. Do not hard-code the skill's installation path. Outside the Browser-pane scope above, the Claude Code default is `chrome-devtools` MCP in Edge, followed by `agent-edge`; do not use the Claude browser extension unless the user explicitly requests it.
-
 ### Subagent routing
 
-- Always set an explicit `model` on every subagent spawn — each `Agent`/`Task` call for any `subagent_type` (`Explore`, `general-purpose`, `Plan`, `ce-*`, …) and any command that spawns them (`/ce-review`, `/ce-work`, …). Never rely on a default; `Explore`'s default is haiku and must be overridden.
+- Set an explicit `model` on every direct `Agent` call and on any other subagent tool that exposes a `model` field, including recursive spawns. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
 - Route by task: `sonnet` — cheap parallel exploration, code search, bulk reads, small edits; `opus` — hard reasoning, user-facing work, reviews, orchestration.
 - Haiku only when I explicitly ask for it.
-- An explicit model choice from me overrides this; a skill's own adversarial/judge model rule overrides it only for that bounded role. Forgetting to set a model is a bug, not permission to omit next time.
+- An explicit model choice from me takes precedence. Otherwise, an applicable skill may select another model for a bounded adversarial or judge role.

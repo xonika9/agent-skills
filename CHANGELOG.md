@@ -5,14 +5,17 @@
 ### Highlights
 
 - Aligned the English and Russian README copy for Codex skill discovery, browser setup, context-file generation, idea review, delegation limits, and prompt-engineering references.
+- Synchronized the published global instruction examples with the audited Claude Code and Codex policies, including shared skill routing and a self-directed execution contract.
+- Made the Codex example retain undocumented subagent capabilities only after bounded live probes, and aligned its routing claims with verified `agent_type`, `fork_turns`, and `service_tier` behavior.
+- Made `x9-browser-session` the canonical owner of browser route selection and removed its circular dependency on global Claude Code instructions.
 
 ### Install / update
 
-- No installation changes are required.
+- Users who copied the published global instruction examples should resynchronize them after updating; plugin and skill installation routes are unchanged.
 
 ### Compatibility
 
-- Documentation-only update; skill behavior and installation routes are unchanged.
+- Existing browser routes, skill names, and installation routes remain compatible. Global subagent policy now distinguishes verified runtime controls from command-internal routing that the caller cannot set.
 
 ### Breaking changes
 

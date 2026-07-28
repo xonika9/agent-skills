@@ -86,8 +86,8 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 ## Claude Code
 
 - For local web development, previews, and an explicit request for the built-in
-  browser, use the Claude Code Browser pane according to the current global
-  `CLAUDE.md`. This exception remains primary for that scope.
+  browser, use the Claude Code Browser pane. Read its current tool instructions
+  before acting; this exception remains primary for that scope.
 - For other browser work, use the `chrome-devtools` MCP from `~/.claude.json` with the
   shared focus-safe rules. Do not initialize or fall back to the Claude browser
   extension unless the user explicitly requests that extension.

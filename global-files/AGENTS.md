@@ -25,7 +25,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - State load-bearing assumptions. Push back when the request is infeasible, unsafe, or has a materially simpler path.
 
 **Contract first, adaptive path.**
-- Give a capable agent the outcome, constraints, evidence sources, authority boundary, and observable completion bar; let it choose the path.
+- Work from the outcome, constraints, evidence sources, authority boundary, and observable completion bar; choose the path adaptively.
 - Prescribe steps when order, completeness, approval gates, deterministic transformation, durable state, or known failure modes are part of correctness.
 - Prefer the smallest solution that meets the contract. Avoid unrequested features, abstractions, and adjacent cleanup.
 
@@ -36,26 +36,24 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 **Plan proportionally.**
 - For non-trivial work, state a brief plan first; for simple work, proceed directly.
+
+## Shared tool routing
+
+- Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
+- Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
 <!-- END SHARED PERSONAL CORE -->
 
 ## Codex runtime
 
-### Documentation and browser tools
-
-- Use `find-docs` with Context7 for library documentation, setup guides, API references, and framework-specific behavior.
-- Before the first browser action, load and follow the installed `x9-browser-session` skill. Do not hard-code the skill's installation path. For local web development, previews, or an explicit request for the in-app browser, use that in-app browser immediately. For every other browser task, the Codex default is the Edge browser extension; do not let the browser runtime silently choose the in-app browser by URL or default selection.
-- For in-app work, use the installed `browser:control-in-app-browser` skill and its distinct in-app binding. Discover the `node_repl js` tool if it is deferred. Do not copy initialization APIs into this always-on file because plugin versions change them.
-
 ### Subagent routing
 
-The rules below describe observed Codex Desktop behavior. Tool schemas and runtime behavior can change; verify live session metadata when routing details are load-bearing instead of relying on the visible JSON schema alone.
+Some Codex capabilities are omitted from documentation or the visible tool schema. On every audit of this file, run a bounded live probe in the current Codex session for every parameter and lifecycle operation named below. Absence from documentation or the visible schema is not evidence of absence, and historical logs are not current proof. Retain a capability claim only when its current probe succeeds.
 
 - Default bounded worker settings: inherit the parent model, use `reasoning_effort: "medium"`, and use `fork_turns: "none"`.
 - The reasoning effort for every Codex subagent is fixed at `reasoning_effort: "medium"`. Pass it explicitly on every `spawn_agent` call, recursively; do not inherit reasoning effort from the parent.
-- Task risk, worker role, workflow stage, review type, project or personal skills, and one-off task briefs must not select another reasoning effort. To use another value, change this global policy first. A higher-priority system or developer instruction may supersede this rule.
-- Model routing is independent from reasoning effort. Unless the current user or an applicable task-specific skill explicitly requires a supported model override, inherit the parent model. Confirm the actual model and effort in child session metadata when routing is load-bearing.
-- `agent_type` may be accepted even when omitted from the visible schema. A live `agent_type: "explorer"` probe recorded `agent_role: "explorer"` in session metadata.
-- Numeric recent-history forks such as `fork_turns: "1"` work. A full-history fork accepted a model override but silently kept the parent model, so never rely on model overrides with `fork_turns: "all"`.
-- `service_tier` was accepted by the tool surface but not exposed in child metadata; treat exact tier routing as unverified unless another live signal confirms it.
-- Tool return shapes vary. Track the returned task path, collect the child's final result, and inspect child metadata before releasing it when routing is load-bearing.
-- Configured thread and depth limits are ceilings, not promises of simultaneous capacity. Keep useful unfinished agents; release completed agents only after their result has been collected and integrated.
+- Task risk, worker role, workflow stage, review type, project or personal skills, and one-off task briefs do not select another reasoning effort. Change this global policy before using another value.
+- Model routing is independent from reasoning effort. Unless the current user or an applicable task-specific skill explicitly requires a supported model override, inherit the parent model.
+- `agent_type` is accepted even when omitted from the visible schema; verify the applied role under `agent_role` in child session metadata.
+- `fork_turns` supports `"none"`, positive recent-history counts such as `"1"`, and `"all"`. Use `"none"` by default.
+- `service_tier` is accepted and appears in the child's `thread_settings_applied` event. Inspect that event when exact tier routing is load-bearing; `turn_context` may omit it.
+- Track the returned task path, collect the child's final result, and inspect the child's session metadata when exact routing is load-bearing.
