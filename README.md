@@ -154,7 +154,7 @@ The method applies one cross-runtime quality contract to Claude Code and Codex s
 
 For agent-facing instruction prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying those rules. The full plugin already includes both skills; install them together when copying individual skills. Without the companion, structural checks remain available, but the instruction-quality part of Create, Audit, and Fix is reported as degraded.
 
-Persistent audit reports under `docs/skill-audits/` follow the user's requested language, or the audit request's carrier language when no override is given.
+Persistent audit reports under `docs/skill-audits/` use the language the user explicitly requests. Without an override, they follow the audit request's primary language, then the current conversation language when the request itself is ambiguous.
 
 #### [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md)
 

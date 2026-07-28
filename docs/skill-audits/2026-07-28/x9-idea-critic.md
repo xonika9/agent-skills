@@ -9,7 +9,7 @@
 ## Проверка структуры
 
 ```text
-python3 /Users/xonika/Documents/projects/agent-skills/skills/x9-skill-creator/scripts/validate.py --runtime portable /Users/xonika/Documents/projects/agent-skills/skills/x9-idea-critic
+python3 skills/x9-skill-creator/scripts/validate.py --runtime portable skills/x9-idea-critic
 PASS — 0 errors, 0 warning(s)
 ```
 

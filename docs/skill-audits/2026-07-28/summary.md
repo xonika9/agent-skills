@@ -39,10 +39,10 @@ python3 skills/x9-research/scripts/test_validate_html.py
 Ran 13 tests
 OK
 
-python3 skills/x9-skill-creator/scripts/validate.py --runtime portable /Users/xonika/Documents/projects/agent-skills/skills/x9-idea-critic
+python3 skills/x9-skill-creator/scripts/validate.py --runtime portable skills/x9-idea-critic
 PASS — 0 errors, 0 warning(s)
 
-python3 skills/x9-skill-creator/scripts/validate.py --runtime portable /Users/xonika/Documents/projects/agent-skills/skills/x9-research
+python3 skills/x9-skill-creator/scripts/validate.py --runtime portable skills/x9-research
 PASS — 0 errors, 0 warning(s)
 
 python3 skills/x9-skill-creator/scripts/test_validate.py

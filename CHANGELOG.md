@@ -4,6 +4,16 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 2.0.0 - 2026-07-28
+
+### Highlights
+
 - Made `x9-idea-critic` select the promised provider family explicitly, isolate volatile Claude Code and Codex mechanics in runtime adapters, and declare a reproducible lens/provider matrix for `full` mode.
 - Made `x9-research` leave an inspectable independent-review disposition, assign browser and delivery rules to one owner, support correct HTML language metadata, and validate deterministic Markdown/HTML requirements with a bundled regression-tested checker.
 - Made `x9-skill-creator` structural validation runtime-aware for portable Agent Skills, Claude Code, and Codex, with stricter frontmatter constraints, duplicate-key detection, and complete bundled-resource reachability checks.

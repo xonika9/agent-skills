@@ -4,12 +4,15 @@ Run from the repository root:
 
 ```bash
 for skill in skills/*; do
-  python3 skills/x9-skill-creator/scripts/validate.py "$skill"
+  python3 skills/x9-skill-creator/scripts/validate.py \
+    --runtime portable --runtime claude --runtime codex "$skill"
 done
 
 python3 skills/x9-skill-creator/scripts/test_validate.py
 python3 skills/x9-agent-instructions/scripts/test_check_globals.py
+python3 skills/x9-excalidraw-diagrams/scripts/test_check_scene.py
 python3 skills/x9-okf-adapt/scripts/test_okf.py
+python3 skills/x9-research/scripts/test_validate_html.py
 python3 .claude/skills/release/scripts/check_global_files.py
 python3 scripts/check_package.py
 python3 scripts/check_public.py
