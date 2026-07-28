@@ -28,6 +28,7 @@ Rules:
 - `Decision` is `Fix recommended` or `User decision`.
 - `Full report` links the persistent report when one exists; use `—` when a single-target audit did not create one.
 - When a skill has no retained findings, include one accounting row with `Severity`, `Area`, `Recommendation`, and `Decision` set to `—`, and `Finding` set to `No retained findings`.
+- Prefix every retained `Finding` with a stable identifier such as `F1`, `F2`, and so on. Preserve that identifier in the explanation section and any persistent report.
 - Keep cells concise. Evidence should name the exact source path/line or observable behavior and why it matters; detailed logs stay in the full report.
 
 After QA, recompute status from retained findings:
@@ -35,16 +36,24 @@ After QA, recompute status from retained findings:
 - `clean`: no retained findings;
 - `needs your decision`: at least one retained finding has `User decision`;
 - `work remaining`: retained findings exist and none require a user decision.
+- `degraded`: a required audit route or dependency was unavailable, even if the remaining checks completed.
+
+`degraded` takes precedence over the finding-derived statuses. Keep any user decisions visible in their own section even when the overall audit is degraded.
+
+## Why these changes help
+
+After the table, include one explanation for every retained finding, keyed by its identifier. Use no more than two short sentences: state the practical improvement rather than repeating the finding, evidence, or recommendation; add the material cost or trade-off when the change affects dependencies, compatibility, authority, runtime behavior, or scope. Omit this section when there are no retained findings.
 
 ## Single-target handoff
 
 The main auditor owns both the raw audit and final QA. Return:
 
 1. The required findings table.
-2. `Action`, selected evidence tier, and validation result.
-3. A short `Needs your decision` section only when table rows use `User decision`; include the recommended default and concrete alternatives.
-4. `Decided here` for a Fix action: the safe reasoned changes already applied.
-5. `Remaining/deferred`, including `NOT_PROVEN` behavioral claims without presenting the deferral as a finding.
+2. `Why these changes help` when retained findings exist.
+3. `Action`, selected evidence tier, instruction-rubric result (`applied`, `not applicable`, or `degraded`), and validation result.
+4. A short `Needs your decision` section only when table rows use `User decision`; include the recommended default and concrete alternatives.
+5. `Decided here` for a Fix action: the safe reasoned changes already applied.
+6. `Remaining/deferred`, including `NOT_PROVEN` behavioral claims without presenting the deferral as a finding.
 
 Do not return only the Verdict block or bury Minor findings in prose.
 
@@ -58,7 +67,7 @@ Workers produce raw per-target reports. The orchestrator does not repeat every f
 4. Merge duplicates and filter unsupported or non-operational recommendations.
 5. Recompute every target status from retained findings.
 6. Write the consolidated report required by [batch-audit.md](batch-audit.md).
-7. Return the complete findings table in chat, followed by decisions, evidence/deferred scope, and the consolidated-report link.
+7. Return the complete findings table in chat, followed by `Why these changes help`, decisions, instruction-rubric coverage, evidence/deferred scope, and the consolidated-report link.
 
 The final chat table contains every retained Blocker, Important, and Minor finding. `Needs your decision` never determines whether a finding is shown.
 

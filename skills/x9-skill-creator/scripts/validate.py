@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Strict structural validator for Agent Skills.
 
-Usage: validate.py <skill-directory>
+Usage: validate.py [--runtime portable|claude|codex] <skill-directory>
 Behavioral quality is evaluated separately with references/evals.md.
 """
 
@@ -22,22 +22,68 @@ MAX_BODY_LINES = 500
 MAX_BODY_WORDS = 5000
 TOC_THRESHOLD = 100
 
+RUNTIMES = ("portable", "claude", "codex")
 JUNK = {
-    ".DS_Store", "Thumbs.db", "desktop.ini", "README.md", "CHANGELOG.md",
-    "INSTALLATION_GUIDE.md", "QUICK_REFERENCE.md",
+    ".DS_Store",
+    "Thumbs.db",
+    "desktop.ini",
+    "README.md",
+    "CHANGELOG.md",
+    "INSTALLATION_GUIDE.md",
+    "QUICK_REFERENCE.md",
 }
 RESOURCE_DIRS = {"references", "scripts", "assets", "agents"}
-ALLOWED_KEYS = {
-    "name", "description", "license", "metadata", "version", "compatibility",
-    "when_to_use", "argument-hint", "arguments", "disable-model-invocation",
-    "user-invocable", "allowed-tools", "disallowed-tools", "model", "effort",
-    "context", "agent", "hooks", "paths", "shell",
+PORTABLE_KEYS = {
+    "name",
+    "description",
+    "license",
+    "compatibility",
+    "metadata",
+    "allowed-tools",
 }
-BOOL_KEYS = {"disable-model-invocation", "user-invocable"}
-MAPPING_KEYS = {"metadata", "hooks"}
+CLAUDE_KEYS = PORTABLE_KEYS | {
+    "version",
+    "when_to_use",
+    "argument-hint",
+    "arguments",
+    "disable-model-invocation",
+    "user-invocable",
+    "allowed-tools",
+    "disallowed-tools",
+    "model",
+    "effort",
+    "context",
+    "agent",
+    "background",
+    "hooks",
+    "paths",
+    "shell",
+}
+CODEX_KEYS = PORTABLE_KEYS
+RUNTIME_KEYS = {
+    "portable": PORTABLE_KEYS,
+    "claude": CLAUDE_KEYS,
+    "codex": CODEX_KEYS,
+}
+RUNTIME_REQUIRED = {
+    "portable": {"name", "description"},
+    "claude": set(),
+    "codex": {"description"},
+}
+BOOL_KEYS = {"disable-model-invocation", "user-invocable", "background"}
 STRING_KEYS = {
-    "name", "description", "license", "version", "compatibility", "when_to_use",
-    "argument-hint", "model", "effort", "context", "agent", "shell",
+    "name",
+    "description",
+    "license",
+    "version",
+    "compatibility",
+    "when_to_use",
+    "argument-hint",
+    "model",
+    "effort",
+    "context",
+    "agent",
+    "shell",
 }
 REF_USE_RE = re.compile(r"!?\[([^\]]+)\]\[([^\]]*)\]")
 REF_DEF_RE = re.compile(r"(?m)^\s*\[([^\]]+)\]:\s*(\S+)")
@@ -51,10 +97,29 @@ SECRET_RE = re.compile(
 )
 
 RUBY_YAML = r'''
-require "yaml"
+require "psych"
 require "json"
+
+def check_duplicates(node, path = [])
+  if node.is_a?(Psych::Nodes::Mapping)
+    seen = {}
+    node.children.each_slice(2) do |key_node, value_node|
+      key = key_node.respond_to?(:value) ? key_node.value.to_s : key_node.to_yaml
+      location = (path + [key]).join(".")
+      raise "duplicate YAML key: #{location}" if seen.key?(key)
+      seen[key] = true
+      check_duplicates(value_node, path + [key])
+    end
+  elsif node.respond_to?(:children)
+    Array(node.children).each { |child| check_duplicates(child, path) }
+  end
+end
+
 begin
-  value = YAML.safe_load(STDIN.read, permitted_classes: [], permitted_symbols: [], aliases: false)
+  source = STDIN.read
+  stream = Psych.parse_stream(source)
+  check_duplicates(stream)
+  value = Psych.safe_load(source, permitted_classes: [], permitted_symbols: [], aliases: false)
   STDOUT.write(JSON.generate({"ok" => true, "value" => value}))
 rescue => e
   STDOUT.write(JSON.generate({"ok" => false, "error" => e.message}))
@@ -79,25 +144,23 @@ def parse_frontmatter(data: bytes):
     if end is None:
         return None, None, "frontmatter closing --- is missing"
     raw = "".join(lines[1:end])
-    top_keys = []
-    for line in raw.splitlines():
-        match = re.match(r"^([A-Za-z0-9_-]+)\s*:", line)
-        if match:
-            top_keys.append(match.group(1))
-    duplicates = sorted(key for key, count in __import__("collections").Counter(top_keys).items() if count > 1)
-    if duplicates:
-        return None, None, f"duplicate frontmatter key(s): {', '.join(duplicates)}"
     try:
         proc = subprocess.run(
-            ["ruby", "-e", RUBY_YAML], input=raw, text=True,
-            capture_output=True, check=False,
+            ["ruby", "-e", RUBY_YAML],
+            input=raw,
+            text=True,
+            capture_output=True,
+            check=False,
         )
     except FileNotFoundError:
         return None, None, "Ruby/Psych is required for strict YAML validation"
     try:
         result = json.loads(proc.stdout)
     except json.JSONDecodeError:
-        return None, None, "YAML parser returned invalid output"
+        detail = proc.stderr.strip().splitlines()
+        if detail:
+            return None, None, f"Ruby/Psych failed: {detail[-1]}"
+        return None, None, "Ruby/Psych returned invalid output"
     if not result.get("ok"):
         return None, None, f"invalid YAML: {result.get('error', 'unknown parser error')}"
     if not isinstance(result.get("value"), dict):
@@ -172,7 +235,7 @@ def is_external(target: str):
     return target.startswith(("http://", "https://", "mailto:", "data:")) or "://" in target
 
 
-def validate(root: Path):
+def validate(root: Path, runtimes=("portable",)):
     errors, warnings = [], []
     if not root.is_dir():
         return [f"not a directory: {root}"], []
@@ -186,39 +249,109 @@ def validate(root: Path):
         errors.append(f"frontmatter: {fm_error}")
         fm, body = {}, ""
 
-    unknown = sorted(set(fm) - ALLOWED_KEYS)
-    if unknown:
-        errors.append(f"frontmatter: unknown key(s): {', '.join(unknown)}")
+    for runtime in runtimes:
+        unsupported = sorted(set(fm) - RUNTIME_KEYS[runtime])
+        if unsupported:
+            errors.append(
+                f"frontmatter: unsupported for {runtime}: {', '.join(unsupported)}"
+            )
+        missing = sorted(RUNTIME_REQUIRED[runtime] - set(fm))
+        if missing:
+            errors.append(
+                f"frontmatter: required for {runtime}: {', '.join(missing)}"
+            )
+
+    portable_or_codex = any(runtime in {"portable", "codex"} for runtime in runtimes)
     name = fm.get("name")
-    if not isinstance(name, str) or not name.strip():
-        errors.append("frontmatter: name must be a non-empty string")
-    else:
-        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name):
+    if name is not None:
+        if not isinstance(name, str) or not name.strip():
+            errors.append("frontmatter: name must be a non-empty string")
+        elif portable_or_codex and not re.fullmatch(
+            r"[a-z0-9]+(?:-[a-z0-9]+)*", name
+        ):
             errors.append("frontmatter: name must be hyphen-case")
-        if len(name) > MAX_NAME:
+        elif portable_or_codex and len(name) > MAX_NAME:
             errors.append(f"frontmatter: name exceeds {MAX_NAME} characters")
-        if name != root.name:
+        elif "portable" in runtimes and name != root.name:
             errors.append(f"frontmatter: name '{name}' does not match folder '{root.name}'")
+
     description = fm.get("description")
-    if not isinstance(description, str) or not description.strip():
-        errors.append("frontmatter: description must be a non-empty string")
-    else:
-        if len(description) > MAX_DESCRIPTION:
+    if description is not None:
+        if not isinstance(description, str) or not description.strip():
+            errors.append("frontmatter: description must be a non-empty string")
+        elif portable_or_codex and len(description) > MAX_DESCRIPTION:
             errors.append(f"frontmatter: description exceeds {MAX_DESCRIPTION} characters")
-        if "<" in description or ">" in description:
+        elif "codex" in runtimes and ("<" in description or ">" in description):
             errors.append("frontmatter: description must not contain angle brackets")
+
+    compatibility = fm.get("compatibility")
+    if compatibility is not None:
+        if not isinstance(compatibility, str) or not compatibility.strip():
+            errors.append("frontmatter: compatibility must be a non-empty string")
+        elif len(compatibility) > 500:
+            errors.append("frontmatter: compatibility exceeds 500 characters")
+
+    metadata = fm.get("metadata")
+    if metadata is not None:
+        if not isinstance(metadata, dict):
+            errors.append("frontmatter: metadata must be a mapping")
+        elif any(
+            not isinstance(key, str) or not isinstance(value, str)
+            for key, value in metadata.items()
+        ):
+            errors.append("frontmatter: metadata keys and values must be strings")
+
+    hooks = fm.get("hooks")
+    if hooks is not None and not isinstance(hooks, dict):
+        errors.append("frontmatter: hooks must be a mapping")
+
     for key in BOOL_KEYS:
         if key in fm and not isinstance(fm[key], bool):
             errors.append(f"frontmatter: {key} must be boolean")
-    for key in MAPPING_KEYS:
-        if key in fm and not isinstance(fm[key], dict):
-            errors.append(f"frontmatter: {key} must be a mapping")
-    for key in STRING_KEYS - {"name", "description"}:
+
+    for key in STRING_KEYS - {"name", "description", "compatibility"}:
         if key in fm and not isinstance(fm[key], str):
             errors.append(f"frontmatter: {key} must be a string")
-    for key in {"allowed-tools", "disallowed-tools", "paths", "arguments"}:
-        if key in fm and not isinstance(fm[key], (str, list, dict)):
-            errors.append(f"frontmatter: {key} has an unsupported type")
+
+    if "allowed-tools" in fm:
+        allowed_tools = fm["allowed-tools"]
+        if portable_or_codex and not isinstance(allowed_tools, str):
+            errors.append(
+                "frontmatter: allowed-tools must be a string for portable and codex"
+            )
+        elif not isinstance(allowed_tools, (str, list)):
+            errors.append("frontmatter: allowed-tools must be a string or list")
+        elif isinstance(allowed_tools, list) and any(
+            not isinstance(item, str) for item in allowed_tools
+        ):
+            errors.append("frontmatter: allowed-tools list items must be strings")
+
+    for key in {"disallowed-tools", "paths", "arguments"}:
+        if key not in fm:
+            continue
+        value = fm[key]
+        if not isinstance(value, (str, list)):
+            errors.append(f"frontmatter: {key} must be a string or list")
+        elif isinstance(value, list) and any(not isinstance(item, str) for item in value):
+            errors.append(f"frontmatter: {key} list items must be strings")
+
+    if "context" in fm and fm["context"] != "fork":
+        errors.append("frontmatter: context must be 'fork'")
+    if "shell" in fm and fm["shell"] not in {"bash", "powershell"}:
+        errors.append("frontmatter: shell must be 'bash' or 'powershell'")
+    if (
+        any(key in fm for key in {"agent", "background"})
+        and fm.get("context") != "fork"
+    ):
+        warnings.append("frontmatter: agent/background has no effect without context: fork")
+    if "when_to_use" in fm and isinstance(description, str):
+        combined = f"{description} {fm['when_to_use']}"
+        if len(combined) > 1536:
+            warnings.append(
+                "frontmatter: description + when_to_use exceeds Claude's "
+                "1536-character listing budget"
+            )
+
     if not body.strip():
         errors.append("SKILL.md body is empty")
 
@@ -227,8 +360,6 @@ def validate(root: Path):
         rel = path.relative_to(root)
         if path.name in JUNK:
             errors.append(f"junk file not allowed: {rel.as_posix()}")
-        if len(rel.parts) > 2 and rel.parts[0] in RESOURCE_DIRS:
-            errors.append(f"resource nested too deep: {rel.as_posix()}")
         if path.suffix in {".md", ".py", ".sh", ".toml", ".yaml", ".yml", ".json"}:
             text = path.read_text(encoding="utf-8", errors="replace")
             if ("[" + "TODO") in text:
@@ -245,6 +376,7 @@ def validate(root: Path):
     texts = {p: p.read_text(encoding="utf-8", errors="replace") for p in md_files}
     slugs = {p: heading_slugs(text) for p, text in texts.items()}
     graph = defaultdict(set)
+    direct_targets = defaultdict(set)
     for path, text in texts.items():
         rel = path.relative_to(root).as_posix()
         clean = clean_markdown(text)
@@ -265,6 +397,8 @@ def validate(root: Path):
             if not resolved.exists():
                 errors.append(f"broken local link in {rel}: {target}")
                 continue
+            if resolved.is_file():
+                direct_targets[path].add(resolved)
             if resolved.is_file() and resolved.suffix.lower() == ".md":
                 graph[path].add(resolved)
                 if fragment and fragment not in slugs.get(resolved, set()):
@@ -287,6 +421,53 @@ def validate(root: Path):
                 head = "\n".join(texts[ref].splitlines()[:60])
                 if not TOC_RE.search(head):
                     warnings.append(f"long reference lacks TOC: {ref.relative_to(root).as_posix()} ({lines} lines)")
+
+    reachable_text = "\n".join(texts[path] for path in reachable)
+    linked_resources = set()
+    for path in reachable:
+        linked_resources.update(direct_targets.get(path, set()))
+    resources = {
+        path
+        for path in files
+        if path.relative_to(root).parts[0] in RESOURCE_DIRS
+        and not (path.suffix.lower() == ".md" and ref_dir in path.parents)
+    }
+    linked_resources.update(
+        resource
+        for resource in resources
+        if resource.relative_to(root).as_posix() in reachable_text
+    )
+    pending = list(linked_resources & resources)
+    while pending:
+        source = pending.pop()
+        if source.suffix.lower() not in {
+            ".py",
+            ".sh",
+            ".md",
+            ".toml",
+            ".yaml",
+            ".yml",
+            ".json",
+        }:
+            continue
+        source_text = source.read_text(encoding="utf-8", errors="replace")
+        for candidate in resources - linked_resources:
+            rel = candidate.relative_to(root).as_posix()
+            identifiers = {rel, candidate.name}
+            if candidate.suffix == ".py":
+                identifiers.add(candidate.stem)
+            if any(identifier in source_text for identifier in identifiers):
+                linked_resources.add(candidate)
+                pending.append(candidate)
+
+    for resource in resources:
+        rel = resource.relative_to(root).as_posix()
+        runtime_metadata = rel == "agents/openai.yaml"
+        maintainer_test = (
+            resource.parent.name == "scripts" and resource.name.startswith("test_")
+        )
+        if resource not in linked_resources and not runtime_metadata and not maintainer_test:
+            errors.append(f"orphan resource not reachable from SKILL.md: {rel}")
 
     for script in (p for p in files if p.parts and "scripts" in p.parts):
         rel = script.relative_to(root).as_posix()
@@ -311,9 +492,17 @@ def validate(root: Path):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--runtime",
+        action="append",
+        choices=RUNTIMES,
+        dest="runtimes",
+        help="validation profile; repeat to require compatibility with several runtimes",
+    )
     parser.add_argument("skill", type=Path)
     args = parser.parse_args()
-    errors, warnings = validate(args.skill.resolve())
+    runtimes = tuple(dict.fromkeys(args.runtimes or ("portable",)))
+    errors, warnings = validate(args.skill.resolve(), runtimes)
     for warning in warnings:
         print(f"[WARN] {warning}")
     for error in errors:

@@ -26,11 +26,14 @@ jobs:
         run: |
           python3 skills/x9-skill-creator/scripts/test_validate.py
           for skill in skills/*; do
-            python3 skills/x9-skill-creator/scripts/validate.py "$skill"
+            python3 skills/x9-skill-creator/scripts/validate.py \
+              --runtime portable --runtime claude --runtime codex "$skill"
           done
 
       - name: Run deterministic regression tests
-        run: python3 skills/x9-okf-adapt/scripts/test_okf.py
+        run: |
+          python3 skills/x9-agent-instructions/scripts/test_check_globals.py
+          python3 skills/x9-okf-adapt/scripts/test_okf.py
 
       - name: Check repository instruction import
         run: printf '@AGENTS.md\n' | cmp - CLAUDE.md

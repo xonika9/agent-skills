@@ -33,7 +33,7 @@ Paths to native `.system` tooling below can drift with Codex updates — if a sc
 ## Init and validate
 
 - Scaffold, if wanted, with the native `init_skill.py` (`~/.codex/skills/.system/skill-creator/scripts/`); then delete placeholders.
-- Validate with this skill's `scripts/validate.py`. Run the matrix in [evals.md](evals.md) only when behavioral evidence is selected; structural success does not prove behavior.
+- Validate with this skill's `scripts/validate.py --runtime codex`; add `--runtime portable` when the same file also claims Agent Skills portability. Run the matrix in [evals.md](evals.md) only when behavioral evidence is selected; structural success does not prove behavior.
 
 ## Invocation
 

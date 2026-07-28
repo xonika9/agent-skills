@@ -1,6 +1,6 @@
 # Skill quality rubric
 
-Use every dimension when creating, auditing, or fixing a skill. Structural checks are marked `[s]`; judgment and behavior checks are `[j]` and `[b]`.
+Use every dimension when creating, auditing, or fixing a skill. Structural checks are marked `[s]`; judgment and behavior checks are `[j]` and `[b]`. Apply the loaded `x9-agent-instructions` rubric to all agent-facing instructional prose; this rubric does not duplicate that skill's language, prescription, or line-value rules.
 
 ## Contents
 
@@ -53,7 +53,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 ## 6. Progressive disclosure `[s+j]`
 
 - Metadata triggers; the body is a concise map; references/scripts/assets load only when needed.
-- Every resource is reachable from `SKILL.md`; nesting and long-file navigation stay manageable.
+- Every agent-consumed resource is reachable from `SKILL.md`, directly or through a referenced resource. Runtime-loaded metadata and maintainer regression tests may instead be owned by their canonical loader or test command.
 - Cross-skill ownership is explicit rather than duplicated silently.
 
 ## 7. Observable completion `[j+b]`
@@ -103,3 +103,4 @@ Answer yes/no with a concrete fix:
 7. Is the evidence tier explicit, and did behavior pass when behavioral evidence was in scope?
 8. Are stopping and ambiguity rules unambiguous?
 9. Does every rule appear exactly once, with no pair that cannot both hold?
+10. Was `x9-agent-instructions` applied to every agent-facing instruction in scope, or was its absence recorded as `not applicable` or `degraded`?

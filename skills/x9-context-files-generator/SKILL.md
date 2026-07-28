@@ -1,11 +1,16 @@
 ---
 name: x9-context-files-generator
 description: Use when creating, auditing, or updating repository-level AGENTS.md, CLAUDE.md, or README.md — «создай AGENTS.md», «обнови README», «настрой контекст репозитория», "generate repository context files". Do not use for global personal instructions, skills, or ordinary documentation unrelated to onboarding agents or humans.
+compatibility: Full creation, audit, or update of agent-facing repository instructions requires x9-agent-instructions. README-only work does not.
 ---
 
 # Repository context files
 
 Create concise, evidence-backed onboarding files for two audiences: agents (`AGENTS.md`/`CLAUDE.md`) and humans (`README.md`). Existing files are user-owned inputs, not blank templates.
+
+For every Create, Audit, or Update that touches agent-facing instructional prose in `AGENTS.md` or an explicitly exceptional `CLAUDE.md`, load and apply `x9-agent-instructions` before writing or judging that prose. It is a subordinate instruction-quality rubric, not the primary context-file workflow, and owns language, prescription, duplication, artifact references, and what earns a line. This skill remains the owner of repository evidence, audience selection, canonical files, merge and preservation behavior, `AGENTS.md`/`CLAUDE.md` normalization, and `README.md`.
+
+Do not apply the subordinate rubric to `README.md` or to a `CLAUDE.md` that contains only the canonical `@AGENTS.md` import. Fold its findings into this workflow's single report and approval gate rather than producing a second handoff. If `x9-agent-instructions` is unavailable, continue the remaining repository and structural checks, record the instruction rubric as `degraded`, and do not claim a complete or clean agent-file result. README-only work records it as `not applicable`.
 
 ## Select the action
 
@@ -43,4 +48,5 @@ Read [references/agents-md.md](references/agents-md.md) when editing agent files
 - When canonical-file normalization was authorized and no exception applies, `CLAUDE.md` contains only `@AGENTS.md` and all local instructions are owned by `AGENTS.md`.
 - Commands and paths trace to the current repository.
 - Agent and human files contain only behavior-changing audience-specific material.
+- The instruction rubric is reported as `applied`, `not applicable`, or `degraded`; a complete or clean agent-file result requires `applied`.
 - A fresh-context reader can start the project without inventing a command.

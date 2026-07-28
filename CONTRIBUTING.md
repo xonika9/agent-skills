@@ -39,10 +39,12 @@ Run the focused tests for your change. Before submitting a package-wide change, 
 
 ```bash
 for skill in skills/*; do
-  python3 skills/x9-skill-creator/scripts/validate.py "$skill"
+  python3 skills/x9-skill-creator/scripts/validate.py \
+    --runtime portable --runtime claude --runtime codex "$skill"
 done
 
 python3 skills/x9-skill-creator/scripts/test_validate.py
+python3 skills/x9-agent-instructions/scripts/test_check_globals.py
 python3 skills/x9-okf-adapt/scripts/test_okf.py
 python3 scripts/check_package.py
 python3 scripts/check_public.py

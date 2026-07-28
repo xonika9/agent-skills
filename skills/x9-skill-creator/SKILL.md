@@ -1,13 +1,16 @@
 ---
 name: x9-skill-creator
 description: Use when creating, auditing, fixing, or improving an Agent Skill for Claude Code or Codex — «создай скилл», «проверь скилл», «почини скилл», «улучши скилл», "create a skill", "audit skill". Do not use for ordinary code, non-skill prose, global agent instructions, or merely running an existing skill.
+compatibility: Requires Python 3 and Ruby with Psych for structural validation. Full Create, Audit, and Fix work on agent-facing prose also requires x9-agent-instructions.
 ---
 
 # Skill creator
 
 Create and audit skills through one cross-runtime quality contract: precise triggering, appropriate freedom, safe authority, progressive disclosure, and evidence proportional to maturity and risk.
 
-The body of a skill is an agent instruction. The `x9-agent-instructions` skill owns that rubric — language, prescription, duplication, and what earns a line; load it when the prose itself is what needs writing or judging. This skill owns what makes the instruction a skill: triggering metadata, placement and runtime adapters, resource layout and progressive disclosure, evidence tier, structural validation, and the audit handoff.
+The body of a skill and some reachable resources are agent instructions. For every Create, Audit, or Fix, load and apply `x9-agent-instructions` before writing or judging any agent-facing instructional prose in `SKILL.md` or reachable resources. It is a subordinate rubric, not the primary skill-authoring workflow, and it owns language, prescription, duplication, and what earns a line. This skill owns what makes the instruction a skill: triggering metadata, placement and runtime adapters, resource layout and progressive disclosure, evidence tier, structural validation, and the audit handoff.
+
+If `x9-agent-instructions` is unavailable, continue only the remaining skill checks, record the instruction rubric as `degraded`, and do not claim that instruction quality was reviewed. A full skill audit cannot be `clean` in that state. Work whose explicit scope contains no agent-facing prose may record the rubric as `not applicable`.
 
 ## Select action and evidence
 
@@ -41,11 +44,13 @@ For a genuinely underspecified new skill, use the focused questions in [referenc
 ## Structural check
 
 ```bash
-python3 <resolved-x9-skill-creator-directory>/scripts/validate.py <absolute-target-skill-directory>
+python3 <resolved-x9-skill-creator-directory>/scripts/validate.py \
+  --runtime <portable|claude|codex> \
+  <absolute-target-skill-directory>
 python3 <resolved-x9-skill-creator-directory>/scripts/test_validate.py
 ```
 
-Resolve the creator directory from the loaded skill resource and the target from the actual project/personal source under review; do not substitute a globally installed copy for a package-owned target. The first command validates that target. The second checks validator regression scenarios and is not a substitute for target validation. Structural checks cannot prove triggering, runtime-specific semantics, or output quality; verify platform-specific metadata in the target runtime during behavioral evaluation.
+Use one `--runtime` per target runtime; repeat it to require one file to satisfy several runtimes. `portable` enforces the Agent Skills specification and is the default when the flag is omitted. Resolve the creator directory from the loaded skill resource and the target from the actual project/personal source under review; do not substitute a globally installed copy for a package-owned target. The first command validates that target. The second checks validator regression scenarios and is not a substitute for target validation. Structural checks cannot prove triggering, runtime-specific semantics, or output quality; verify platform-specific metadata in the target runtime during behavioral evaluation.
 
 ## Optional behavioral check
 
@@ -62,6 +67,7 @@ For stable or release-gated substantive changes, compare old/new or with-skill/w
 ## Done
 
 - Structural validation exits 0 without unexplained warnings.
+- The handoff records the instruction rubric as `applied`, `not applicable`, or `degraded`; a full skill audit is not `clean` when it is `degraded`.
 - The judge checklist in the rubric passes.
 - The handoff states the action and evidence tier, does not claim evidence outside that scope, and follows the single or batch table contract in [audit reporting](references/audit-reporting.md).
 - In batch mode, the orchestrator has quality-checked worker findings and removed unsupported or duplicate recommendations before presenting them.

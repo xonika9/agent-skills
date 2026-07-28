@@ -80,6 +80,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - A new or existing repository needs `AGENTS.md` and `CLAUDE.md`: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
+- You need an editable Excalidraw diagram that remains readable at fit-to-view: use [`x9-excalidraw-diagrams`](skills/x9-excalidraw-diagrams/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
 - Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md).
 
@@ -117,7 +118,7 @@ The default uses one critic from each provider; focused and deeper panel modes a
 
 This is the skill for “write me a prompt for this task.” Describe the outcome in your own words, including through speech-to-text, and it turns that input into a bounded brief with the goal, constraints, evidence, authority, deliverable, and completion bar.
 
-It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included — and comes back with what to change, why, and the diff. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
+It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included. The first pass is report-only: every retained change gets a short explanation of the practical benefit and any material trade-off, followed by the smallest complete proposed diff. It edits only after explicit approval. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
 
 Based on:
 
@@ -127,6 +128,14 @@ Based on:
 - [The new rules of context engineering for Claude 5 generation models](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models)
 - [Using GPT-5.6](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-5.6)
 
+### Visual artifacts
+
+#### [`x9-excalidraw-diagrams`](skills/x9-excalidraw-diagrams/SKILL.md)
+
+An Excalidraw file can open successfully and still fail as a diagram: the text is tiny at fit-to-view, arrows cross labels, sections blur together, or one overloaded canvas tries to explain everything. This skill chooses the diagram topology and reading direction first, then controls spacing, zones, routing, palette, and information density. It uses Excalifont for short display text and Nunito for prose, identifiers, and connector labels.
+
+The result remains native, editable `.excalidraw` JSON. A bundled Python checker catches stale bindings, unsupported font IDs, structural errors, and unreadable whole-view scale; completion also requires a faithful render and visual inspection. Use another format when the requested output is Mermaid, SVG, a raster image, or manual editing in the Excalidraw interface.
+
 ### Repositories and reusable workflows
 
 #### [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md)
@@ -135,11 +144,15 @@ On a new repository, it creates useful `README.md`, `AGENTS.md`, and `CLAUDE.md`
 
 For personal cross-runtime repositories, `AGENTS.md` stays the source of truth and `CLAUDE.md` imports it with `@AGENTS.md`. Claude Code and AGENTS-aware harnesses receive the same context without two copies drifting apart.
 
+For agent-facing prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying prompt-quality rules. The full plugin already includes both skills; install them together when copying `x9-context-files-generator` individually. Without the companion, repository and structural checks continue, but agent-file instruction quality is reported as degraded. README-only work does not require it.
+
 #### [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md)
 
 Give it an already understood repeated process to package as an Agent Skill, or hand it an existing skill for an audit. When the idea is underspecified, it asks only the questions that change the design. It then builds or fixes the trigger contract, structure, references, runtime adapters, safety boundaries, and validation. If the process is a multi-stage autonomous loop, design that loop with `x9-loop-engineering` first.
 
-The method applies one cross-runtime quality contract to Claude Code and Codex skills. It supports both static audits and clean-context behavioral evaluation when the extra evidence is worth the cost.
+The method applies one cross-runtime quality contract to Claude Code and Codex skills. Structural validation uses explicit portable, Claude Code, and Codex profiles, so a passing check names the compatibility it actually proved. The skill supports both static audits and clean-context behavioral evaluation when the extra evidence is worth the cost.
+
+For agent-facing instruction prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying those rules. The full plugin already includes both skills; install them together when copying individual skills. Without the companion, structural checks remain available, but the instruction-quality part of Create, Audit, and Fix is reported as degraded.
 
 #### [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md)
 

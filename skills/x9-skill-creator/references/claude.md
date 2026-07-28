@@ -18,13 +18,13 @@ Build only the resource folders the contract needs. Prefer the runtime's current
 
 ## Frontmatter
 
-- `name` and `description` are required. Optional and rare: `allowed-tools`, `license`; plugin skills sometimes carry `version`.
+- Portable Agent Skills require `name` and `description`. Claude Code also accepts runtime extensions; discover the current fields from the official frontmatter reference before relying on one, and validate with the `claude` runtime profile.
 - For a **user-invoked-only** skill (run via `/<name>`, never auto-fired), set `disable-model-invocation: true` — this drops its `description` from the model's context budget entirely. The trade-off: you must remember the skill exists to invoke it, so reserve it for skills you reach for deliberately.
 - A personal skill does not need `agents/openai.yaml`.
 
 ## Triggering
 
-- The only trigger is the `description`. Claude tends to **under**-trigger, so make the description slightly "pushy": explicit trigger phrases and contexts, plus a "when NOT". Do not summarize the process in the `description` (see dimension 1).
+- Claude Code combines `description` and `when_to_use` when both exist and can fall back to the first body paragraph when `description` is absent. Keep `description` for portable skills, put the leading use case first, and use a near-miss instead of process summary (see dimension 1).
 
 ## Invocation
 
