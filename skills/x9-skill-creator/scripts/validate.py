@@ -300,8 +300,8 @@ def validate(root: Path):
             if proc.returncode:
                 errors.append(f"shell syntax error in {rel}: {proc.stderr.strip()}")
 
-    line_count = data.decode("utf-8-sig", errors="replace").count("\n") + 1
-    word_count = len(data.decode("utf-8-sig", errors="replace").split())
+    line_count = body.count("\n") + 1
+    word_count = len(body.split())
     if line_count > MAX_BODY_LINES:
         warnings.append(f"SKILL.md exceeds line budget: {line_count}>{MAX_BODY_LINES}")
     if word_count > MAX_BODY_WORDS:

@@ -34,7 +34,7 @@ Completeness of the specification helps; completeness of the path hurts. Describ
 ## What to leave out
 
 - **A prescribed path** derivable from the goal and the constraints. It adds no knowledge and removes the executor's room to deviate. A sequence that appears in the request is not evidence that the order is load-bearing: before writing any numbered step, name the invariant that makes a wrong order impossible and write that instead.
-- **Verification instructions** — "add a final check", "double-check yourself", "have a subagent verify". Agents verify their own work; these buy extra passes, not quality. Naming required evidence is a different thing and stays.
+- **Verification instructions** — "add a final check", "double-check yourself", "re-read before sending". Agents verify their own work; ordering another pass over it buys passes, not quality. Two things are different and stay: naming the required evidence, and a reviewer that is part of the task's design — a separate agent with a different error profile, judging the artifact rather than the executor's account of it.
 - **Anything said twice.** One rule, one place.
 - **Contradictions.** Reconciling conflicting requirements consumes reasoning, and two rules that cannot both hold are worse than neither.
 - **Retellings of what the executor will load anyway** — a skill, plan, spec, or contract it is going to read. Give the path and only the deltas.

@@ -43,7 +43,8 @@ The main auditor owns both the raw audit and final QA. Return:
 1. The required findings table.
 2. `Action`, selected evidence tier, and validation result.
 3. A short `Needs your decision` section only when table rows use `User decision`; include the recommended default and concrete alternatives.
-4. `Remaining/deferred`, including `NOT_PROVEN` behavioral claims without presenting the deferral as a finding.
+4. `Decided here` for a Fix action: the safe reasoned changes already applied.
+5. `Remaining/deferred`, including `NOT_PROVEN` behavioral claims without presenting the deferral as a finding.
 
 Do not return only the Verdict block or bury Minor findings in prose.
 

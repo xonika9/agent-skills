@@ -41,7 +41,7 @@ Resolve targets before creating workers:
 4. Exclude dependencies, caches, generated output, runtime installation directories, and targets whose resolved path is outside the repository. Explicitly supplied project paths may include hidden source directories such as `.claude/skills` or `.agents/skills`.
 5. Deduplicate targets by resolved directory. Ask one short question only when multiple plausible source roots make ownership or intended scope materially ambiguous.
 
-Do not audit a globally installed copy merely because it is reachable from the project. The installed `x9-skill-creator` is the audit contract; the resolved project directories are the audit subjects.
+The installed `x9-skill-creator` is the audit contract; the resolved source directories are the audit subjects. Resolve every candidate through symlinks first: a path under a runtime installation directory that resolves into a source repository is that source, not a copy. Exclude only a path that resolves to a genuinely separate installed duplicate.
 
 ## Orchestrator contract
 

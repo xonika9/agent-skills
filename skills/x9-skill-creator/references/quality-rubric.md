@@ -14,8 +14,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 - [Behavioral evidence](#8-behavioral-evidence-b)
 - [Stop and degradation](#9-stop-and-degradation-jb)
 - [Clarity and questions](#10-clarity-and-questions-sj)
-- [Audit severity and verdict](#audit-severity-and-verdict)
-- [Finding acceptance and final QA](#finding-acceptance-and-final-qa)
+- [Audit severity](#audit-severity)
 - [Judge checklist](#judge-checklist)
 
 ## 1. Triggering and scope `[s+j+b]`
@@ -34,7 +33,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 - Flexible judgment stays in outcome-oriented prose.
 - Fragile repeated transformations use deterministic scripts.
-- Prescribe sequence only when order, completeness, approval gates, state, or known failure modes are part of correctness.
+- Before writing a numbered step, name the invariant that makes a wrong order impossible and write that invariant instead. A step survives only where a wrong order cannot be undone: irreversible sequences, approval gates, deterministic transformations, recovery from a known-bad state. A sequence present in the request is not evidence that the order is load-bearing.
 
 ## 4. Authority and preservation `[j+b]`
 
@@ -46,7 +45,8 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 ## 5. Context cost and freshness `[s+j]`
 
 - Every paragraph carries non-obvious behavior; details live in linked references.
-- Use English for machine-facing prose by default; keep literals in the language where exact text matters.
+- One rule lives in one place. A rule restated in a second file, in `Done`, or in a runtime adapter is a defect rather than emphasis; the second occurrence becomes a link to the owner.
+- No two rules across the skill and its references may be impossible to satisfy at once.
 - Volatile models, flags, schemas, tool versions, rankings, and performance claims use live discovery before they become load-bearing. A freshness date is not a substitute for current validation.
 - No junk, placeholders, secrets, or temporary experiment state in the skill.
 
@@ -60,7 +60,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 - Done is a command, diff, schema, rendered result, source trace, hash, or reproduced behavior.
 - Verification examines the real artifact, not the builder's report.
-- When behavioral proof is in scope, subjective, fragile, or high-stakes output receives a fresh-context attempt to disprove completion.
+- Done names the artifact to inspect, not a self-check to perform. The author's own fresh-context attempt to disprove completion belongs to behavioral evaluation ([evals.md](evals.md)) and does not go inside the skill being written.
 
 ## 8. Behavioral evidence `[b]`
 
@@ -82,26 +82,13 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 - Ask only for load-bearing ambiguity that cannot be recovered from context.
 - Explain reasons where they improve judgment; use explicit prohibitions for safety/preservation and positive targets for ordinary guidance.
 
-## Audit severity and verdict
+## Audit severity
 
 - **Blocker:** unsafe, broken runtime, destructive behavior, leaked secret, or failing required validation.
 - **Important:** likely mis-trigger, undelivered contract, stale adapter, required-but-missing behavioral evidence, or fragile prose operation.
 - **Minor:** real lower-risk clarity, duplication, or maintenance issue.
 
-## Finding acceptance and final QA
-
-Rubric findings are raw claims until the responsible main agent checks their cited evidence, operational impact, severity, and fit with the skill's explicit intent and current user or repository policy. Follow [audit reporting](audit-reporting.md) to classify each claim as retained, user-decision, or filtered out.
-
-Filter unsupported, duplicate, out-of-scope, purely stylistic, intent-contradicting, or evidence-tier-exceeding claims. Do not filter a real finding because it is Minor, inconvenient, or costly. In batch mode workers preserve raw findings in per-target reports; the orchestrator owns final QA, deduplication, status recomputation, and the user-facing table.
-
-End audits with:
-
-- `Status`: `clean`, `needs your decision`, or `work remaining`.
-- `Decided here`: safe reasoned fixes already made.
-- `Needs your decision`: only irreversible or load-bearing choices.
-- `Remaining/deferred`: every unapplied item with reason and rough effort.
-
-The Verdict block is report metadata, not a sufficient user-facing audit. The final handoff must also expose every retained Blocker, Important, and Minor finding through [audit reporting](audit-reporting.md).
+Severity is assigned here. Finding lifecycle, filtering, status recomputation, and the handoff contract are owned by [audit reporting](audit-reporting.md).
 
 ## Judge checklist
 
@@ -115,3 +102,4 @@ Answer yes/no with a concrete fix:
 6. Is Done externally observable?
 7. Is the evidence tier explicit, and did behavior pass when behavioral evidence was in scope?
 8. Are stopping and ambiguity rules unambiguous?
+9. Does every rule appear exactly once, with no pair that cannot both hold?

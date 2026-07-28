@@ -23,6 +23,7 @@ Surface only blind spots that plausibly apply. Do not perform an interview ritua
 - What actions may change local or external state?
 - Which step is deterministic enough to require a script?
 - What exact evidence separates complete, degraded, and failed?
+- Which existing skill already owns part of this contract, and what stays a link to it rather than a copy?
 
 ## Existing-skill action
 
