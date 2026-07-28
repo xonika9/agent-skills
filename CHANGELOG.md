@@ -4,11 +4,22 @@
 
 ### Highlights
 
+- Renamed `x9-excalidraw-diagrams` to `x9-diagrams` and expanded it into one research-backed method for choosing, creating, reviewing, and converting native Excalidraw, Mermaid, and draw.io diagrams.
+- Added format-specific Mermaid and draw.io adapters while preserving the native Excalidraw checker, current font/binding rules, and regression tests.
+- Kept the distributed skill focused on operational guidance by removing the maintainer-only research ledger.
+- Added a constraint-based format matrix, explicit ownership boundary with specialized Mermaid-only skills, and separate structural plus rendered completion gates for all supported formats.
+
 ### Install / update
+
+- Full-plugin users can update in place and invoke `x9-diagrams`. Individual-skill users must remove `x9-excalidraw-diagrams` and install `x9-diagrams`; the old name is not retained as an alias.
 
 ### Compatibility
 
+- `x9-diagrams` remains portable across Claude Code and Codex. Complete proof requires Python 3 plus a faithful Excalidraw renderer, a target-compatible Mermaid renderer, or a compatible diagrams.net editor/exporter for the selected format; missing visual proof is reported as `DEGRADED`.
+
 ### Breaking changes
+
+- The public skill name and path changed from `x9-excalidraw-diagrams` to `x9-diagrams`. Direct invocations, selective-install records, and local symbolic links using the old name must migrate to the new name.
 
 ## 2.0.0 - 2026-07-28
 
@@ -22,7 +33,7 @@
 - Made `x9-skill-creator` load `x9-agent-instructions` as the required rubric for agent-facing prose while keeping skill-audit reporting self-contained.
 - Made `x9-agent-instructions` reference installed skills by discoverable name, reject machine-specific `SKILL.md` paths, and omit redundant requests to read repository context already injected by the runtime.
 - Made `x9-context-files-generator` load `x9-agent-instructions` as a bounded companion rubric for agent-facing prose while keeping repository structure, preservation, and README work under its own contract.
-- Added `x9-excalidraw-diagrams`, a research-backed workflow for native, editable Excalidraw scenes with fit-to-view legibility, role-based typography, controlled routing, a render-and-inspect completion gate, and structural detection of clipped explicit text lines.
+- Added the Excalidraw workflow now published as `x9-diagrams`, with fit-to-view legibility, role-based typography, controlled routing, a render-and-inspect completion gate, and structural detection of clipped explicit text lines.
 - Made persistent `x9-skill-creator` audit reports follow the user's requested or request-carrier language through one batch-wide `Report language` tag while preserving exact technical literals, source quotations, and validator output.
 
 ### Install / update
@@ -31,7 +42,7 @@
 - Structural validation now accepts repeatable `--runtime portable|claude|codex` flags; omitting the flag keeps the portable profile as the default.
 - The full plugin already installs both required skills. Users who copy individual skills should install `x9-skill-creator` together with `x9-agent-instructions`.
 - Users who copy `x9-context-files-generator` individually should install `x9-agent-instructions` alongside it for complete agent-file creation and review.
-- The new skill is included in the full plugin and can also be installed individually as `x9-excalidraw-diagrams`.
+- The diagram skill is included in the full plugin and can also be installed individually as `x9-diagrams`.
 
 ### Compatibility
 
@@ -40,7 +51,7 @@
 - `x9-skill-creator` now declares its existing Python 3 and Ruby/Psych validation dependency explicitly. Existing portable skills remain valid, while runtime-specific frontmatter must be checked with the matching profile.
 - Without `x9-agent-instructions`, `x9-skill-creator` can still run structural checks but reports full Create, Audit, and Fix work on agent-facing prose as degraded.
 - Without `x9-agent-instructions`, `x9-context-files-generator` keeps README, repository-evidence, and structural work available but reports agent-file instruction quality as degraded.
-- `x9-excalidraw-diagrams` is portable across Claude Code and Codex. Its structural checker requires Python 3; visual proof requires a faithful Excalidraw renderer or editor and is reported as degraded when neither is available.
+- `x9-diagrams` is portable across Claude Code and Codex. Its Excalidraw structural checker requires Python 3; visual proof requires a faithful renderer or editor and is reported as degraded when neither is available.
 
 ### Breaking changes
 
@@ -48,7 +59,7 @@
 - Validation is intentionally stricter: unsupported runtime fields, non-string portable metadata values, overlong `compatibility`, and unreachable bundled resources now fail instead of passing silently.
 - A standalone `x9-skill-creator` installation now requires `x9-agent-instructions` before it can claim a complete instruction-quality review.
 - A standalone `x9-context-files-generator` installation now requires `x9-agent-instructions` before it can claim a complete or clean agent-file result; README-only work is unchanged.
-- No new breaking changes are introduced by `x9-excalidraw-diagrams`.
+- No diagram-skill breaking changes were introduced in this release.
 
 ## 1.6.0 - 2026-07-28
 

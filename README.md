@@ -80,7 +80,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - A new or existing repository needs `AGENTS.md` and `CLAUDE.md`: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
-- You need an editable Excalidraw diagram that remains readable at fit-to-view: use [`x9-excalidraw-diagrams`](skills/x9-excalidraw-diagrams/SKILL.md).
+- You need an editable diagram in Excalidraw, Mermaid, or draw.io: use [`x9-diagrams`](skills/x9-diagrams/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
 - Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md).
 
@@ -130,11 +130,11 @@ Based on:
 
 ### Visual artifacts
 
-#### [`x9-excalidraw-diagrams`](skills/x9-excalidraw-diagrams/SKILL.md)
+#### [`x9-diagrams`](skills/x9-diagrams/SKILL.md)
 
-An Excalidraw file can open successfully and still fail as a diagram: the text is tiny at fit-to-view, arrows cross labels, sections blur together, or one overloaded canvas tries to explain everything. This skill chooses the diagram topology and reading direction first, then controls spacing, zones, routing, palette, and information density. It uses Excalifont for short display text and Nunito for prose, identifiers, and connector labels.
+Choosing the diagram type and choosing its file format are different decisions. This skill first identifies the relationship the visual must explain, then selects Excalidraw, Mermaid, or draw.io from the delivery constraints. The shared method controls the question, audience, reading direction, hierarchy, density, boundaries, labels, routing, and the point where one overloaded diagram should split.
 
-The result remains native, editable `.excalidraw` JSON. A bundled Python checker catches stale bindings, unsupported font IDs, structural errors, and unreadable whole-view scale; completion also requires a faithful render and visual inspection. Use another format when the requested output is Mermaid, SVG, a raster image, or manual editing in the Excalidraw interface.
+Each route produces native editable source: `.excalidraw` JSON with checked bindings and current fonts, Mermaid text validated by the target renderer, or `.drawio` XML with pages, layers, containers, geometry, and resolvable connections. Structural validity and visual quality are separate gates, so completion requires a compatible render or editor inspection; unavailable native proof is reported as `DEGRADED`.
 
 ### Repositories and reusable workflows
 
