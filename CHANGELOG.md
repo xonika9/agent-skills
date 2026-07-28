@@ -4,6 +4,16 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 1.6.0 - 2026-07-28
+
+### Highlights
+
 - Aligned the English and Russian README copy for Codex skill discovery, browser setup, context-file generation, idea review, delegation limits, and prompt-engineering references.
 - Synchronized the published global instruction examples with the audited Claude Code and Codex policies, including shared skill routing and a self-directed execution contract.
 - Made the Codex example retain undocumented subagent capabilities only after bounded live probes, and aligned its routing claims with verified `agent_type`, `fork_turns`, and `service_tier` behavior.
