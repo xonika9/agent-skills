@@ -44,6 +44,12 @@ Read [the shared design method](references/design-method.md) before creating or 
 
 Format adapters own serialization, escaping, identifiers, bindings, geometry, themes, pages, layers, and renderer-specific limitations. Do not copy their volatile mechanics into this core.
 
+## Preserve the native source
+
+For a new named-path deliverable, the requested path becomes canonical when first written. For a revision, the existing source remains canonical while changes live in a candidate. Editors and renderers consume those artifacts; an export elsewhere never replaces the canonical source implicitly.
+
+A revision candidate replaces the existing source only when it meets the [completion gate](#completion-gate). Otherwise report `DEGRADED`, leave the existing source unchanged, and identify the candidate as unfinished.
+
 ## Convert and review
 
 Across conversions preserve semantic identity: node meaning, relationship direction, sequence, containment, boundaries, cardinality, and exact technical tokens. Preserve pages, layers, and container identity when both source and target support them. State losses such as automatic-layout changes, unsupported shape libraries, or flattened styling; never promise pixel parity.
@@ -61,7 +67,7 @@ When trigger ownership is ambiguous, use `x9-diagrams` only if the task needs it
 Match completion evidence to the requested action:
 
 - **Format selection:** name the view and delivery format, connect the choice to the user's constraints, state material limitations, and identify whether a compatible validator, renderer, or editor is available.
-- **Creation or material revision:** the chosen view answers the stated question; the native source parses or opens and remains editable; a compatible renderer or editor produced the actual view; and that view was inspected at delivery size for legibility, hierarchy, crossings, clipping, and misleading structure.
+- **Creation or material revision:** the chosen view answers the stated question; the native source parses or opens and remains editable; the agent did not trigger a native file or directory chooser it could not complete itself; format-specific post-load layout is stable where applicable; a compatible renderer or editor produced the actual view from the final canonical source after its last material mutation; and that view was inspected in its declared delivery mode for legibility, hierarchy, crossings, clipping, and misleading structure.
 - **Conversion:** meet the creation evidence and confirm that important semantics survived; state any loss in layout, styling, pages, layers, containers, or notation.
 - **Review only:** distinguish native-structure findings from rendered-composition findings and cite the inspected evidence without rewriting the artifact.
 

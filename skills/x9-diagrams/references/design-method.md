@@ -6,9 +6,11 @@ Use this reference for decisions shared by Excalidraw, Mermaid, and draw.io. For
 
 Write the one-sentence question the diagram answers. Rank content as:
 
-1. primary: necessary to answer the question at whole-view scale;
+1. primary: necessary to answer the question in the declared delivery mode;
 2. secondary: useful explanation at normal reading or editing scale;
 3. detail: better placed in a focused view, note, or linked artifact.
+
+For a revision, preserve the existing view type, dominant reading direction, canvas orientation, major topology, node identity, and meaningful boundaries. A request to review, fix, polish, or improve does not authorize changing them; only an explicit redesign request does.
 
 Choose one entry point and one dominant reading direction. Left-to-right suits pipelines and causality; top-to-bottom suits long processes and layered flows; radial layouts suit one center with independent branches; matched columns suit comparison. A direction change needs a visible boundary or phase transition.
 
@@ -34,7 +36,14 @@ Use scale, grouping, and whitespace to reveal hierarchy. Primary peers share vis
 
 Keep labels short enough to scan. Separate a human-facing label from a technical identifier when both matter. Move paragraphs into nearby notes or focused views rather than turning every node into a document.
 
-At whole-view size, required body text should remain comfortably readable and connector labels should not require zoom. If automatic layout or fit-to-view makes important text too small, simplify or split the diagram instead of relying on panning. Pages are appropriate only when each page answers a distinct question or presents a stable level of detail; they are not a hiding place for an overloaded canvas.
+Use hard line breaks only for semantic boundaries such as a heading/body split or separate list items. Width-driven wrapping belongs to the selected format's layout engine. If rendering produces orphaned one-word lines, leading separators, or broken compounds, shorten the label or enlarge the node instead of hand-tuning line breaks.
+
+Choose the delivery mode before laying out the canvas:
+
+- **Whole view:** the complete argument must fit the delivery viewport. Required body text stays comfortably readable and connector labels do not require zoom. If important text becomes too small, simplify or split the diagram.
+- **Scrollable canvas:** use this only when normal-zoom scrolling is an explicit part of the handoff. Validate the main path in consecutive viewport-sized regions at normal zoom; each region needs readable text, visible connectors, and enough overlap with the next region to preserve orientation. Do not use a whole-scene fit calculation as a failure gate for this mode.
+
+Pages are appropriate only when each page answers a distinct question or presents a stable level of detail; they are not a hiding place for an overloaded canvas.
 
 ## Make boundaries mean something
 
@@ -70,12 +79,13 @@ Create an overview plus focused views when any of these remain after one layout 
 - cross-boundary connectors dominate internal relationships;
 - unavoidable crossings obscure the main path;
 - nodes become prose cards;
-- the viewer must pan to discover the conclusion.
+- a whole-view delivery requires panning to discover the conclusion;
+- a scrollable delivery loses the main path between adjacent viewports.
 
 Preserve identifiers between views so the overview and details can be cross-referenced.
 
 ## Visual acceptance
 
-A successful diagram has an obvious entry point, stable scan path, readable primary content at whole-view size, balanced mass and whitespace, consistent peer roles, meaningful boundaries, and unambiguous connector landing points.
+A successful diagram has an obvious entry point, stable scan path, readable primary content in its declared delivery mode, balanced mass and whitespace, consistent peer roles, meaningful boundaries, and unambiguous connector landing points.
 
 Failure signals include a wall of equal boxes, more colors than meanings, clipped or detached labels, large accidental voids, dense islands, long connector labels squeezed between nodes, and valid source that has never been rendered.

@@ -79,8 +79,28 @@ ARROWHEADS = {
     "cardinality_zero_or_one",
     "cardinality_zero_or_many",
 }
-SKILL_FONTS = {5, 6}
+CURRENT_FONT_FAMILIES = {1, 2, 3, 5, 6}
 BASIC_ELEMENT_TYPES = {"rectangle", "diamond", "ellipse", "text", "line", "arrow"}
+LITERAL_CONTROL_ESCAPES = {
+    "\\n": "LF (U+000A)",
+    "\\r": "CR (U+000D)",
+    "\\t": "TAB (U+0009)",
+}
+NORMALIZATION_LAYOUT_FIELDS = ("x", "y", "width", "height", "angle")
+NORMALIZATION_TEXT_FIELDS = (
+    "text",
+    "originalText",
+    "fontSize",
+    "fontFamily",
+    "lineHeight",
+    "containerId",
+    "autoResize",
+)
+NORMALIZATION_LINEAR_FIELDS = (
+    "points",
+    "startBinding",
+    "endBinding",
+)
 
 
 def _number(value: Any) -> bool:
@@ -91,8 +111,95 @@ def _number(value: Any) -> bool:
     )
 
 
+def _normalization_values_match(left: Any, right: Any, tolerance: float) -> bool:
+    if _number(left) and _number(right):
+        return math.isclose(left, right, rel_tol=0.0, abs_tol=tolerance)
+    if isinstance(left, list) and isinstance(right, list):
+        return len(left) == len(right) and all(
+            _normalization_values_match(a, b, tolerance)
+            for a, b in zip(left, right)
+        )
+    if isinstance(left, dict) and isinstance(right, dict):
+        return left.keys() == right.keys() and all(
+            _normalization_values_match(left[key], right[key], tolerance)
+            for key in left
+        )
+    return left == right
+
+
+def compare_normalization_stability(
+    scene: Any,
+    normalization_result: Any,
+    *,
+    tolerance: float = 1e-6,
+) -> tuple[list[str], list[str]]:
+    """Compare a final scene with the same scene normalized one more time."""
+    errors: list[str] = []
+    notes: list[str] = []
+    if not isinstance(scene, dict) or not isinstance(normalization_result, dict):
+        return ["normalization comparison requires two scene objects"], notes
+
+    def active_by_id(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
+        elements = data.get("elements")
+        if not isinstance(elements, list):
+            return {}
+        return {
+            element["id"]: element
+            for element in elements
+            if isinstance(element, dict)
+            and isinstance(element.get("id"), str)
+            and not element.get("isDeleted")
+        }
+
+    before = active_by_id(scene)
+    after = active_by_id(normalization_result)
+    for element_id in sorted(before.keys() - after.keys()):
+        errors.append(
+            f"normalization removed or deleted active element {element_id!r}"
+        )
+    for element_id in sorted(after.keys() - before.keys()):
+        errors.append(
+            f"normalization added or restored active element {element_id!r}"
+        )
+
+    for element_id in sorted(before.keys() & after.keys()):
+        candidate = before[element_id]
+        normalized = after[element_id]
+        if candidate.get("type") != normalized.get("type"):
+            errors.append(
+                f"normalization changed {element_id}.type from "
+                f"{candidate.get('type')!r} to {normalized.get('type')!r}"
+            )
+            continue
+
+        fields = list(NORMALIZATION_LAYOUT_FIELDS)
+        if candidate.get("type") == "text":
+            fields.extend(NORMALIZATION_TEXT_FIELDS)
+        if candidate.get("type") in {"line", "arrow"}:
+            fields.extend(NORMALIZATION_LINEAR_FIELDS)
+        for field in fields:
+            if not _normalization_values_match(
+                candidate.get(field),
+                normalized.get(field),
+                tolerance,
+            ):
+                errors.append(
+                    f"normalization changed {element_id}.{field}; "
+                    "the final scene is not interaction-stable"
+                )
+
+    if not errors:
+        notes.append(
+            f"normalization stability: PASS for {len(before)} active element(s)"
+        )
+    return errors, notes
+
+
 def _binding_errors(
-    binding: Any, element_id: str, endpoint: str, ids: set[str]
+    binding: Any,
+    element_id: str,
+    endpoint: str,
+    by_id: dict[str, dict[str, Any]],
 ) -> list[str]:
     if binding is None:
         return []
@@ -102,8 +209,11 @@ def _binding_errors(
 
     errors: list[str] = []
     target = binding.get("elementId")
-    if not isinstance(target, str) or target not in ids:
-        errors.append(f"{prefix}.elementId does not resolve: {target!r}")
+    target_element = by_id.get(target) if isinstance(target, str) else None
+    if target_element is None or target_element.get("isDeleted"):
+        errors.append(
+            f"{prefix}.elementId does not resolve to an active element: {target!r}"
+        )
 
     point = binding.get("fixedPoint")
     if (
@@ -125,11 +235,16 @@ def validate_scene(
     data: Any,
     *,
     viewport_width: float | None = None,
+    viewport_height: float | None = None,
     minimum_effective_font: float = 12.0,
     required_fonts: set[int] | None = None,
+    allowed_literal_escape_ids: set[str] | None = None,
+    allowed_hard_line_break_ids: set[str] | None = None,
 ) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     notes: list[str] = []
+    allowed_literal_escape_ids = allowed_literal_escape_ids or set()
+    allowed_hard_line_break_ids = allowed_hard_line_break_ids or set()
 
     if not isinstance(data, dict):
         return ["top-level JSON value must be an object"], notes
@@ -166,6 +281,7 @@ def validate_scene(
     used_fonts: set[int] = set()
     active_bounds: list[tuple[float, float, float, float]] = []
     active_text: list[dict[str, Any]] = []
+    renderer_wrapped_text_ids: list[str] = []
 
     for position, element in enumerate(elements):
         if not isinstance(element, dict):
@@ -225,10 +341,10 @@ def validate_scene(
                 errors.append(f"{element_id}.fontFamily must be an integer")
             else:
                 used_fonts.add(font)
-                if font not in SKILL_FONTS:
+                if font not in CURRENT_FONT_FAMILIES:
                     errors.append(
-                        f"{element_id}.fontFamily must be 5 (Excalifont) or "
-                        f"6 (Nunito), got {font}"
+                        f"{element_id}.fontFamily is not a current serialized "
+                        f"family: {font}"
                     )
             for field in ("fontSize", "lineHeight"):
                 if not _number(element.get(field)):
@@ -238,15 +354,64 @@ def validate_scene(
             for field in ("text", "originalText"):
                 if not isinstance(element.get(field), str):
                     errors.append(f"{element_id}.{field} must be a string")
-            if element.get("text") != element.get("originalText"):
-                errors.append(f"{element_id}.text and originalText must match")
+            text = element.get("text")
+            original_text = element.get("originalText")
+            may_wrap = (
+                bool(element.get("containerId"))
+                or element.get("autoResize") is False
+            )
             if (
-                isinstance(element.get("text"), str)
+                isinstance(text, str)
+                and isinstance(original_text, str)
+                and not may_wrap
+                and text != original_text
+            ):
+                errors.append(
+                    f"{element_id}.text and originalText must match for "
+                    "unwrapped text"
+                )
+            if (
+                isinstance(text, str)
+                and isinstance(original_text, str)
+                and bool(element.get("containerId"))
+                and text != original_text
+                and not element.get("isDeleted")
+            ):
+                renderer_wrapped_text_ids.append(element_id)
+            if element_id not in allowed_literal_escape_ids:
+                for token, control_character in LITERAL_CONTROL_ESCAPES.items():
+                    escaped_fields = [
+                        field
+                        for field in ("text", "originalText")
+                        if isinstance(element.get(field), str)
+                        and token in element[field]
+                    ]
+                    if escaped_fields:
+                        fields = " and ".join(escaped_fields)
+                        verb = "contains" if len(escaped_fields) == 1 else "contain"
+                        errors.append(
+                            f"{element_id}.{fields} {verb} literal escape token "
+                            f"{token!r}; use {control_character} before JSON "
+                            "serialization or allow this element explicitly"
+                        )
+            if (
+                isinstance(original_text, str)
+                and "\n" in original_text
+                and element.get("containerId") is None
+                and element_id not in allowed_hard_line_break_ids
+            ):
+                errors.append(
+                    f"{element_id}.originalText contains a hard line break in "
+                    "unbound text; let Excalidraw wrap by width "
+                    "or allow this element explicitly"
+                )
+            if (
+                isinstance(text, str)
                 and _number(element.get("fontSize"))
                 and _number(element.get("lineHeight"))
                 and _number(element.get("height"))
             ):
-                explicit_lines = element["text"].count("\n") + 1
+                explicit_lines = text.count("\n") + 1
                 minimum_height = (
                     explicit_lines * element["fontSize"] * element["lineHeight"]
                 )
@@ -266,9 +431,13 @@ def validate_scene(
                     f"{sorted(VERTICAL_ALIGNS)}"
                 )
             container_id = element.get("containerId")
-            if container_id is not None and container_id not in ids:
+            container = by_id.get(container_id) if isinstance(container_id, str) else None
+            if container_id is not None and (
+                container is None or container.get("isDeleted")
+            ):
                 errors.append(
-                    f"{element_id}.containerId does not resolve: {container_id!r}"
+                    f"{element_id}.containerId does not resolve to an active "
+                    f"element: {container_id!r}"
                 )
             if not element.get("isDeleted") and _number(element.get("fontSize")):
                 active_text.append(element)
@@ -297,7 +466,7 @@ def validate_scene(
                         element.get(f"{endpoint}Binding"),
                         element_id,
                         endpoint,
-                        ids,
+                        by_id,
                     )
                 )
             for field in ("startArrowhead", "endArrowhead"):
@@ -386,6 +555,32 @@ def validate_scene(
         for font in sorted(required_fonts - used_fonts):
             errors.append(f"required fontFamily {font} is not used")
 
+    for element_id in sorted(allowed_literal_escape_ids):
+        target = by_id.get(element_id)
+        if target is None:
+            errors.append(
+                f"literal-escape allowance does not resolve to an element: "
+                f"{element_id!r}"
+            )
+        elif target.get("type") != "text":
+            errors.append(
+                f"literal-escape allowance requires a text element, got "
+                f"{target.get('type')!r}: {element_id!r}"
+            )
+
+    for element_id in sorted(allowed_hard_line_break_ids):
+        target = by_id.get(element_id)
+        if target is None:
+            errors.append(
+                f"hard-line-break allowance does not resolve to an element: "
+                f"{element_id!r}"
+            )
+        elif target.get("type") != "text":
+            errors.append(
+                f"hard-line-break allowance requires a text element, got "
+                f"{target.get('type')!r}: {element_id!r}"
+            )
+
     if active_bounds:
         min_x = min(bound[0] for bound in active_bounds)
         min_y = min(bound[1] for bound in active_bounds)
@@ -400,13 +595,17 @@ def validate_scene(
 
         if viewport_width is not None and width > 0 and active_text:
             scale = viewport_width / width
+            fit_label = f"fit-to-width {viewport_width:g}px"
+            if viewport_height is not None and height > 0:
+                scale = min(scale, viewport_height / height)
+                fit_label = (
+                    f"fit-to-{viewport_width:g}×{viewport_height:g}px viewport"
+                )
             effective = min(text["fontSize"] * scale for text in active_text)
-            notes.append(
-                f"fit-to-{viewport_width:g}px minimum text size: {effective:.1f}px"
-            )
+            notes.append(f"{fit_label} minimum text size: {effective:.1f}px")
             if effective < minimum_effective_font:
                 errors.append(
-                    f"fit-to-view minimum text size {effective:.1f}px is below "
+                    f"{fit_label} minimum text size {effective:.1f}px is below "
                     f"{minimum_effective_font:g}px"
                 )
 
@@ -414,7 +613,35 @@ def validate_scene(
         "font families used: "
         + (", ".join(str(font) for font in sorted(used_fonts)) or "none")
     )
+    if renderer_wrapped_text_ids:
+        notes.append(
+            "normalization not proven: renderer-derived wrapping appears in "
+            f"{len(renderer_wrapped_text_ids)} active bound text element(s) "
+            f"({', '.join(sorted(renderer_wrapped_text_ids))}); static validation "
+            "cannot certify interaction stability"
+        )
     return errors, notes
+
+
+def active_bound_text_ids(data: Any) -> list[str]:
+    if not isinstance(data, dict) or not isinstance(data.get("elements"), list):
+        return []
+    return sorted(
+        element["id"]
+        for element in data["elements"]
+        if isinstance(element, dict)
+        and element.get("type") == "text"
+        and isinstance(element.get("id"), str)
+        and element.get("containerId")
+        and not element.get("isDeleted")
+    )
+
+
+def _summarize_ids(ids: list[str], limit: int = 5) -> str:
+    shown = ", ".join(ids[:limit])
+    if len(ids) > limit:
+        shown += f", … +{len(ids) - limit} more"
+    return shown
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -424,6 +651,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--viewport-width",
         type=float,
         help="fail when fit-to-width text becomes too small",
+    )
+    parser.add_argument(
+        "--viewport-height",
+        type=float,
+        help="also constrain fit-to-view by height; requires --viewport-width",
     )
     parser.add_argument(
         "--minimum-effective-font",
@@ -438,7 +670,58 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=[],
         help="require a fontFamily value to appear; repeat as needed",
     )
-    return parser.parse_args(argv)
+    parser.add_argument(
+        "--allow-literal-escapes-in",
+        action="append",
+        default=[],
+        metavar="ELEMENT_ID",
+        help=(
+            "allow literal backslash-n, backslash-r, or backslash-t in one text "
+            "element; repeat as needed"
+        ),
+    )
+    parser.add_argument(
+        "--allow-hard-line-breaks-in",
+        action="append",
+        default=[],
+        metavar="ELEMENT_ID",
+        help=(
+            "allow semantic LF line breaks in one unbound text element; "
+            "repeat as needed"
+        ),
+    )
+    parser.add_argument(
+        "--normalization-result",
+        type=Path,
+        help=(
+            "scene produced by applying the target Excalidraw normalizer once "
+            "more to the final scene; fail if interaction-relevant fields changed"
+        ),
+    )
+    parser.add_argument(
+        "--normalization-tolerance",
+        type=float,
+        default=1e-6,
+        help="absolute numeric tolerance for normalization comparison (default: 1e-6)",
+    )
+    parser.add_argument(
+        "--structural-only",
+        action="store_true",
+        help=(
+            "allow an intermediate structural pass without normalization proof; "
+            "not valid as final completion evidence"
+        ),
+    )
+    args = parser.parse_args(argv)
+    if args.viewport_height is not None and args.viewport_width is None:
+        parser.error("--viewport-height requires --viewport-width")
+    if args.normalization_tolerance < 0:
+        parser.error("--normalization-tolerance must not be negative")
+    if args.structural_only and args.normalization_result is not None:
+        parser.error(
+            "--structural-only cannot be combined with --normalization-result"
+        )
+    return args
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -455,9 +738,57 @@ def main(argv: list[str] | None = None) -> int:
     errors, notes = validate_scene(
         data,
         viewport_width=args.viewport_width,
+        viewport_height=args.viewport_height,
         minimum_effective_font=args.minimum_effective_font,
         required_fonts=set(args.require_font_family),
+        allowed_literal_escape_ids=set(args.allow_literal_escapes_in),
+        allowed_hard_line_break_ids=set(args.allow_hard_line_breaks_in),
     )
+    bound_text_ids = active_bound_text_ids(data)
+    if (
+        bound_text_ids
+        and args.normalization_result is None
+        and not args.structural_only
+    ):
+        errors.append(
+            f"normalization proof is required for {len(bound_text_ids)} active "
+            f"bound text element(s) ({_summarize_ids(bound_text_ids)}); "
+            "provide --normalization-result "
+            "or use --structural-only for an intermediate check"
+        )
+    if args.normalization_result is not None:
+        try:
+            normalization_result = json.loads(
+                args.normalization_result.read_text(encoding="utf-8")
+            )
+        except FileNotFoundError:
+            print(
+                f"ERROR: file not found: {args.normalization_result}",
+                file=sys.stderr,
+            )
+            return 2
+        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+            print(
+                f"ERROR: cannot parse {args.normalization_result}: {error}",
+                file=sys.stderr,
+            )
+            return 2
+        normalized_errors, _ = validate_scene(
+            normalization_result,
+            required_fonts=set(args.require_font_family),
+            allowed_literal_escape_ids=set(args.allow_literal_escapes_in),
+            allowed_hard_line_break_ids=set(args.allow_hard_line_breaks_in),
+        )
+        errors.extend(
+            f"normalization result: {error}" for error in normalized_errors
+        )
+        stability_errors, stability_notes = compare_normalization_stability(
+            data,
+            normalization_result,
+            tolerance=args.normalization_tolerance,
+        )
+        errors.extend(stability_errors)
+        notes.extend(stability_notes)
     for note in notes:
         print(f"NOTE: {note}")
     if errors:

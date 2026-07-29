@@ -68,7 +68,7 @@ Validate in layers:
 2. The file contains `mxfile`, at least one `diagram`, `mxGraphModel`, `root`, and root cells `0` and `1`.
 3. IDs are unique; every parent, source, and target resolves; vertices and edges have appropriate geometry.
 4. A compatible diagrams.net editor opens the native file without repair or data loss.
-5. The editor or compatible exporter renders it; inspect the output at whole-view and normal editing scale.
+5. The editor or compatible exporter renders it; inspect the output in the delivery mode declared by the shared design method and at normal editing scale.
 6. Reopen the saved file when editability, page/layer preservation, or container behavior is load-bearing.
 
 Do not delete the native source after export. A PNG, SVG, or PDF is delivery evidence or a companion, not a substitute for a requested editable `.drawio` file. If only steps 1–3 are possible, report `DEGRADED`; structural XML validation is not visual proof.

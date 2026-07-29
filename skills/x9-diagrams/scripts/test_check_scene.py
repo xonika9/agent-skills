@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import copy
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
-from check_scene import validate_scene
+from check_scene import compare_normalization_stability, main, validate_scene
 
 
 def common(element_id: str, element_type: str, x: int, y: int, width: int, height: int):
@@ -121,11 +124,17 @@ class ValidateSceneTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertTrue(any("font families used: 5, 6" in note for note in notes))
 
-    def test_rejects_virgil(self):
+    def test_accepts_current_virgil_for_existing_scenes(self):
         candidate = scene()
         candidate["elements"][1]["fontFamily"] = 1
         errors, _ = validate_scene(candidate)
-        self.assertTrue(any("Excalifont" in error for error in errors))
+        self.assertEqual(errors, [])
+
+    def test_rejects_reserved_font_slot(self):
+        candidate = scene()
+        candidate["elements"][1]["fontFamily"] = 4
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("not a current serialized family" in error for error in errors))
 
     def test_rejects_unknown_element_type(self):
         candidate = scene()
@@ -160,6 +169,30 @@ class ValidateSceneTests(unittest.TestCase):
         errors, _ = validate_scene(candidate)
         self.assertTrue(any("not reciprocal" in error for error in errors))
 
+    def test_rejects_active_arrow_bound_to_deleted_element(self):
+        candidate = scene()
+        candidate["elements"][0]["isDeleted"] = True
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(
+            any(
+                "startBinding.elementId does not resolve to an active element"
+                in error
+                for error in errors
+            )
+        )
+
+    def test_rejects_active_text_bound_to_deleted_container(self):
+        candidate = scene()
+        candidate["elements"][0]["isDeleted"] = True
+        candidate["elements"][-1]["startBinding"] = None
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(
+            any(
+                "containerId does not resolve to an active element" in error
+                for error in errors
+            )
+        )
+
     def test_rejects_too_small_fit_view(self):
         candidate = copy.deepcopy(scene())
         candidate["elements"].append(
@@ -170,7 +203,29 @@ class ValidateSceneTests(unittest.TestCase):
             viewport_width=1600,
             minimum_effective_font=12,
         )
-        self.assertTrue(any("fit-to-view" in error for error in errors))
+        self.assertTrue(any("fit-to-width" in error for error in errors))
+
+    def test_rejects_too_tall_fit_view(self):
+        candidate = copy.deepcopy(scene())
+        candidate["elements"].append(
+            common("far-below", "rectangle", 0, 5000, 180, 80)
+        )
+        errors, _ = validate_scene(
+            candidate,
+            viewport_width=1600,
+            viewport_height=900,
+            minimum_effective_font=12,
+        )
+        self.assertTrue(any("1600×900" in error for error in errors))
+
+    def test_accepts_tall_scene_when_only_width_is_requested(self):
+        candidate = copy.deepcopy(scene())
+        candidate["elements"].append(
+            common("far-below", "rectangle", 0, 5000, 180, 80)
+        )
+        errors, notes = validate_scene(candidate, viewport_width=1600)
+        self.assertEqual(errors, [])
+        self.assertTrue(any("fit-to-width" in note for note in notes))
 
     def test_rejects_invalid_font_metrics_without_crashing_fit_view(self):
         candidate = scene()
@@ -181,9 +236,216 @@ class ValidateSceneTests(unittest.TestCase):
     def test_rejects_explicit_lines_that_exceed_text_height(self):
         candidate = scene()
         candidate["elements"][1]["text"] = "Client\napplication"
-        candidate["elements"][1]["originalText"] = "Client\napplication"
+        candidate["elements"][1]["originalText"] = "Client application"
         errors, _ = validate_scene(candidate)
         self.assertTrue(any("clips 2 explicit text lines" in error for error in errors))
+
+    def test_accepts_wrapped_bound_text_when_height_is_sufficient(self):
+        candidate = scene()
+        candidate["elements"][1]["text"] = "Client\napplication"
+        candidate["elements"][1]["originalText"] = "Client application"
+        candidate["elements"][1]["height"] = 50
+        errors, notes = validate_scene(candidate)
+        self.assertEqual(errors, [])
+        self.assertTrue(any("normalization not proven" in note for note in notes))
+
+    def test_rejects_scene_changed_by_target_normalization(self):
+        candidate = scene()
+        candidate["elements"][1].update(
+            {
+                "text": "0 · READINESS\nnow\nGate: external access is safe",
+                "originalText": (
+                    "0 · READINESS now Gate: external access is safe"
+                ),
+                "height": 75,
+            }
+        )
+        normalized_again = copy.deepcopy(candidate)
+        normalized_again["elements"][1].update(
+            {
+                "text": (
+                    "0 · READINESS now\nGate: external access is safe"
+                ),
+                "height": 50,
+                "y": 30,
+            }
+        )
+
+        structural_errors, notes = validate_scene(candidate)
+        stability_errors, _ = compare_normalization_stability(
+            candidate,
+            normalized_again,
+        )
+
+        self.assertEqual(structural_errors, [])
+        self.assertTrue(any("normalization not proven" in note for note in notes))
+        self.assertTrue(
+            any("left-label.text" in error for error in stability_errors)
+        )
+        self.assertTrue(
+            any("left-label.height" in error for error in stability_errors)
+        )
+        self.assertTrue(
+            any("left-label.y" in error for error in stability_errors)
+        )
+
+    def test_accepts_scene_stable_under_repeated_normalization(self):
+        candidate = scene()
+        candidate["elements"][1]["text"] = "Client\napplication"
+        candidate["elements"][1]["originalText"] = "Client application"
+        candidate["elements"][1]["height"] = 50
+        normalized_again = copy.deepcopy(candidate)
+        normalized_again["elements"][1]["version"] += 1
+        normalized_again["elements"][1]["versionNonce"] += 1
+        normalized_again["elements"][1]["updated"] += 1
+
+        errors, notes = compare_normalization_stability(
+            candidate,
+            normalized_again,
+        )
+
+        self.assertEqual(errors, [])
+        self.assertTrue(any("normalization stability: PASS" in note for note in notes))
+
+    def test_semantic_original_text_breaks_can_be_normalization_stable(self):
+        candidate = scene()
+        candidate["elements"][1]["text"] = "Heading\nExplanation"
+        candidate["elements"][1]["originalText"] = "Heading\nExplanation"
+        candidate["elements"][1]["height"] = 50
+
+        errors, _ = compare_normalization_stability(
+            candidate,
+            copy.deepcopy(candidate),
+        )
+
+        self.assertEqual(errors, [])
+
+    def test_cli_requires_normalization_proof_for_bound_text(self):
+        with tempfile.TemporaryDirectory() as directory:
+            scene_path = Path(directory) / "scene.excalidraw"
+            scene_path.write_text(json.dumps(scene()), encoding="utf-8")
+
+            self.assertEqual(main([str(scene_path)]), 1)
+            self.assertEqual(
+                main([str(scene_path), "--structural-only"]),
+                0,
+            )
+
+    def test_cli_accepts_stable_second_normalization(self):
+        with tempfile.TemporaryDirectory() as directory:
+            scene_path = Path(directory) / "scene.excalidraw"
+            normalized_path = Path(directory) / "normalized.excalidraw"
+            serialized = json.dumps(scene())
+            scene_path.write_text(serialized, encoding="utf-8")
+            normalized_path.write_text(serialized, encoding="utf-8")
+
+            self.assertEqual(
+                main(
+                    [
+                        str(scene_path),
+                        "--normalization-result",
+                        str(normalized_path),
+                    ]
+                ),
+                0,
+            )
+
+    def test_rejects_mismatched_unbound_auto_resizing_text(self):
+        candidate = scene()
+        candidate["elements"][0]["boundElements"] = [
+            {"id": "flow", "type": "arrow"},
+        ]
+        candidate["elements"][1]["containerId"] = None
+        candidate["elements"][1]["originalText"] = "Customer"
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("must match for unwrapped text" in error for error in errors))
+
+    def test_rejects_literal_newline_escape(self):
+        candidate = scene()
+        candidate["elements"][1]["text"] = r"Client\napplication"
+        candidate["elements"][1]["originalText"] = r"Client\napplication"
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("literal escape token '\\\\n'" in error for error in errors))
+
+    def test_rejects_literal_newline_escape_in_original_text(self):
+        candidate = scene()
+        candidate["elements"][1]["text"] = "Client\napplication"
+        candidate["elements"][1]["originalText"] = r"Client\napplication"
+        candidate["elements"][1]["height"] = 50
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("originalText" in error for error in errors))
+        self.assertTrue(any("literal escape token '\\\\n'" in error for error in errors))
+
+    def test_rejects_manual_hard_line_break_in_auto_resizing_text(self):
+        candidate = scene()
+        candidate["elements"][0]["boundElements"] = [
+            {"id": "flow", "type": "arrow"},
+        ]
+        candidate["elements"][1]["containerId"] = None
+        candidate["elements"][1]["text"] = "Client\napplication"
+        candidate["elements"][1]["originalText"] = "Client\napplication"
+        candidate["elements"][1]["height"] = 50
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("hard line break" in error for error in errors))
+
+    def test_rejects_manual_hard_line_break_in_fixed_width_text(self):
+        candidate = scene()
+        candidate["elements"][0]["boundElements"] = [
+            {"id": "flow", "type": "arrow"},
+        ]
+        candidate["elements"][1]["containerId"] = None
+        candidate["elements"][1]["autoResize"] = False
+        candidate["elements"][1]["text"] = "Client\napplication"
+        candidate["elements"][1]["originalText"] = "Client\napplication"
+        candidate["elements"][1]["height"] = 50
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("hard line break" in error for error in errors))
+
+    def test_allows_semantic_hard_line_break_by_element_id(self):
+        candidate = scene()
+        candidate["elements"][0]["boundElements"] = [
+            {"id": "flow", "type": "arrow"},
+        ]
+        candidate["elements"][1]["containerId"] = None
+        candidate["elements"][1]["text"] = "Heading\nExplanation"
+        candidate["elements"][1]["originalText"] = "Heading\nExplanation"
+        candidate["elements"][1]["height"] = 50
+        errors, _ = validate_scene(
+            candidate,
+            allowed_hard_line_break_ids={"left-label"},
+        )
+        self.assertEqual(errors, [])
+
+    def test_allows_intentional_literal_escape_by_element_id(self):
+        candidate = scene()
+        candidate["elements"][1]["text"] = r"Client\napplication"
+        candidate["elements"][1]["originalText"] = r"Client\napplication"
+        errors, _ = validate_scene(
+            candidate,
+            allowed_literal_escape_ids={"left-label"},
+        )
+        self.assertEqual(errors, [])
+
+    def test_rejects_unknown_literal_escape_allowance(self):
+        errors, _ = validate_scene(
+            scene(),
+            allowed_literal_escape_ids={"missing-label"},
+        )
+        self.assertTrue(any("allowance does not resolve" in error for error in errors))
+
+    def test_rejects_literal_escape_allowance_for_non_text_element(self):
+        errors, _ = validate_scene(
+            scene(),
+            allowed_literal_escape_ids={"left"},
+        )
+        self.assertTrue(any("requires a text element" in error for error in errors))
+
+    def test_rejects_unknown_hard_line_break_allowance(self):
+        errors, _ = validate_scene(
+            scene(),
+            allowed_hard_line_break_ids={"missing-label"},
+        )
+        self.assertTrue(any("allowance does not resolve" in error for error in errors))
 
 
 if __name__ == "__main__":

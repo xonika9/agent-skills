@@ -4,6 +4,16 @@
 
 ### Highlights
 
+- Made repository-backed diagram creation source-first and added a clipboard round trip for faithful browser verification without file pickers or download-directory handoffs.
+- Made Excalidraw validation reject double-escaped control tokens in text by default, with an explicit per-element allowance for diagrams that intentionally display them.
+- Aligned Excalidraw text validation with native soft wrapping: `originalText` remains authored content, `text` may carry computed wraps, and unbound hard line breaks require an explicit semantic exception.
+- Preserved existing diagram structure and source until rendered proof passes, and required target-version text normalization before an Excalidraw revision can be adopted.
+- Preserved supported font choices in existing Excalidraw scenes instead of forcing an unrelated restyle; Excalifont and Nunito remain the recommendation for new Cyrillic content.
+- Protected open Excalidraw work and clipboard state during browser verification, rejected bindings to deleted elements, and made fit-to-view checks account for both viewport dimensions.
+- Made Excalidraw fit-to-view evidence use the actual rendered content viewport rather than nominal browser-window dimensions.
+- Added a target-normalization stability comparison so a scene that reflows on first interaction cannot pass on static rendering alone.
+- Separated whole-view and explicitly scrollable delivery checks, and rejected browser actions that strand work in a native file or directory chooser the agent cannot complete.
+
 ### Install / update
 
 ### Compatibility
