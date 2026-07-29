@@ -10,6 +10,30 @@
 
 ### Breaking changes
 
+## 2.2.0 - 2026-07-29
+
+### Highlights
+
+- Renamed `x9-okf-adapt` to `x9-okf-docs` and reduced its always-loaded instructions to a short route selector; maintenance, adoption, and migration details now load only when needed.
+- Updated the skill for OKF v0.2 with separate official and curated validation profiles, reserved-file handling, truthful `generated` metadata, and read-only-by-default v0.1 migration.
+- Added incremental `--touch` migration so substantively edited documents converge to OKF v0.2 without scanning or rewriting the rest of a repository.
+- Made `x9-okf-docs` the canonical owner of version-specific OKF rules. On the first OKF write, it replaces a copied version, field contract, or former skill name in `AGENTS.md` while preserving repository-specific scope.
+- Made durable research read `generated.at` first while retaining `timestamp` as a legacy fallback.
+
+### Install / update
+
+- Existing OKF v0.1 repositories require no immediate rewrite. Normal work can migrate named documents through `--touch` and lazily repair stale repository instructions; bulk audit remains optional.
+- Full-plugin users receive `x9-okf-docs` on update. Individual-skill users must remove `x9-okf-adapt`, install `x9-okf-docs`, and may leave repository instructions to self-repair on the first OKF write.
+
+### Compatibility
+
+- OKF v0.1 remains readable through documented fallbacks. Incremental migration keeps `timestamp` synchronized by default and requires Python 3, Ruby/Psych, and an explicit actor.
+
+### Breaking changes
+
+- The curated profile now writes `generated.by` and `generated.at` instead of creating legacy `timestamp`; callers applying manifests must pass `--actor`. Official OKF validation is available separately through `--profile okf`.
+- The discoverable skill name changed from `x9-okf-adapt` to `x9-okf-docs`; the former name is not retained as a duplicate alias.
+
 ## 2.1.0 - 2026-07-29
 
 ### Highlights

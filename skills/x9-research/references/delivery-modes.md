@@ -69,18 +69,18 @@ One clear match authorizes proceeding. Several plausible matches require one sho
 
 ## Use OKF frontmatter for discovery
 
-Read the complete YAML frontmatter of candidate curated Markdown files. Prefer:
+Read the complete YAML frontmatter of candidate curated Markdown files. Treat `x9-okf-docs` as the authority for version-specific OKF fields, migration, and validation. For discovery, prefer these semantic roles when the active OKF version or local profile provides them:
 
 - `title` for the research question or dossier identity;
 - `description` for semantic scope and close formulations;
 - `tags` for stable topic matching across vocabulary changes;
 - `type` to distinguish a dossier entry point from a research note, analysis, plan, playbook, or reference;
-- `timestamp` to judge freshness after identity has been resolved, never as the primary identity key;
-- `okf_version` or local extension fields when present, preserving their declared meaning.
+- the version-aware freshness value defined by `x9-okf-docs`, used only after identity has been resolved;
+- the declared OKF version and local extension fields, preserving their meaning.
 
 An exact current path or same basename is stronger than a semantic match. Frontmatter `title`, `description`, and `tags` are stronger than a coincidental body mention. A broad dossier match selects the folder, not an existing research file; a new question inside that area still receives a new basename.
 
-Follow the repository's allowed OKF types and required fields. Do not invent a type or rewrite valid metadata merely to normalize style. Update `timestamp` after a substantive edit when local rules use it for freshness.
+Follow the repository's OKF version and any separate local profile. Do not invent a type or rewrite valid metadata merely to normalize style. After a substantive edit, use the version-aware update and validation workflow from `x9-okf-docs`; do not reproduce its field rules here.
 
 ## Create durable research
 

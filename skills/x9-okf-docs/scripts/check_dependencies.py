@@ -30,7 +30,7 @@ def main() -> int:
 
     git = shutil.which("git")
     if git is None:
-        print("DEGRADED: Git is unavailable; timestamp inventory will use filesystem modification time")
+        print("DEGRADED: Git is unavailable; generated.at inventory suggestions will use filesystem modification time")
     else:
         print(f"PASS: Git available at {git}")
     return 0

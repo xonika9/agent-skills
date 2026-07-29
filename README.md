@@ -82,7 +82,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
 - You need an editable diagram in Excalidraw, Mermaid, or draw.io: use [`x9-diagrams`](skills/x9-diagrams/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
-- Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md).
+- Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md).
 
 ## Skill catalog
 
@@ -170,11 +170,11 @@ The skill is Claude Code only. It does not manage quotas by itself and does not 
 
 ### Knowledge bases
 
-#### [`x9-okf-adapt`](skills/x9-okf-adapt/SKILL.md)
+#### [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md)
 
-Large Markdown documentation collections become easier for people and agents to navigate when every document describes itself consistently. This skill adapts an existing knowledge base to [OKF v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) frontmatter with a shared set of fields for type, title, description, tags, and freshness.
+Large Markdown documentation collections become easier for people and agents to navigate when every document describes itself consistently. This skill maintains a knowledge base under [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md), keeps repository instructions version-independent, and upgrades only the documents being substantively edited. On the first OKF write in an older repository, it also replaces copied version rules or the former `x9-okf-adapt` name in `AGENTS.md`.
 
-The migration is intentionally conservative: deterministic scripts add or repair metadata while verifying that document bodies, line endings, and BOMs did not change.
+The main skill file is a short route selector, so routine edits load only the maintenance contract. Adoption, repair, and bulk migration live in separate references. Legacy v0.1 collections keep working without a forced repository-wide migration, and deterministic scripts verify that document bodies, line endings, and BOMs did not change.
 
 ## Global instruction examples
 
