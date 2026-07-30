@@ -43,6 +43,8 @@ Distinguish:
 
 For dynamic or recovery-sensitive workflows, the run record must make consequential realized work reconstructable. A simple static graph may record only deviations, retries, cancellations, and replacements needed to explain the outcome. Dynamic topology changes need a recorded cause, authority, and budget impact.
 
+In the realized execution graph, distinguish actual runtime launches from logical workflow nodes and deterministic checkpoints. Record same-run spawn parentage separately from cross-run continuation. When routing affects validity, cost, or analysis, record requested and runtime-observed effective routing separately; leave the effective value unknown when the runtime cannot prove it, and keep the observation mechanism in the runtime adapter.
+
 ## Node contract
 
 Every load-bearing node needs an operational boundary: responsibility, accepted inputs, produced artifacts or decisions, authority, completion evidence, and failure behavior. Add fields only when they change routing, recovery, verification, ownership, or budget decisions.

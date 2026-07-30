@@ -11,6 +11,8 @@ Criticize through the routes the user selected. Opus and GPT are independent per
 
 For `/x9-idea-critic [mode] [idea]`, treat the first argument as a mode only when it is one of the recognized words below. Otherwise it is part of the idea. Natural-language requests map to the same modes.
 
+When the invocation omits the idea, recover the latest clearly discussed proposal, intended outcome, success criterion, and known constraints from the conversation. Ask one short question only when the conversation leaves the target idea ambiguous.
+
 | Mode | Natural-language examples | Critics |
 |---|---|---|
 | default / omitted | «раскритикуй идею», «проверь на прочность» | one fresh Opus critic and one fresh GPT critic |
@@ -48,6 +50,8 @@ Both adapters must select a currently available model from the promised provider
 - Keep attribution: show which critic raised each invalidating point and whether the other independently agreed.
 - Resolve duplicate wording, not disagreement. Surface material conflicts and judge them against evidence.
 - Keep the synthesis concise by grouping overlap and separating required changes from optional improvements, not by dropping findings or dependencies that could change the verdict.
+- Critics own diagnosis; the orchestrator owns the post-critique rewrite. After resolving the findings, turn them into the strongest defensible next version of the idea rather than stopping at recommendations.
+- Base the rewrite only on findings upheld during synthesis and available evidence. Preserve the intended outcome and success criterion unless they were invalidated; change the intended user, scope, mechanism, assumptions, or delivery model where necessary.
 
 ## Output
 
@@ -55,6 +59,9 @@ Both adapters must select a currently available model from the promised provider
 2. Verdict: `KILL`, `REVISE`, `SURVIVES`, or `NOT_PROVEN` when blocked.
 3. Invalidating findings with evidence and attribution.
 4. Serious/minor risks.
-5. Cheapest tests that could falsify the remaining assumptions.
-6. Missing evidence and unresolved disagreement.
-7. For `REVISE`, give a concrete revision agenda covering all findings upheld during synthesis. Distinguish changes required to address `KILLER` and `SERIOUS` findings from optional improvements, accepted risks, or deferred work associated with `MINOR` findings. Group overlapping work and show dependencies; do not cap the number of changes or omit necessary architecture work for brevity. For `SURVIVES`, recommend only changes justified by the findings and distinguish them from risks that can reasonably be accepted. For `KILL`, do not manufacture a rescue plan.
+5. For a substantive verdict, the best defensible next version: a self-contained rewritten proposal covering its intended user, outcome, operating mechanism, scope, and success criterion. It must be understandable without rereading the critique.
+6. Change map connecting every material difference from the original proposal to the upheld finding or evidence that justifies it. Group overlapping work, show dependencies, and distinguish changes required by `KILLER` or `SERIOUS` findings from optional improvements, accepted risks, or deferred work associated with `MINOR` findings.
+7. Cheapest tests that could falsify the remaining assumptions.
+8. Missing evidence and unresolved disagreement.
+
+For `REVISE`, rewrite the original proposal and include every change needed to address upheld `KILLER` and `SERIOUS` findings. For `SURVIVES`, return a hardened version with only the changes justified by the findings. For `KILL`, do not disguise the invalidated core as a revision: return the closest evidence-supported replacement for the same intended outcome, or state that no defensible replacement is proven. For `BLOCKED`, do not manufacture a rewrite; explain what evidence is needed before one can be produced.

@@ -112,7 +112,7 @@ It is deliberately Wildberries-specific and runs inside the current Claude Code 
 
 Use this when you want resistance, not another enthusiastic brainstorm. The skill sends a neutral brief to independent Opus and GPT critics. The main agent then combines agreements, disagreements, fatal assumptions, cheaper alternatives, and the quickest tests that could prove the idea wrong.
 
-The default uses one critic from each provider; focused and deeper panel modes are also available. The GPT route from Claude Code uses `x9-codex-delegation`.
+It also turns the upheld findings into a self-contained stronger proposal and maps every material change back to the problem it addresses. The default uses one critic from each provider; focused and deeper panel modes are also available. The GPT route from Claude Code uses `x9-codex-delegation`.
 
 #### [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md)
 

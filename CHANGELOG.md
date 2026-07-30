@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- Made `x9-idea-critic` turn upheld criticism into a self-contained stronger proposal, with a change map and verdict-specific handling for revised, surviving, killed, or unproven ideas.
+- Hardened `x9-loop-engineering` with conditional patterns for authoritative derived state, recoverable public lifecycle mutations, version-scoped continuity, task-first self-repair, and evidence-bound realized execution traces.
 - Made repository-backed diagram creation source-first and added a clipboard round trip for faithful browser verification without file pickers or download-directory handoffs.
 - Made Excalidraw validation reject double-escaped control tokens in text by default, with an explicit per-element allowance for diagrams that intentionally display them.
 - Aligned Excalidraw text validation with native soft wrapping: `originalText` remains authored content, `text` may carry computed wraps, and unbound hard line breaks require an explicit semantic exception.
@@ -17,6 +19,9 @@
 ### Install / update
 
 ### Compatibility
+
+- Existing `x9-idea-critic` modes and provider routes are unchanged; successful critiques now include an evidence-grounded next version of the idea.
+- Existing simple and linear workflow guidance is unchanged; the new recovery, versioning, self-repair, and lineage patterns apply only when those mechanisms exist.
 
 ### Breaking changes
 
