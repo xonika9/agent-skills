@@ -1,6 +1,7 @@
 # Agent Skills repository
 
-This is the public source of truth for the `x9-*` Agent Skills. The package targets the open Agent Skills format; Claude Code and Codex also have native plugin manifests in this repository.
+This is the public source of truth for the `x9-*` Agent Skills. The package targets the open Agent Skills format; Claude Code and Codex also have native plugin manifests in this repository. Never create branches — always commit and work directly on `main`.
+
 
 ## Source ownership
 
