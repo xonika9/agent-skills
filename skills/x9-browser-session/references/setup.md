@@ -2,8 +2,8 @@
 
 Use the portable contract below for any Chromium browser. The Microsoft Edge/macOS
 recipe uses a dedicated profile, the Codex browser extension as the Codex primary
-outside local web development and explicit in-app requests,
-local CDP on port `9222` as the Claude Code primary and Codex fallback, and
+outside the exceptions defined in the parent skill,
+local CDP on port `9222` as the Claude Code primary and Codex MCP route, and
 `agent-edge` as the last fallback attached to the same profile. The configuration intentionally follows
 `chrome-devtools-mcp@latest`; check its live help before configuring it because
 supported flags can change.
@@ -14,7 +14,7 @@ supported flags can change.
 - [Verified Microsoft Edge adapter on macOS](#verified-microsoft-edge-adapter-on-macos)
   - [1. Create the automation profile and launcher](#1-create-the-automation-profile-and-launcher)
   - [2. Verify the Codex extension](#2-verify-the-codex-extension)
-  - [3. Configure the Claude primary and Codex fallback](#3-configure-the-claude-primary-and-codex-fallback)
+  - [3. Configure the Claude primary and Codex MCP route](#3-configure-the-claude-primary-and-codex-mcp-route)
   - [4. Add the last-resort wrapper](#4-add-the-last-resort-wrapper)
   - [5. Verify without touching existing tabs](#5-verify-without-touching-existing-tabs)
 
@@ -29,8 +29,8 @@ Choose these values for the target machine instead of copying the Edge-specific 
 | Codex extension | The installed extension and its local native host |
 | CDP endpoint | A localhost-only port or browser WebSocket endpoint |
 | Launcher | Starts that executable with the dedicated profile and remote debugging enabled |
-| Codex Edge primary | Outside local web development and explicit in-app requests, uses the Codex extension and creates a session-owned background tab |
-| Claude primary / Codex fallback | Attaches to the existing CDP endpoint and creates a background page |
+| Codex Edge primary | Outside the exceptions defined in the parent skill, uses the Codex extension and creates a session-owned background tab |
+| Claude primary / Codex MCP route | Attaches to the existing CDP endpoint and creates a background page |
 | Last fallback | Attaches to the same endpoint; it must not launch a clean browser |
 
 Before adding runtime configuration, verify that the Codex extension is connected and
@@ -70,7 +70,7 @@ route.
 The extension verification passes when it can create and operate a task-owned inactive
 tab without changing the user's visible tab.
 
-### 3. Configure the Claude primary and Codex fallback
+### 3. Configure the Claude primary and Codex MCP route
 
 Claude Code, in `~/.claude.json`:
 

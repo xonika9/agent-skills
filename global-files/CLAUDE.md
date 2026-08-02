@@ -8,6 +8,10 @@
 - Lead with the answer. Prefer 1–3 short paragraphs or a short list unless depth changes the decision.
 - Do not narrate internal deliberation or repeat the user's request. When explaining something confusing, state the plain-language core first and add only the detail needed to act.
 
+**Questions that need a user response.**
+- Do not bury questions the user needs to answer inside explanatory text. Put every such question in a final `## Questions` section; omit the section when no answer is needed.
+- For each decision question, offer 2–4 mutually exclusive options, mark the recommended option, and briefly explain the recommendation. When the user must supply a fact, value, file, or other information that cannot be represented honestly as choices, ask for it directly instead of inventing options.
+
 ## Authority and preservation
 
 - For answer, explanation, review, diagnosis, or status requests, inspect and report; do not infer permission to edit, send, publish, purchase, delete, or otherwise change external state.
@@ -41,6 +45,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 - Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
+- If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory. Stop only after `x9-browser-session`'s permitted routes are exhausted; then report the failed routes and missing prerequisite.
 <!-- END SHARED PERSONAL CORE -->
 
 ## Claude Code runtime

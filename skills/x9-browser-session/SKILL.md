@@ -10,38 +10,51 @@ Edge adapter, runtime-specific extension and in-app surfaces, CDP fallbacks, tas
 isolation, and focus safety. Re-check installed tool instructions and live schemas when
 a named surface is absent.
 
+## `chrome-devtools` MCP allowlist
+
+Targets in this list bypass the browser extension in both runtimes. An entry matches
+the exact hostname and its subdomains; do not infer sibling or look-alike domains.
+
+- `avito.ru`
+
 ## Choose the surface
 
 1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic
    operation. An explicit request to open, inspect, or operate a browser UI overrides
    this preference.
-2. If the user explicitly requests the runtime's in-app browser, use it immediately.
+2. When the target hostname matches the [`chrome-devtools` MCP allowlist](#chrome-devtools-mcp-allowlist),
+   use MCP against the verified Edge profile. This route overrides the runtime default
+   and an explicit in-app selection. If MCP cannot attach or complete the operation,
+   continue directly to the `agent-edge` fallback under the shared unattended-Edge
+   condition.
+3. If the user explicitly requests the runtime's in-app browser, use it immediately.
    That explicit choice is sticky: do not substitute Edge or another browser after an
    authentication or connection failure unless the user approves the switch.
-3. For local web development and previews, use the runtime's in-app browser unless the
+4. For local web development and previews, use the runtime's in-app browser unless the
    user explicitly requests Edge:
    - Codex: its in-app browser;
    - Claude Code: its Browser pane.
-4. For every other browser-control task, use the runtime-specific default:
+5. For every other browser-control task, use the runtime-specific default:
    - Codex: its browser extension in the verified Edge profile;
    - Claude Code: `chrome-devtools` MCP against that Edge profile. Do not use the
      Claude browser extension unless the user explicitly requests it.
-5. In Codex, if the extension is unavailable, disconnected, or lacks a required
+6. In Codex, if the extension is unavailable, disconnected, or lacks a required
    DevTools capability, retry its documented recovery once and then use
    `chrome-devtools` MCP against the same Edge profile.
-6. If MCP cannot attach or cannot perform the required operation, use `agent-edge`,
+7. If MCP cannot attach or cannot perform the required operation, use `agent-edge`,
    which connects `agent-browser` to the same Edge profile. Because the current
    `agent-browser` brings newly created and selected tabs to the foreground, use this
    fallback only when the user is not simultaneously working in Edge. If that condition
    is unknown and the fallback would require creating or switching tabs, ask one short
    question instead of taking over the window.
-7. Once a controller works, keep it through ordinary stale-reference, redraw, and
+8. Once a controller works, keep it through ordinary stale-reference, redraw, and
    timeout errors. Do not alternate controllers on the same task tab.
 
-The in-app browser remains the isolated route for an explicit request and for local
-web development in both runtimes. It has a separate profile and does not carry the
-user's Edge extensions. Use Edge when exact account state, region, cart, saved data,
-personalized content, ad blocking, or another installed extension matters.
+Outside the allowlist route above, the in-app browser remains the isolated route for an
+explicit request and for local web development in both runtimes. It has a separate
+profile and does not carry the user's Edge extensions. Use Edge when exact account
+state, region, cart, saved data, personalized content, ad blocking, or another installed
+extension matters.
 
 ## Shared Edge safety
 
@@ -69,10 +82,10 @@ a clean standalone `agent-browser` session for that work.
 
 - Profile: `~/Library/Application Support/Microsoft Edge Automation`.
 - Launcher: `~/Applications/Edge (Agent).app` with remote-debugging port `9222`.
-- Codex primary outside the local-development and explicit in-app exceptions: the
-  ChatGPT browser extension installed in this Edge.
+- Codex primary outside the exceptions in [Choose the surface](#choose-the-surface):
+  the ChatGPT browser extension installed in this Edge.
 - Claude Code primary outside the local-development exception: `chrome-devtools` MCP.
-- Codex first fallback: `chrome-devtools` MCP configured with
+- Codex MCP route: `chrome-devtools` MCP configured with
   `--browserUrl http://127.0.0.1:9222`.
 - Last fallback: `agent-edge`, which wraps `agent-browser --cdp 9222` against the same
   profile.
@@ -99,13 +112,14 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 - For local web development, previews, and an explicit request for the in-app browser,
   read and follow `browser:control-in-app-browser` and select its distinct in-app
   binding immediately. This exception remains primary for that scope.
-- For other browser work, select the Edge extension directly. Do not let
+- Except for the allowlist route in [Choose the surface](#choose-the-surface),
+  select the Edge extension directly for other browser work. Do not let
   `getDefault()` or `getForUrl()` silently choose the in-app browser. Read and follow
   the installed `chrome:control-chrome` skill; it owns the current setup and extension
   APIs.
-- If the Edge extension remains unavailable after its documented troubleshooting,
-  use the `chrome-devtools` MCP from `~/.codex/config.toml` with the shared focus-safe
-  rules.
+- The Codex MCP route uses `~/.codex/config.toml` and the shared focus-safe rules.
+  Outside the earlier exceptions, enter it only after the Edge extension remains
+  unavailable following its documented troubleshooting.
 - If MCP tools are absent after Edge is running, restart Codex once. Use `agent-edge`
   only under the shared unattended-Edge condition.
 
@@ -117,12 +131,13 @@ Read [references/setup.md](references/setup.md) for the portable adapter contrac
 
 Report cancelled or failed browser calls as failures. For an implicit/default Edge
 selection, use the runtime-specific chain: Codex extension → MCP → `agent-edge`;
-Claude Code MCP → `agent-edge`. For an explicit in-app choice, do not enter an Edge
-chain without approval. If an implicitly selected local-development browser is
-unavailable, use the runtime's Edge chain and report the fallback. Do not substitute
-remembered data or a public page when the task required the authenticated source.
-Return `DEGRADED` or `BLOCKED` with the failed route and missing prerequisite when the
-permitted chain is exhausted.
+Claude Code MCP → `agent-edge`; use the allowlist route defined in
+[Choose the surface](#choose-the-surface) instead of the Codex default. For an allowed
+explicit in-app choice, do not enter an Edge chain without approval. If an implicitly
+selected local-development browser is unavailable, use the runtime's Edge chain and
+report the fallback. Do not substitute remembered data or a public page when the task
+required the authenticated source. Return `DEGRADED` or `BLOCKED` with the failed route
+and missing prerequisite when the permitted chain is exhausted.
 
 ## Done
 

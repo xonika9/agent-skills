@@ -4,26 +4,41 @@
 
 ### Highlights
 
-- Made `x9-idea-critic` turn upheld criticism into a self-contained stronger proposal, with a change map and verdict-specific handling for revised, surviving, killed, or unproven ideas.
-- Hardened `x9-loop-engineering` with conditional patterns for authoritative derived state, recoverable public lifecycle mutations, version-scoped continuity, task-first self-repair, and evidence-bound realized execution traces.
-- Made repository-backed diagram creation source-first and added a clipboard round trip for faithful browser verification without file pickers or download-directory handoffs.
-- Made Excalidraw validation reject double-escaped control tokens in text by default, with an explicit per-element allowance for diagrams that intentionally display them.
-- Aligned Excalidraw text validation with native soft wrapping: `originalText` remains authored content, `text` may carry computed wraps, and unbound hard line breaks require an explicit semantic exception.
-- Preserved existing diagram structure and source until rendered proof passes, and required target-version text normalization before an Excalidraw revision can be adopted.
-- Preserved supported font choices in existing Excalidraw scenes instead of forcing an unrelated restyle; Excalifont and Nunito remain the recommendation for new Cyrillic content.
-- Protected open Excalidraw work and clipboard state during browser verification, rejected bindings to deleted elements, and made fit-to-view checks account for both viewport dimensions.
-- Made Excalidraw fit-to-view evidence use the actual rendered content viewport rather than nominal browser-window dimensions.
-- Added a target-normalization stability comparison so a scene that reflows on first interaction cannot pass on static rendering alone.
-- Separated whole-view and explicitly scrollable delivery checks, and rejected browser actions that strand work in a native file or directory chooser the agent cannot complete.
 
 ### Install / update
 
 ### Compatibility
 
-- Existing `x9-idea-critic` modes and provider routes are unchanged; successful critiques now include an evidence-grounded next version of the idea.
-- Existing simple and linear workflow guidance is unchanged; the new recovery, versioning, self-repair, and lineage patterns apply only when those mechanisms exist.
 
 ### Breaking changes
+
+## 2.3.0 - 2026-08-02
+
+### Highlights
+
+- Added an extensible `chrome-devtools` MCP allowlist, initially containing `avito.ru`; matching domains bypass the browser extension in both runtimes and preserve `agent-edge` only as the unattended fallback.
+- Synchronized the published global-instruction examples with the current question-format and browser-retrieval fallback rules while keeping their shared core byte-identical.
+- Made `x9-idea-critic` turn upheld criticism into a self-contained stronger proposal, with a change map and verdict-specific handling for revised, surviving, killed, or unproven ideas.
+- Hardened `x9-loop-engineering` with conditional patterns for authoritative derived state, recoverable public lifecycle mutations, version-scoped continuity, task-first self-repair, and evidence-bound realized execution traces.
+- Made repository-backed diagram creation source-first, preserve existing structure and supported fonts until rendered proof passes, and use a clipboard round trip for faithful browser verification.
+- Tightened Excalidraw structure checks for escaped control tokens, native soft wrapping, semantic hard breaks, deleted bindings, and target-version normalization.
+- Strengthened rendered diagram evidence with content-viewport fit checks, post-normalization stability, explicit whole-view versus scrollable delivery, and protection from blocking native choosers.
+
+### Install / update
+
+- Full-plugin users can update in place; no data or skill-name migration is required.
+- Selective Codex installations that use an allowlisted browser target need the `chrome-devtools` MCP route from the `x9-browser-session` setup guide.
+
+### Compatibility
+
+- Browser routing outside entries in the `chrome-devtools` MCP allowlist is unchanged; the list currently routes `avito.ru` through MCP in Codex as well as Claude Code.
+- Existing `x9-idea-critic` modes and provider routes are unchanged; successful critiques now include an evidence-grounded next version of the idea.
+- Existing simple and linear workflow guidance is unchanged; the new loop recovery, versioning, self-repair, and lineage patterns apply only when those mechanisms exist.
+- Existing Excalidraw scenes remain supported, but invalid control text, dangling bindings, unstable wrapping, or unsupported hard line breaks now fail the stricter checker until corrected or explicitly allowed.
+
+### Breaking changes
+
+None.
 
 ## 2.2.0 - 2026-07-29
 
