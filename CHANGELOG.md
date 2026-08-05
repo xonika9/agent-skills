@@ -4,6 +4,9 @@
 
 ### Highlights
 
+- Made `x9-browser-session` serialize Avito browsing across agents and controllers,
+  reuse captured listing data, and stop instead of escalating controller fallbacks when
+  Avito returns throttling or access-control signals.
 
 ### Install / update
 

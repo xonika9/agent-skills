@@ -17,6 +17,26 @@ the exact hostname and its subdomains; do not infer sibling or look-alike domain
 
 - `avito.ru`
 
+## Avito traffic discipline
+
+Treat one account, browser profile, and public IP as one browsing lane for the whole
+parent task. Avito work is sequential even when the rest of the research is delegated:
+
+- appoint one Avito operator; subagents may analyze captured data but must not browse
+  `avito.ru` concurrently;
+- keep only one Avito navigation, search, or listing load in flight. Prefer one task
+  tab; extra tabs may hold queued pages, but interact with only one at a time;
+- let the current page finish loading and inspect it before requesting the next page;
+  shortlist from search results and reuse captured data instead of repeatedly reopening
+  or refreshing listings;
+- do not bulk-load listings, paginate rapidly, poll availability, or run retry loops;
+- treat CAPTCHA, `429`, timeout, access-denied, or an Avito error page as site
+  throttling, not a controller failure. Stop Avito requests across the parent task,
+  preserve collected results, and return `DEGRADED`; do not switch controllers,
+  profiles, agents, or IP addresses to continue;
+- resume only when the user requests another check or ordinary access is already
+  visibly restored. Perform that check serially through the same browser profile.
+
 ## Choose the surface
 
 1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic
@@ -128,6 +148,10 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 Read [references/setup.md](references/setup.md) for the portable adapter contract and the verified Edge example. Never commit browser profile contents or credentials.
 
 ## Failure behavior
+
+For the Avito signals defined in
+[Avito traffic discipline](#avito-traffic-discipline), follow that section's stop rule
+instead of entering the controller fallback chain.
 
 Report cancelled or failed browser calls as failures. For an implicit/default Edge
 selection, use the runtime-specific chain: Codex extension → MCP → `agent-edge`;
