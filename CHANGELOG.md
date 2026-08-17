@@ -4,16 +4,38 @@
 
 ### Highlights
 
-- Made `x9-browser-session` serialize Avito browsing across agents and controllers,
-  reuse captured listing data, and stop instead of escalating controller fallbacks when
-  Avito returns throttling or access-control signals.
-
 ### Install / update
 
 ### Compatibility
 
+### Breaking changes
+
+## 2.4.0 - 2026-08-17
+
+### Highlights
+
+- Made `x9-browser-session` serialize Avito browsing across agents and controllers,
+  reuse captured listing data, passively re-inspect transient IP or security checks
+  after five seconds, and stop without escalating controller fallbacks when the check
+  persists or Avito returns an explicit throttling or access-control signal.
+- Synchronized the published Codex global-instruction example with the current safe
+  reconciliation rules for non-idempotent task creation.
+
+### Install / update
+
+- Full-plugin users can update in place. Selective installations should update
+  `x9-browser-session`; no skill-name or configuration migration is required.
+
+### Compatibility
+
+- Browser routing outside Avito is unchanged. Avito work now runs serially and returns
+  `DEGRADED` instead of switching controllers when throttling or access controls persist.
+- Existing global-instruction examples remain opt-in references; the new Codex task
+  reconciliation rules do not modify personal runtime configuration automatically.
 
 ### Breaking changes
+
+None.
 
 ## 2.3.0 - 2026-08-02
 

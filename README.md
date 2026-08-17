@@ -100,6 +100,8 @@ A clean automation browser is enough to test a public website. It is the wrong t
 
 The [setup guide](skills/x9-browser-session/references/setup.md), which you can hand directly to an agent, includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. Both runtimes use their in-app browser for local web development and explicit in-app requests unless the target appears in the skill's extensible MCP allowlist. Allowlisted domains, currently `avito.ru`, use `chrome-devtools` MCP in both runtimes and bypass the browser extension. Other Codex browser work defaults to its Edge extension; other Claude Code browser work defaults to MCP. Both reserve `agent-edge` for unattended fallback.
 
+Avito browsing uses one sequential lane across the parent task: the agent reuses captured listing data, passively rechecks a transient security interstitial once after five seconds, and stops with `DEGRADED` instead of switching controllers when throttling or access controls persist.
+
 #### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
 
 A Wildberries rating rarely tells the whole story: reviews may belong to another variant, the seller may be questionable, and the visible price depends on the account and region. This skill searches through your logged-in session, checks the exact variant, seller, price per unit, fresh and low-rated reviews, recurring risks, and buyer photos when appearance or packaging matters before producing a shortlist.

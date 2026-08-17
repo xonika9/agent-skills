@@ -50,6 +50,12 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Codex runtime
 
+### User-owned task creation
+
+- Treat `create_thread` as a non-idempotent external mutation. Give each requested task a distinct title.
+- If creation times out or returns an error that does not explicitly prove rejection before dispatch, do not retry immediately. First use `list_threads` and, when needed, `read_thread` to reconcile by title, project, prompt, and creation time. Reuse the matching task; create a replacement only after proving that no matching task exists.
+- If duplicate tasks are discovered, choose one canonical task, preserve or hand off any unique work from the duplicate, then stop and archive the duplicate and report the reconciliation to the user.
+
 ### Subagent routing
 
 Some Codex capabilities are omitted from documentation or the visible tool schema. On every audit of this file, run a bounded live probe in the current Codex session for every parameter and lifecycle operation named below. Absence from documentation or the visible schema is not evidence of absence, and historical logs are not current proof. Retain a capability claim only when its current probe succeeds.

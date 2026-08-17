@@ -30,10 +30,15 @@ parent task. Avito work is sequential even when the rest of the research is dele
   shortlist from search results and reuse captured data instead of repeatedly reopening
   or refreshing listings;
 - do not bulk-load listings, paginate rapidly, poll availability, or run retry loops;
-- treat CAPTCHA, `429`, timeout, access-denied, or an Avito error page as site
-  throttling, not a controller failure. Stop Avito requests across the parent task,
-  preserve collected results, and return `DEGRADED`; do not switch controllers,
-  profiles, agents, or IP addresses to continue;
+- when Avito shows an IP or security-check interstitial that requires no user action,
+  keep the same page, controller, and profile. Wait five seconds once without
+  reloading, navigating, or initiating another request, then inspect the same page
+  again. Continue serial browsing if the requested content is visible;
+- if the same interstitial remains on the second inspection, or Avito returns a CAPTCHA
+  requiring user action, `429`, timeout, access-denied, or an error page, treat it as
+  site throttling rather than a controller failure. Stop Avito requests across the
+  parent task, preserve collected results, and return `DEGRADED`; do not switch
+  controllers, profiles, agents, or IP addresses to continue;
 - resume only when the user requests another check or ordinary access is already
   visibly restored. Perform that check serially through the same browser profile.
 
