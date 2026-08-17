@@ -60,10 +60,18 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 Some Codex capabilities are omitted from documentation or the visible tool schema. On every audit of this file, run a bounded live probe in the current Codex session for every parameter and lifecycle operation named below. Absence from documentation or the visible schema is not evidence of absence, and historical logs are not current proof. Retain a capability claim only when its current probe succeeds.
 
-- Default bounded worker settings: inherit the parent model, use `reasoning_effort: "medium"`, and use `fork_turns: "none"`.
-- The reasoning effort for every Codex subagent is fixed at `reasoning_effort: "medium"`. Pass it explicitly on every `spawn_agent` call, recursively; do not inherit reasoning effort from the parent.
-- Task risk, worker role, workflow stage, review type, project or personal skills, and one-off task briefs do not select another reasoning effort. Change this global policy before using another value.
-- Model routing is independent from reasoning effort. Unless the current user or an applicable task-specific skill explicitly requires a supported model override, inherit the parent model.
+- Do not derive a Codex subagent's model or reasoning effort from the parent session.
+- The default subagent pair is `gpt-5.6-terra` with `reasoning_effort: "high"` and `fork_turns: "none"`.
+- Use Terra High when the work is bounded and its result can be accepted without repeating the work: evidence-backed repository exploration, documentation research, test or log analysis, and implementation with a narrow contract and an independent acceptance signal.
+- Tests created or modified by the same Terra subagent are not an independent acceptance signal by themselves.
+- Use `gpt-5.6-sol` with `reasoning_effort: "medium"` when failure would be costly or hard to detect, or when the subagent must resolve load-bearing ambiguity, make architecture, product, security, data, or migration decisions, investigate an uncertain cross-system root cause, review high-impact work without an independent oracle, or perform final independent acceptance.
+- When classification is unclear, use Sol Medium; quality takes precedence over quota.
+- The parent owns acceptance. A Terra subagent's confidence or self-assessment is not sufficient evidence of correctness.
+- If a Terra result needs substantive correction or a full Sol redo, route remaining subproblems of the same kind to Sol Medium for the rest of the current parent task.
+- A Terra subagent that encounters load-bearing ambiguity must return its evidence and boundary instead of guessing. This escalation supplements, but does not replace, parent verification.
+- Always pass `model` and `reasoning_effort` together and explicitly on every `spawn_agent` call, including recursive spawns: Terra uses `high`; Sol uses `medium`.
+- Do not delegate merely to use a cheaper model. Separate execution must materially improve speed, context isolation, independence, or verification.
+- An explicit user choice or applicable task-specific skill may override the model. Unless reasoning effort is also explicitly overridden, use the model-effort pair defined above.
 - `agent_type` is accepted even when omitted from the visible schema; verify the applied role under `agent_role` in child session metadata.
 - `fork_turns` supports `"none"`, positive recent-history counts such as `"1"`, and `"all"`. Use `"none"` by default.
 - `service_tier` is accepted and appears in the child's `thread_settings_applied` event. Inspect that event when exact tier routing is load-bearing; `turn_context` may omit it.
