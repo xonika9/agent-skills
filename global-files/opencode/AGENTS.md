@@ -46,13 +46,16 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
 - If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory. Stop only after `x9-browser-session`'s permitted routes are exhausted; then report the failed routes and missing prerequisite.
+- Resolve a selected skill from its catalog-provided location and read that exact `SKILL.md`. Skill directories may be symlinked, so before reporting one missing, verify the exact path or use symlink-aware traversal; an empty result from `rg --files` or `find ... -type f` does not prove absence.
 <!-- END SHARED PERSONAL CORE -->
 
-## Claude Code runtime
+## OpenCode runtime
 
-### Subagent routing
+### Browser control
 
-- Set an explicit `model` on every direct `Agent` call and on any other subagent tool that exposes a `model` field, including recursive spawns. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
-- Route by task: `sonnet` — cheap parallel exploration, code search, bulk reads, small edits; `opus` — hard reasoning, user-facing work, reviews, orchestration.
-- Haiku only when I explicitly ask for it.
-- An explicit model choice from me takes precedence. Otherwise, an applicable skill may select another model for a bounded adversarial or judge role.
+- In OpenCode, use the configured `chrome-devtools` MCP for browser control. Create task-owned pages with `background: true` and select them with `bringToFront: false`.
+
+### Subagent coordination
+
+- Use `terra-high` for general delegated work unless the user or an applicable skill explicitly selects another configured subagent.
+- Keep coordination and final acceptance in the parent.

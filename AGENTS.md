@@ -7,7 +7,7 @@ This is the public source of truth for the `x9-*` Agent Skills. The package targ
 
 - Treat every directory under `skills/` as canonical. Do not create runtime-specific copies of a skill.
 - Keep platform-specific behavior inside a clearly named adapter or reference. Do not claim portability for a route that depends on a missing runtime tool.
-- The published global-instruction files live in `global-files/`. They are examples for users, not instructions for work on this repository.
+- The installable global-instruction files live under `global-files/<harness>/`. They do not govern work on this repository; the root `AGENTS.md` remains canonical here.
 - Preserve unrelated and user-owned changes. Never commit, push, create a tag, or publish a release unless the user explicitly requests it.
 
 ## README and public copy

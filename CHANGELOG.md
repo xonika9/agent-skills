@@ -4,11 +4,19 @@
 
 ### Highlights
 
+- Split the installable global instructions into dedicated OpenCode, Codex, and Claude Code files while preserving their shared personal core.
+
 ### Install / update
+
+- Existing users can link each harness to its matching file under `global-files/<harness>/`; back up local global instructions before replacing them with links.
 
 ### Compatibility
 
+- The former top-level `global-files/AGENTS.md` and `global-files/CLAUDE.md` paths were replaced by harness-specific paths.
+
 ### Breaking changes
+
+- Consumers of the published global files must update references to the new harness-specific paths.
 
 ## 2.4.0 - 2026-08-17
 

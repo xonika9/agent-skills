@@ -40,13 +40,13 @@ Keep `README.md` as the canonical English presentation and `README.ru.md` materi
 
 Load the installed `humanizer-ru` skill for the final Russian text. Apply its documentation-level editing rules without changing meaning or manufacturing facts, then run its bundled scanner against the complete `README.ru.md`, even when the file did not require a release-specific edit. Resolve the skill and scanner from the live runtime rather than a personal absolute path. If optional packages are missing, use an ephemeral environment instead of changing global Python state. Treat scanner findings as evidence to review, not permission to damage technical accuracy for a score.
 
-## Synchronize global instruction examples
+## Synchronize global instruction files
 
-Load `x9-agent-instructions`, then compare the installed personal global files with `global-files/AGENTS.md` and `global-files/CLAUDE.md`. The repository files are sanitized published examples: update them from the current personal contracts, preserving the byte-identical shared core and keeping Codex-only and Claude Code-only behavior in their respective runtime adapters.
+Load `x9-agent-instructions`, then compare the installed personal global files with the matching files under `global-files/<harness>/`. Preserve the byte-identical shared core and keep OpenCode-only, Codex-only, and Claude Code-only behavior in their respective runtime adapters.
 
-Never copy credentials, personal paths, machine-specific state, private project names, or unverified runtime observations into `global-files/`. Replace local installation details with discoverable public instructions and retain the meaning of authority and safety boundaries. Keep the README descriptions of the global files accurate in both languages.
+Never copy credentials, personal paths, machine-specific state, private project names, or unverified runtime observations into `global-files/`. Keep the README descriptions and installation paths accurate in both languages.
 
-Release authority permits reading the personal global files and updating their repository examples; it does not permit editing files under `~/.claude/` or `~/.codex/`. If the personal shared cores disagree or their intended public form is ambiguous, mark preparation `BLOCKED` instead of choosing a source or modifying home-directory files.
+Release authority permits reading the installed global files and updating their matching repository files; it does not permit replacing an independently managed file under a harness home directory. If the shared cores disagree or an installed file differs from its matching repository file unexpectedly, mark preparation `BLOCKED` instead of choosing a source.
 
 ## Choose and confirm the version
 
@@ -67,7 +67,7 @@ After version confirmation:
 - leave a new empty `Unreleased` template with `Highlights`, `Install / update`, `Compatibility`, and `Breaking changes`;
 - make the release notes concise and outcome-oriented, cover the complete candidate, and write `None.` explicitly when there are no breaking changes;
 - apply the identified README corrections, keeping the English and Russian versions materially equivalent;
-- synchronize the sanitized examples in `global-files/` with the current personal global contracts;
+- synchronize the harness-specific files in `global-files/` with the current personal global contracts;
 - set the same `X.Y.Z` in both plugin manifests.
 
 Do not include private paths, credentials, tokens, cookies, fabricated evidence, or changes outside the confirmed candidate.
@@ -76,7 +76,7 @@ Do not include private paths, credentials, tokens, cookies, fabricated evidence,
 
 Run the complete command set in [checks.md](references/checks.md). A failed command blocks preparation and publication until it is fixed or the maintainer explicitly changes scope; never present a partial gate as a successful release.
 
-Preparation is complete when the release diff contains the confirmed version and date, both manifests agree, `Unreleased` is reset, the notes cover the tag-to-candidate diff, every public change is accurately represented in both READMEs or has a justified no-impact determination, the global examples match the sanitized current personal contracts, and every required check passes.
+Preparation is complete when the release diff contains the confirmed version and date, both manifests agree, `Unreleased` is reset, the notes cover the tag-to-candidate diff, every public change is accurately represented in both READMEs or has a justified no-impact determination, the harness-specific global files match the current personal contracts, and every required check passes.
 
 ## Publish
 

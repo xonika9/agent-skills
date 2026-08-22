@@ -8,10 +8,12 @@ START = b"<!-- BEGIN SHARED PERSONAL CORE -->"
 END = b"<!-- END SHARED PERSONAL CORE -->"
 ROOT = Path(__file__).resolve().parents[4]
 FILES = (
+    Path.home() / ".config/opencode/AGENTS.md",
     Path.home() / ".claude/CLAUDE.md",
     Path.home() / ".codex/AGENTS.md",
-    ROOT / "global-files/CLAUDE.md",
-    ROOT / "global-files/AGENTS.md",
+    ROOT / "global-files/opencode/AGENTS.md",
+    ROOT / "global-files/claude/CLAUDE.md",
+    ROOT / "global-files/codex/AGENTS.md",
 )
 
 

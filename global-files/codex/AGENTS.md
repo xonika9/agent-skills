@@ -46,9 +46,15 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
 - If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory. Stop only after `x9-browser-session`'s permitted routes are exhausted; then report the failed routes and missing prerequisite.
+- Resolve a selected skill from its catalog-provided location and read that exact `SKILL.md`. Skill directories may be symlinked, so before reporting one missing, verify the exact path or use symlink-aware traversal; an empty result from `rg --files` or `find ... -type f` does not prove absence.
 <!-- END SHARED PERSONAL CORE -->
 
 ## Codex runtime
+
+### Local storage hygiene
+
+- Treat `$CODEX_HOME/evidence` and `$CODEX_HOME/worktrees` as bounded task storage, not permanent archives. Do not retain reconstructible binaries, package archives, dependency caches, build outputs, or completed worktrees there after the task.
+- Before completing a task that created or materially expanded either directory, report its size and disposition. Remove task-created disposable data only when deletion is already authorized; otherwise ask whether to keep or remove it. Preserve user changes and evidence required for resumability or audit.
 
 ### User-owned task creation
 
@@ -56,23 +62,8 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - If creation times out or returns an error that does not explicitly prove rejection before dispatch, do not retry immediately. First use `list_threads` and, when needed, `read_thread` to reconcile by title, project, prompt, and creation time. Reuse the matching task; create a replacement only after proving that no matching task exists.
 - If duplicate tasks are discovered, choose one canonical task, preserve or hand off any unique work from the duplicate, then stop and archive the duplicate and report the reconciliation to the user.
 
-### Subagent routing
+### Subagent delegation
 
-Some Codex capabilities are omitted from documentation or the visible tool schema. On every audit of this file, run a bounded live probe in the current Codex session for every parameter and lifecycle operation named below. Absence from documentation or the visible schema is not evidence of absence, and historical logs are not current proof. Retain a capability claim only when its current probe succeeds.
-
-- Do not derive a Codex subagent's model or reasoning effort from the parent session.
-- The default subagent pair is `gpt-5.6-terra` with `reasoning_effort: "high"` and `fork_turns: "none"`.
-- Use Terra High when the work is bounded and its result can be accepted without repeating the work: evidence-backed repository exploration, documentation research, test or log analysis, and implementation with a narrow contract and an independent acceptance signal.
-- Tests created or modified by the same Terra subagent are not an independent acceptance signal by themselves.
-- Use `gpt-5.6-sol` with `reasoning_effort: "medium"` when failure would be costly or hard to detect, or when the subagent must resolve load-bearing ambiguity, make architecture, product, security, data, or migration decisions, investigate an uncertain cross-system root cause, review high-impact work without an independent oracle, or perform final independent acceptance.
-- When classification is unclear, use Sol Medium; quality takes precedence over quota.
-- The parent owns acceptance. A Terra subagent's confidence or self-assessment is not sufficient evidence of correctness.
-- If a Terra result needs substantive correction or a full Sol redo, route remaining subproblems of the same kind to Sol Medium for the rest of the current parent task.
-- A Terra subagent that encounters load-bearing ambiguity must return its evidence and boundary instead of guessing. This escalation supplements, but does not replace, parent verification.
-- Always pass `model` and `reasoning_effort` together and explicitly on every `spawn_agent` call, including recursive spawns: Terra uses `high`; Sol uses `medium`.
-- Do not delegate merely to use a cheaper model. Separate execution must materially improve speed, context isolation, independence, or verification.
-- An explicit user choice or applicable task-specific skill may override the model. Unless reasoning effort is also explicitly overridden, use the model-effort pair defined above.
-- `agent_type` is accepted even when omitted from the visible schema; verify the applied role under `agent_role` in child session metadata.
-- `fork_turns` supports `"none"`, positive recent-history counts such as `"1"`, and `"all"`. Use `"none"` by default.
-- `service_tier` is accepted and appears in the child's `thread_settings_applied` event. Inspect that event when exact tier routing is load-bearing; `turn_context` may omit it.
-- Track the returned task path, collect the child's final result, and inspect the child's session metadata when exact routing is load-bearing.
+- Delegate substantive repository exploration, implementation, and test or log analysis to subagents. Keep coordination and final acceptance in the parent.
+- Let Codex configuration choose the default subagent model and reasoning effort. Override them only when the user or an applicable skill explicitly requires another model.
+- Use `fork_turns: "none"` by default. Include recent conversation context only when the subagent's task cannot be made self-contained.

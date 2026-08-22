@@ -178,9 +178,9 @@ Large Markdown documentation collections become easier for people and agents to 
 
 The main skill file is a short route selector, so routine edits load only the maintenance contract. Adoption, repair, and bulk migration live in separate references. Legacy v0.1 collections keep working without a forced repository-wide migration, and deterministic scripts verify that document bodies, line endings, and BOMs did not change.
 
-## Global instruction examples
+## Global instruction files
 
-[`global-files/AGENTS.md`](global-files/AGENTS.md) and [`global-files/CLAUDE.md`](global-files/CLAUDE.md) contain the shared personal core plus sanitized runtime adapters for Claude Code and Codex. They cover language preferences, authority boundaries, preservation, uncertainty, observable completion, documentation and browser routing, and tested subagent behavior. Machine-specific installation paths are intentionally replaced with skill discovery by name.
+The repository carries separate ready-to-install global files for [OpenCode](global-files/opencode/AGENTS.md), [Codex](global-files/codex/AGENTS.md), and [Claude Code](global-files/claude/CLAUDE.md). They share the same personal core while keeping each harness adapter separate. They cover language preferences, authority boundaries, preservation, uncertainty, observable completion, documentation and browser routing, and tested subagent behavior. Machine-specific installation paths are intentionally replaced with skill discovery by name.
 
 Treat them as examples, not as files to overwrite blindly. A safe request is:
 
