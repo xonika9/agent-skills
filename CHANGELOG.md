@@ -5,7 +5,7 @@
 ### Highlights
 
 - Documented the repository-wide package validation and release gates, including their evidence, blocking conditions, and known coverage gaps.
-- `x9-idea-critic` now runs every selected Opus and GPT critic at `high` effort, using the live-confirmed `sol-high` agent for OpenCode GPT routes and an explicit Codex effort override from Claude Code.
+- `x9-idea-critic` now runs every selected Opus and GPT critic at `high` effort, preferring a live-confirmed native `opus-high` agent in Claude Code, using `sol-high` for OpenCode GPT routes, and applying an explicit Codex effort override from Claude Code.
 - Added an OpenCode route to `x9-idea-critic`, combining fresh Claude CLI sessions for Opus critics with explicitly identified native GPT subagents.
 - Added `x9-opencode-sessions` for bounded OpenCode V2 session discovery, text-only message inspection, activity and completion checks, and preview-first cross-branch coordination.
 - Split the installable global instructions into dedicated OpenCode, Codex, and Claude Code files while preserving their shared personal core.

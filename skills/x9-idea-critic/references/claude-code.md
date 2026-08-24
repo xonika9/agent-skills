@@ -4,7 +4,9 @@ Use this adapter only when `x9-idea-critic` runs from Claude Code. Inspect the l
 
 ## Opus route
 
-Resolve a currently available Opus-family model and select it explicitly at `high` effort for every Opus critic. Give each fresh worker only its sealed brief and the read surfaces required by that brief. If no Opus-family model can be selected or `high` effort cannot be enforced, the route failed; do not substitute the current configured model or another Claude family.
+Prefer the native `opus-high` agent only when its live definition confirms both an Opus-family model and `high` effort. Give each fresh worker only its sealed brief and the read surfaces required by that brief.
+
+If that agent is unavailable or its live definition does not confirm both properties, use a fresh non-persistent Claude CLI session only when the live interface supports explicit Opus-family selection, `high` effort, and sealed-brief input. If neither mechanism can enforce both model family and effort, the route failed; asking for `high` in the brief is not enforcement, and another Claude family is not a substitute.
 
 ## GPT route
 
