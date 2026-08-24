@@ -7,6 +7,8 @@ description: Use only when the user explicitly asks to criticize, red-team, pres
 
 Criticize through the routes the user selected. Opus and GPT are independent perspectives with different error profiles; neither route is a fallback or a quality tier.
 
+The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
+
 ## Select mode
 
 For `/x9-idea-critic [mode] [idea]`, treat the first argument as a mode only when it is one of the recognized words below. Otherwise it is part of the idea. Natural-language requests map to the same modes.
@@ -66,5 +68,12 @@ Every critic must run at `high` effort. Every adapter must select a currently av
 6. Change map connecting every material difference from the original proposal to the upheld finding or evidence that justifies it. Group overlapping work, show dependencies, and distinguish changes required by `KILLER` or `SERIOUS` findings from optional improvements, accepted risks, or deferred work associated with `MINOR` findings.
 7. Cheapest tests that could falsify the remaining assumptions.
 8. Missing evidence and unresolved disagreement.
+9. Questions, only when needed. Ask the smallest sufficient set of questions whose answers could materially change the verdict, rewritten proposal, or next action. Do not ask rhetorical questions or repeat information already available. Omit this section when no user input is needed.
+10. What to do next. End with:
+    - `Decision:` state whether to stop the original proposal, adopt the rewritten proposal, proceed with the hardened proposal, or defer judgment.
+    - `Do now:` name one concrete immediate action.
+    - `Then:` state the observable result that permits proceeding or requires revising or killing the proposal.
+
+The final section must be understandable without reading the full critique. When unanswered questions block a defensible decision, set `Do now` to answering those questions and explain which answer would change the direction. Otherwise, choose the most valuable falsification test or the first implementation action. For `KILL`, do not recommend implementing the original proposal. For `REVISE`, treat the rewrite as the next candidate, not as proven. For `SURVIVES`, proceed unless a remaining assumption makes a named test a prerequisite. For `NOT_PROVEN`, obtain the named missing evidence before deciding.
 
 For `REVISE`, rewrite the original proposal and include every change needed to address upheld `KILLER` and `SERIOUS` findings. For `SURVIVES`, return a hardened version with only the changes justified by the findings. For `KILL`, do not disguise the invalidated core as a revision: return the closest evidence-supported replacement for the same intended outcome, or state that no defensible replacement is proven. For `BLOCKED`, do not manufacture a rewrite; explain what evidence is needed before one can be produced.

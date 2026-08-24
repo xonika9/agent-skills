@@ -7,6 +7,8 @@ description: Claude Code only; never use in a Codex session. Use when substantia
 
 Use `x9-browser-session` for browser routing. Use the plugin route when it is available; the raw CLI remains a fallback for an explicitly requested delegation.
 
+The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.
+
 When Claude and OpenAI/Codex are backed by separate subscriptions or usage pools, delegation can distribute substantial work instead of exhausting only the Claude allowance. Treat that as a user-specific routing benefit, not a promise of lower cost: API billing, plan limits, and available runtimes vary.
 
 ## Choose the route

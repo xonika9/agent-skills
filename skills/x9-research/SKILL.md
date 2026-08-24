@@ -8,6 +8,8 @@ compatibility: Requires Python 3 for deterministic HTML output validation.
 
 Treat prior knowledge as a hypothesis. Open live sources, trace every load-bearing claim, search for disconfirming evidence, and label uncertainty.
 
+The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
+
 ## Method
 
 1. Define the real question and the claims the answer depends on. Ask only when an unresolved ambiguity would change what is researched.

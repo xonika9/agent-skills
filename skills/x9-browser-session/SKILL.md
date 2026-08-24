@@ -173,3 +173,5 @@ and missing prerequisite when the permitted chain is exhausted.
 Report the runtime, browser surface, controller, task-owned tab or page, requested
 result, and any checks that could not be completed. For mutating work, verify the
 resulting UI state or server response before claiming completion.
+
+The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.

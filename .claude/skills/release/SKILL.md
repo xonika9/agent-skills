@@ -32,6 +32,14 @@ Preserve unrelated and user-owned changes. If the candidate cannot be separated 
 
 Reconcile every user-visible change since the latest public tag with the release notes. Treat the `AUDIT` file list from `python3 scripts/prepare_release.py --check` as a backstop, not a substitute for reading the semantic diff.
 
+## Review onboarding contracts
+
+From the diff since the latest public tag, identify every changed public `skills/*/SKILL.md`, every changed resource reachable from a public skill, and every added, modified, or deleted `skills/*/references/onboarding.json`. For each affected public skill, read its owner `SKILL.md` and the relevant reachable references to determine semantically whether an external operating prerequisite was added, changed, or removed. Do not infer requirements with a heuristic parser, central registry, or hash gate.
+
+Compare each finding with that skill's local `references/onboarding.json` using the declaration contract and validator owned by `x9-onboarding`. An added, modified, or deleted declaration is its own review trigger. For a deletion, read the owner even when its `SKILL.md` is unchanged and explicitly determine whether it now has no external operating prerequisites. A missing declaration is allowed only when the review finds no such requirements.
+
+Record an observable onboarding verdict for every affected public skill: `MATCHED` when the local declaration reflects its requirements, `NO_REQUIREMENTS` when an absent declaration is justified, or `BLOCKED` when the declaration and semantic diff disagree. Include the changed surfaces and concise evidence in the release output. A `BLOCKED` verdict stops preparation until the contract or the candidate is corrected.
+
 ## Prevent README drift
 
 Read both READMEs completely and trace every public skill, installation route, compatibility claim, renamed concept, and removed behavior in the candidate to its documentation. A changed public contract must have an accurate corresponding section or an explicit, evidence-backed determination that the change has no README impact. Do not infer coverage from whether a README file appears in the diff.

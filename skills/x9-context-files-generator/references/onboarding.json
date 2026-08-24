@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode", "claude", "codex"],
+  "requirements": [
+    {
+      "id": "agent-instructions-rubric",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Creating or reviewing agent instructions.",
+      "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}

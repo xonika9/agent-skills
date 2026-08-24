@@ -50,3 +50,5 @@ Read [references/agents-md.md](references/agents-md.md) when editing agent files
 - Agent and human files contain only behavior-changing audience-specific material.
 - The instruction rubric is reported as `applied`, `not applicable`, or `degraded`; a complete or clean agent-file result requires `applied`.
 - A fresh-context reader can start the project without inventing a command.
+
+The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.

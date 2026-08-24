@@ -8,6 +8,8 @@ compatibility: Native checks require Python 3 for Excalidraw, a target-compatibl
 
 Design, create, review, and convert diagrams while keeping the visual argument and the native source independently correct.
 
+The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
+
 ## Resolve two decisions
 
 First choose the view that expresses the relationship: flowchart, sequence, state, architecture, data model, hierarchy, timeline, comparison, or another supported view. Then choose the delivery format. Do not let a familiar file format decide the diagram type.

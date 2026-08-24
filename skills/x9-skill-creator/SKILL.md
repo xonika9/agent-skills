@@ -8,6 +8,8 @@ compatibility: Requires Python 3 and Ruby with Psych for structural validation. 
 
 Create and audit skills through one cross-runtime quality contract: precise triggering, appropriate freedom, safe authority, progressive disclosure, and evidence proportional to maturity and risk.
 
+The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
+
 The body of a skill and some reachable resources are agent instructions. For every Create, Audit, or Fix, load and apply `x9-agent-instructions` before writing or judging any agent-facing instructional prose in `SKILL.md` or reachable resources. It is a subordinate rubric, not the primary skill-authoring workflow, and it owns language, prescription, duplication, and what earns a line. This skill owns what makes the instruction a skill: triggering metadata, placement and runtime adapters, resource layout and progressive disclosure, evidence tier, structural validation, and the audit handoff.
 
 If `x9-agent-instructions` is unavailable, continue only the remaining skill checks, record the instruction rubric as `degraded`, and do not claim that instruction quality was reviewed. A full skill audit cannot be `clean` in that state. Work whose explicit scope contains no agent-facing prose may record the rubric as `not applicable`.

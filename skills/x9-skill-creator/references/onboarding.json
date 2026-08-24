@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode", "claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running structural validation.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "ruby-runtime",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Strict YAML inspection.",
+      "check": {"type": "command-present", "command": "ruby"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "ruby-psych-module",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Confirming that Ruby Psych is available.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "agent-instructions-rubric",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Reviewing agent-facing instruction prose.",
+      "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}

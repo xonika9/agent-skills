@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "supported_runtimes": ["claude", "codex"],
+  "requirements": [
+    {
+      "id": "browser-session",
+      "runtimes": ["claude", "codex"],
+      "kind": "skill",
+      "level": "required",
+      "needed_for": "Searching Wildberries in a real browser.",
+      "check": {"type": "skill-present", "target_skill": "x9-browser-session"},
+      "guidance_id": "install-skill"
+    },
+    {
+      "id": "authenticated-wildberries-session",
+      "group": "wildberries-access-route",
+      "runtimes": ["claude", "codex"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Checking Wildberries through the authenticated browser route.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "sessionless-fallback-permission",
+      "group": "wildberries-access-route",
+      "runtimes": ["claude", "codex"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Authorizing the sessionless browser fallback.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "native-subagents",
+      "runtimes": ["claude", "codex"],
+      "kind": "runtime-feature",
+      "level": "optional",
+      "needed_for": "Independently verifying high-risk product finalists.",
+      "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
+      "guidance_id": "enable-runtime-feature"
+    }
+  ]
+}

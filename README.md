@@ -30,6 +30,8 @@ Start with the interactive installer. It lets you choose the skills, target agen
 npx skills add xonika9/agent-skills
 ```
 
+After installation or an update, ask your agent: "Check whether my installed x9 skills are ready to use." `x9-onboarding` reports readiness and any manual next steps without changing your environment. If you install selectively and want that check, choose `x9-onboarding` too.
+
 Some workflows compose multiple skills. If you install selectively, choose the companion skills named in the catalog as well; the installer does not resolve those relationships automatically.
 
 Want to inspect the catalog first?
@@ -78,6 +80,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - You need a strong prompt, or a second look at instructions you already wrote: use [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
 - You need to find, read, coordinate, or continue another OpenCode V2 chat: use [`x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md).
+- You have installed or updated skills and need to know what is ready to use: ask [`x9-onboarding`](skills/x9-onboarding/SKILL.md) to check them.
 - A new or existing repository needs `AGENTS.md` and `CLAUDE.md`: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
@@ -86,6 +89,14 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md).
 
 ## Skill catalog
+
+### Setup after installation
+
+#### [`x9-onboarding`](skills/x9-onboarding/SKILL.md)
+
+Installing a skill adds its files, but a usable workflow can still depend on a CLI, a user-controlled account, or a runtime component. This skill checks trusted local setup declarations after installation or an update, reports check coverage separately from readiness, and gives a manual checklist for what remains.
+
+It is read-only: it does not install software, sign in, run setup commands, change configuration or files, or restart a runtime. OpenCode, Claude Code, and Codex have adapters in version 1. Other runtimes receive `PARTIAL` coverage and `BLOCKED` readiness rather than a guess.
 
 ### Research and personal browser automation
 

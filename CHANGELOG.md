@@ -4,10 +4,13 @@
 
 ### Highlights
 
+- Global instructions now carry a compact worker-brief contract that requires non-derivable context, proportional evidence, scope fidelity, and specialist-prompt precedence without loading the full `x9-agent-instructions` skill before dispatch.
 - Applied the August repository audits: package metadata now stays synchronized across Claude Code and Codex, published global cores are checked in CI, installed global files are checked byte-for-byte before release, and documented package checks match the automated gate.
 - Hardened `x9-opencode-sessions` metadata filtering so session locations remain available for precise selection while internal skill text stays private.
 - Documented the repository-wide package validation and release gates, including their evidence, blocking conditions, and known coverage gaps.
 - `x9-idea-critic` now runs every selected Opus and GPT critic at `high` effort, assigns every `full` critic its declared lens, and uses sealed evidence packets instead of broad source access. Claude CLI routes disable inherited customizations and tools, Codex sealed runs reject re-enabled hooks, and native routes distinguish accepted controls from unavailable post-run telemetry.
+- `x9-idea-critic` now ends critiques with any load-bearing questions followed by a direct decision, one immediate action, and an observable condition for proceeding, revising, or stopping.
+- Added `x9-onboarding` to check whether installed or updated `x9-*` skills are ready, distinguish check coverage from readiness, and provide a manual checklist without changing the environment.
 - Added an OpenCode route to `x9-idea-critic`, combining fresh Claude CLI sessions for Opus critics with explicitly identified native GPT subagents.
 - Added `x9-opencode-sessions` for bounded OpenCode V2 session discovery, text-only message inspection, activity and completion checks, and preview-first cross-branch coordination.
 - Split the installable global instructions into dedicated OpenCode, Codex, and Claude Code files while preserving their shared personal core.
@@ -15,6 +18,7 @@
 ### Install / update
 
 - Full-plugin users receive `x9-opencode-sessions` on update. Individual installations require Python 3 and the OpenCode V2 `opencode2` CLI.
+- Full-plugin users receive `x9-onboarding` on update. Selective installations should include it when the user wants an installation-readiness check.
 - Existing users can link each harness to its matching file under `global-files/<harness>/`; back up local global instructions before replacing them with links.
 
 ### Compatibility
@@ -22,11 +26,12 @@
 - Changes to production package/release gates and release workflows now require `Unreleased` coverage, while test-only and auxiliary files remain exempt.
 - `x9-idea-critic` now supports independent OpenCode routes when Claude CLI exposes the required Opus controls or the live subagent catalog explicitly identifies a GPT-family agent; default and full runs still require every selected route for a complete result.
 - `x9-opencode-sessions` is OpenCode V2 only. It uses native `subagent` for the current parent session's children and the V2 Sessions API for other OpenCode branches; Claude Code, Codex, and cross-harness sessions are unsupported.
+- `x9-onboarding` has read-only adapters for OpenCode, Claude Code, and Codex. Other runtimes report `PARTIAL` coverage and `BLOCKED` readiness; it never installs dependencies, authorizes accounts, changes files or configuration, or restarts a runtime.
 - The former top-level `global-files/AGENTS.md` and `global-files/CLAUDE.md` paths were replaced by harness-specific paths.
 
 ### Breaking changes
 
-- None for the new skill.
+- `x9-onboarding` introduces no breaking changes.
 - Consumers of the published global files must update references to the new harness-specific paths.
 
 ## 2.4.0 - 2026-08-17

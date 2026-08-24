@@ -46,6 +46,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - By default, only the user-facing root session orchestrates; configured lower-cost subagents are its execution layer.
 - The root delegates substantive repository exploration, implementation, and test or log analysis even when the work is sequential rather than parallel.
 - Every agent that delegates states the mode in each worker brief: direct execution without spawning subagents by default, or nested delegation only when an explicit user, applicable skill, or repository instruction requires it.
+- Each worker brief gives the goal, only context the worker cannot derive, scope and authority, the evidence or completion signal appropriate to the task, and the required output. Do not broaden or narrow the requested scope. If competing interpretations would materially change the outcome, ask the user; otherwise choose the least-assumptive reading consistent with the stated goal. An active skill's specialist prompt and output contract remain authoritative; add task-specific deltas rather than restating or replacing them.
 - Keep task decomposition, coordination, integration, and final acceptance in the parent.
 - Follow an explicit user, applicable skill, or repository instruction that selects a different delegation mode.
 

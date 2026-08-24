@@ -101,3 +101,5 @@ python3 <skill-directory>/scripts/check_globals.py
 - In Write, every check above passes on the delivered prompt. In Review, failed checks become retained recommendations; after approved edits, every applicable check passes or the remaining exception is explicit.
 - `check_globals.py` passes from an unrelated working directory whenever the global files changed.
 - The handoff names the targets reviewed and what was verified; after approved edits, it also names the files changed.
+
+The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.

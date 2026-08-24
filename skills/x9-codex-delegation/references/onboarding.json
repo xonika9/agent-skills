@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "supported_runtimes": ["claude"],
+  "requirements": [
+    {
+      "id": "native-agent-route",
+      "group": "delegation-route",
+      "runtimes": ["claude"],
+      "kind": "agent",
+      "level": "required",
+      "needed_for": "Delegating through the native Codex agent.",
+      "check": {"type": "runtime-component", "component_id": "codex:codex-rescue"},
+      "guidance_id": "create-agent"
+    },
+    {
+      "id": "command-line-route",
+      "group": "delegation-route",
+      "runtimes": ["claude"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Delegating through the command line fallback.",
+      "check": {"type": "command-present", "command": "codex"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "browser-session",
+      "runtimes": ["claude"],
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Delegating logged in browser work.",
+      "check": {"type": "skill-present", "target_skill": "x9-browser-session"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}

@@ -12,6 +12,14 @@ START = b"<!-- BEGIN SHARED PERSONAL CORE -->"
 END = b"<!-- END SHARED PERSONAL CORE -->"
 SKILL_FILE = Path(__file__).parent.parent / "SKILL.md"
 CONTEXT_SKILL_FILE = SKILL_FILE.parent.parent / "x9-context-files-generator" / "SKILL.md"
+PUBLISHED_GLOBAL_FILES = (
+    SKILL_FILE.parents[2] / "global-files/opencode/AGENTS.md",
+    SKILL_FILE.parents[2] / "global-files/claude/CLAUDE.md",
+    SKILL_FILE.parents[2] / "global-files/codex/AGENTS.md",
+)
+WORKER_BRIEF_RULE = b"Each worker brief gives the goal, only context the worker cannot derive"
+SCOPE_FIDELITY_RULE = b"Do not broaden or narrow the requested scope."
+SPECIALIST_OWNER_RULE = b"An active skill's specialist prompt and output contract remain authoritative"
 
 
 class ExtractTests(unittest.TestCase):
@@ -53,6 +61,14 @@ class SkillContractTests(unittest.TestCase):
     def test_skill_creator_can_load_subordinate_rubric(self):
         self.assertIn("primary workflow for", self.skill)
         self.assertIn("subordinate instruction-quality rubric", self.skill)
+
+    def test_all_published_shared_cores_define_worker_brief_quality(self):
+        shared_cores = [extract(path) for path in PUBLISHED_GLOBAL_FILES]
+        self.assertTrue(all(core == shared_cores[0] for core in shared_cores[1:]))
+        for path, shared_core in zip(PUBLISHED_GLOBAL_FILES, shared_cores):
+            self.assertIn(WORKER_BRIEF_RULE, shared_core, path)
+            self.assertIn(SCOPE_FIDELITY_RULE, shared_core, path)
+            self.assertIn(SPECIALIST_OWNER_RULE, shared_core, path)
 
     def test_installed_skills_use_names_not_machine_paths(self):
         self.assertIn("Name an installed skill by its discoverable name", self.skill)

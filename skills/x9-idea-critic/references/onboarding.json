@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode", "claude", "codex"],
+  "requirements": [
+    {
+      "id": "claude-opus-agent",
+      "group": "opus-critic-route",
+      "runtimes": ["claude"],
+      "kind": "agent",
+      "level": "required",
+      "needed_for": "Running Opus critics.",
+      "check": {"type": "runtime-component", "component_id": "opus-high"},
+      "guidance_id": "create-agent"
+    },
+    {
+      "id": "claude-opus-cli",
+      "group": "opus-critic-route",
+      "runtimes": ["claude"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running Opus critics.",
+      "check": {"type": "command-present", "command": "claude"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "claude-gpt-delegation",
+      "runtimes": ["claude"],
+      "kind": "skill",
+      "level": "required",
+      "needed_for": "Running GPT critics.",
+      "check": {"type": "skill-present", "target_skill": "x9-codex-delegation"},
+      "guidance_id": "install-skill"
+    },
+    {
+      "id": "opencode-opus-cli",
+      "runtimes": ["opencode"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running Opus critics.",
+      "check": {"type": "command-present", "command": "claude"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "opencode-gpt-agent",
+      "runtimes": ["opencode"],
+      "kind": "agent",
+      "level": "required",
+      "needed_for": "Running GPT critics.",
+      "check": {"type": "runtime-component", "component_id": "sol-high"},
+      "guidance_id": "create-agent"
+    },
+    {
+      "id": "codex-opus-cli",
+      "runtimes": ["codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running Opus critics.",
+      "check": {"type": "command-present", "command": "claude"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "codex-native-subagents",
+      "runtimes": ["codex"],
+      "kind": "runtime-feature",
+      "level": "required",
+      "needed_for": "Running GPT critics.",
+      "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
+      "guidance_id": "enable-runtime-feature"
+    }
+  ]
+}

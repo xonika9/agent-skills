@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode", "claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "optional",
+      "needed_for": "Validating shared global instructions.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    }
+  ]
+}

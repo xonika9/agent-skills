@@ -44,6 +44,8 @@ for skill in skills/*; do
 done
 
 python3 skills/x9-skill-creator/scripts/test_validate.py
+python3 skills/x9-onboarding/scripts/test_validate_onboarding.py
+python3 skills/x9-onboarding/scripts/validate_onboarding.py skills
 python3 skills/x9-agent-instructions/scripts/test_check_globals.py
 python3 skills/x9-diagrams/scripts/test_check_scene.py
 python3 skills/x9-okf-docs/scripts/test_okf.py

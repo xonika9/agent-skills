@@ -10,6 +10,8 @@ Use this skill only in OpenCode V2. For child sessions owned by the current pare
 prefer the native `subagent` tool. Use the Sessions API only to inspect or coordinate a
 different root or child branch.
 
+The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
+
 List only enough session metadata to resolve the request. Start with a supplied session
 ID when available; otherwise constrain the list by title/search, project, directory, or
 parent. Stop before sending when the match is ambiguous, and ask the user to select one

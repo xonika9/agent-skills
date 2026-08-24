@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "supported_runtimes": ["claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Managing OKF metadata.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "ruby-runtime",
+      "runtimes": ["claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Strict YAML inspection.",
+      "check": {"type": "command-present", "command": "ruby"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "ruby-psych-module",
+      "runtimes": ["claude", "codex"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Confirming that Ruby Psych is available.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "context-files-generator",
+      "runtimes": ["claude", "codex"],
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Updating stale OKF repository instructions.",
+      "check": {"type": "skill-present", "target_skill": "x9-context-files-generator"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}

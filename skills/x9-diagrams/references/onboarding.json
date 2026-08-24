@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode", "claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "optional",
+      "needed_for": "Checking Excalidraw scenes.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "excalidraw-renderer",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Rendering Excalidraw scenes.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "mermaid-renderer",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Rendering Mermaid diagrams.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "drawio-editor",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Opening draw.io diagrams.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    }
+  ]
+}

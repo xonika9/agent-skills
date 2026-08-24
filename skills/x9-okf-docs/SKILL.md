@@ -7,6 +7,8 @@ description: Use when creating or substantively editing documentation in an OKF 
 
 Own the current OKF metadata contract so repositories do not copy version-specific fields into `AGENTS.md`. Preserve document bodies, operate only on explicit scope, and never invent provenance or trust signals.
 
+The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
+
 ## Choose one route
 
 - For a new document or a substantive edit, read [maintain.md](references/maintain.md).

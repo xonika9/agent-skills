@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["opencode"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running the session API wrapper.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "opencode-cli",
+      "runtimes": ["opencode"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Accessing OpenCode sessions.",
+      "check": {"type": "command-present", "command": "opencode2"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "sessions-api-access",
+      "runtimes": ["opencode"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Confirming access to the Sessions API.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    }
+  ]
+}
