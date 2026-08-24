@@ -41,6 +41,13 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 **Plan proportionally.**
 - For non-trivial work, state a brief plan first; for simple work, proceed directly.
 
+## Subagent orchestration
+
+- By default, treat the primary model as an orchestrator and configured lower-cost subagents as its execution layer.
+- Delegate substantive repository exploration, implementation, and test or log analysis even when the work is sequential rather than parallel.
+- Keep task decomposition, coordination, integration, and final acceptance in the parent.
+- Follow an explicit user, applicable skill, or repository instruction that selects a different delegation mode.
+
 ## Shared tool routing
 
 - Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
@@ -57,7 +64,4 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Subagent coordination
 
-- Treat the primary model as an orchestrator: delegate substantive repository exploration, implementation, and test or log analysis to the configured lower-cost subagents, even when the work is sequential rather than parallel.
 - Use `terra-high` for general delegated work by default.
-- If the current session explicitly enables another delegation mode, follow that mode instead.
-- Keep task decomposition, coordination, integration, and final acceptance in the parent.

@@ -41,6 +41,13 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 **Plan proportionally.**
 - For non-trivial work, state a brief plan first; for simple work, proceed directly.
 
+## Subagent orchestration
+
+- By default, treat the primary model as an orchestrator and configured lower-cost subagents as its execution layer.
+- Delegate substantive repository exploration, implementation, and test or log analysis even when the work is sequential rather than parallel.
+- Keep task decomposition, coordination, integration, and final acceptance in the parent.
+- Follow an explicit user, applicable skill, or repository instruction that selects a different delegation mode.
+
 ## Shared tool routing
 
 - Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
@@ -70,7 +77,5 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Subagent delegation
 
-- Treat the primary model as an orchestrator: delegate substantive repository exploration, implementation, and test or log analysis to the configured lower-cost subagents, even when the work is sequential rather than parallel.
-- Keep task decomposition, coordination, integration, and final acceptance in the parent.
 - Let Codex configuration choose the default subagent model and reasoning effort. Override them only when the user or an applicable skill explicitly requires another model.
 - Use `fork_turns: "none"` by default. Include recent conversation context only when the subagent's task cannot be made self-contained.

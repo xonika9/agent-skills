@@ -41,6 +41,13 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 **Plan proportionally.**
 - For non-trivial work, state a brief plan first; for simple work, proceed directly.
 
+## Subagent orchestration
+
+- By default, treat the primary model as an orchestrator and configured lower-cost subagents as its execution layer.
+- Delegate substantive repository exploration, implementation, and test or log analysis even when the work is sequential rather than parallel.
+- Keep task decomposition, coordination, integration, and final acceptance in the parent.
+- Follow an explicit user, applicable skill, or repository instruction that selects a different delegation mode.
+
 ## Shared tool routing
 
 - Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
@@ -54,6 +61,6 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 ### Subagent routing
 
 - Set an explicit `model` on every direct `Agent` call and on any other subagent tool that exposes a `model` field, including recursive spawns. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
-- Route by task: `sonnet` — cheap parallel exploration, code search, bulk reads, small edits; `opus` — hard reasoning, user-facing work, reviews, orchestration.
+- Route by task: `sonnet` — delegated exploration, code search, bulk reads, implementation, and test or log analysis; `opus` — hard reasoning, user-facing work, reviews, and orchestration.
 - Haiku only when I explicitly ask for it.
 - An explicit model choice from me takes precedence. Otherwise, an applicable skill may select another model for a bounded adversarial or judge role.
