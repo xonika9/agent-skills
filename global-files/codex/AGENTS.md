@@ -51,6 +51,12 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Codex runtime
 
+### Code Mode batching
+
+- When several already-known tool calls are independent and read-only, run them together in one `exec` with `await Promise.all([...])`.
+- Keep dependencies, writes, waits, approvals, and steps whose next call depends on a result sequential.
+- Keep combined output bounded and recover truncated evidence narrowly.
+
 ### Local storage hygiene
 
 - Treat `$CODEX_HOME/evidence` and `$CODEX_HOME/worktrees` as bounded task storage, not permanent archives. Do not retain reconstructible binaries, package archives, dependency caches, build outputs, or completed worktrees there after the task.

@@ -57,5 +57,6 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Subagent coordination
 
-- Use `terra-high` for general delegated work unless the user or an applicable skill explicitly selects another configured subagent.
+- Use `terra-high` for general delegated work by default.
+- If the current session explicitly enables another delegation mode, follow that mode instead.
 - Keep coordination and final acceptance in the parent.
