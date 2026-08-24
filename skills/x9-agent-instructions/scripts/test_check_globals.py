@@ -67,6 +67,12 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("instruction rubric as `degraded`", self.context_skill)
         self.assertIn("README-only work records it as `not applicable`", self.context_skill)
 
+    def test_global_contract_includes_all_three_harnesses(self):
+        self.assertIn("`~/.config/opencode/AGENTS.md`", self.skill)
+        self.assertIn("`~/.claude/CLAUDE.md`", self.skill)
+        self.assertIn("`~/.codex/AGENTS.md`", self.skill)
+        self.assertIn("byte-identical in all three", self.skill)
+
 
 if __name__ == "__main__":
     unittest.main()

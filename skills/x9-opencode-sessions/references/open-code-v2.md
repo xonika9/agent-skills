@@ -31,7 +31,9 @@ The API routes are `GET /api/session`, `GET /api/session/{sessionID}`, `GET
 /api/session/{sessionID}/message`, `GET /api/session/{sessionID}/message/{messageID}`, and
 `GET /api/session/active`. Message output includes top-level `text` from user, synthetic,
 and system messages, plus only `content` entries whose type is `text` from assistant
-messages. Reasoning and tool state remain excluded.
+messages. Internal skill text, reasoning, and tool state remain excluded. Session metadata
+preserves `location.directory`, `location.workspaceID`, and `subpath` so similarly titled
+sessions can be distinguished safely.
 
 ## Send, wait, reconcile
 

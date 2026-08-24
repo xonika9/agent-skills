@@ -45,15 +45,24 @@ done
 
 python3 skills/x9-skill-creator/scripts/test_validate.py
 python3 skills/x9-agent-instructions/scripts/test_check_globals.py
+python3 skills/x9-diagrams/scripts/test_check_scene.py
 python3 skills/x9-okf-docs/scripts/test_okf.py
+python3 skills/x9-research/scripts/test_validate_html.py
+python3 .claude/skills/release/scripts/check_global_files.py --published-only
+python3 scripts/test_check_package.py
 python3 scripts/check_package.py
 python3 scripts/check_public.py
+python3 scripts/test_prepare_release.py
 python3 scripts/prepare_release.py --check
 claude plugin validate .claude-plugin/marketplace.json
 claude plugin validate .claude-plugin/plugin.json
 npx skills add . --list
 git diff --check
 ```
+
+CI runs the same deterministic package checks plus Gitleaks over the full Git history. The
+Claude validators and `npx skills add . --list` remain local compatibility smoke tests because
+their CLIs are not repository dependencies.
 
 `scripts/check_package.py` is the repository-level gate for shared Claude Code and Codex metadata, marketplace policy, and declared assets. A runtime-bundled Codex validator is a useful additional check, but is not a repository dependency.
 

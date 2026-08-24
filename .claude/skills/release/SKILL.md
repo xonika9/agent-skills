@@ -2,7 +2,7 @@
 name: release
 description: Use for this repository when the maintainer asks to prepare or publish a release — «подготовь релиз», «выпусти релиз», "prepare a release", "publish the release". Do not use for ordinary changelog edits, package validation, commits, pushes, or pull requests that are not explicitly a release.
 metadata:
-  internal: true
+  internal: "true"
 ---
 
 # Release
@@ -25,7 +25,7 @@ Resolve the repository root from this skill's location, then inspect:
 - the worktree, current branch, remotes, and latest public `v*` tag;
 - the complete diff and commit range from that tag to the candidate, including uncommitted and untracked files;
 - `README.md`, `README.ru.md`, `CHANGELOG.md`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`;
-- the installed personal `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` plus the published examples in `global-files/`;
+- the installed personal `~/.config/opencode/AGENTS.md`, `~/.claude/CLAUDE.md`, and `~/.codex/AGENTS.md` plus their published sources in `global-files/`;
 - `scripts/prepare_release.py`, `.github/workflows/validate.yml`, and `.github/workflows/release.yml`.
 
 Preserve unrelated and user-owned changes. If the candidate cannot be separated from unrelated work, the current branch cannot safely produce the intended `main` release, or the remote state conflicts with the local history, stop and report the exact blocker instead of rewriting history, discarding files, merging, or force-pushing.

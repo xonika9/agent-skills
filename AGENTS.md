@@ -24,15 +24,15 @@ This is the public source of truth for the `x9-*` Agent Skills. The package targ
 
 ## Plugin metadata
 
-- Keep `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` on the same semantic version.
-- Keep the plugin name `x9-agent-skills` and marketplace name `xonika9` synchronized with `scripts/check_package.py`.
+- Keep `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` synchronized across all shared metadata, including the semantic version.
+- Keep the plugin name `x9-agent-skills` and marketplace name `xonika9` synchronized across both plugin manifests and `.claude-plugin/marketplace.json` plus `.agents/plugins/marketplace.json`, as enforced by `scripts/check_package.py`.
 - Run `claude plugin validate .claude-plugin/marketplace.json`, `claude plugin validate .claude-plugin/plugin.json`, and `python3 scripts/check_package.py` after changing manifests or marketplace files. The repository script is the reproducible Claude/Codex package gate; a runtime-bundled Codex validator may be used as an additional local check.
 
 ## Changelog
 
 - Update `CHANGELOG.md` in the same task as every user-visible change, before reporting completion. Describe the outcome, not the implementation steps. Do not defer changelog reconstruction to release day.
 - Keep an `Unreleased` section with `Highlights`, `Install / update`, `Compatibility`, and `Breaking changes`.
-- `scripts/prepare_release.py --check` blocks changes to release-relevant public files when `Unreleased` is empty.
+- While the current version tag exists, `scripts/prepare_release.py --check` blocks release-relevant changes when `Unreleased` is empty. For a new untagged version, it instead requires complete dated release notes and an empty `Unreleased` template.
 
 ## Verification
 

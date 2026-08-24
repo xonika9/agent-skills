@@ -11,6 +11,19 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_NAME = "x9-agent-skills"
 MARKETPLACE_NAME = "xonika9"
+CLAUDE_CATEGORY = "productivity"
+CODEX_CATEGORY = "Productivity"
+SHARED_MANIFEST_FIELDS = (
+    "name",
+    "version",
+    "description",
+    "author",
+    "homepage",
+    "repository",
+    "license",
+    "keywords",
+    "skills",
+)
 SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
@@ -57,6 +70,20 @@ def validate_manifest(manifest: dict, source: str) -> None:
     require(manifest["skills"] == "./skills/", f"{source}.skills must be ./skills/")
     require(isinstance(manifest.get("author"), dict), f"{source}.author is required")
     require(bool(manifest["author"].get("name")), f"{source}.author.name is required")
+    require(
+        isinstance(manifest.get("keywords"), list)
+        and bool(manifest["keywords"])
+        and all(isinstance(keyword, str) and keyword for keyword in manifest["keywords"]),
+        f"{source}.keywords must contain non-empty strings",
+    )
+
+
+def validate_shared_metadata(claude: dict, codex: dict) -> None:
+    for field in SHARED_MANIFEST_FIELDS:
+        require(
+            claude.get(field) == codex.get(field),
+            f"Claude Code and Codex plugin {field} differ",
+        )
 
 
 def validate_codex_interface(codex: dict) -> None:
@@ -85,7 +112,7 @@ def main() -> None:
     validate_manifest(codex, ".codex-plugin/plugin.json")
     validate_codex_interface(codex)
 
-    require(claude["version"] == codex["version"], "Claude Code and Codex plugin versions differ")
+    validate_shared_metadata(claude, codex)
     require((ROOT / "skills").is_dir(), "skills/ is missing")
 
     require(claude_marketplace.get("name") == MARKETPLACE_NAME, "Claude marketplace name differs")
@@ -93,6 +120,7 @@ def main() -> None:
     require(isinstance(claude_plugins, list) and len(claude_plugins) == 1, "Claude marketplace must contain one plugin")
     require(claude_plugins[0].get("name") == PLUGIN_NAME, "Claude marketplace plugin name differs")
     require(claude_plugins[0].get("source") == "./", "Claude marketplace source must be ./")
+    require(claude_plugins[0].get("category") == CLAUDE_CATEGORY, f"Claude marketplace category must be {CLAUDE_CATEGORY}")
 
     require(codex_marketplace.get("name") == MARKETPLACE_NAME, "Codex marketplace name differs")
     codex_plugins = codex_marketplace.get("plugins")
@@ -101,6 +129,7 @@ def main() -> None:
     require(entry.get("name") == PLUGIN_NAME, "Codex marketplace plugin name differs")
     require(entry.get("source") == {"source": "local", "path": "./"}, "Codex marketplace source differs")
     require(entry.get("policy") == {"installation": "AVAILABLE", "authentication": "ON_INSTALL"}, "Codex marketplace policy differs")
+    require(codex["interface"]["category"] == CODEX_CATEGORY, f"Codex interface category must be {CODEX_CATEGORY}")
     require(entry.get("category") == codex["interface"]["category"], "Codex marketplace category differs")
 
     print("PASS: Claude Code and Codex plugin metadata agree")

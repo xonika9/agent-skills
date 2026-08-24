@@ -6,7 +6,11 @@ import sys
 
 START = b"<!-- BEGIN SHARED PERSONAL CORE -->"
 END = b"<!-- END SHARED PERSONAL CORE -->"
-FILES = (Path.home() / ".claude/CLAUDE.md", Path.home() / ".codex/AGENTS.md")
+FILES = (
+    Path.home() / ".config/opencode/AGENTS.md",
+    Path.home() / ".claude/CLAUDE.md",
+    Path.home() / ".codex/AGENTS.md",
+)
 
 
 def extract(path: Path):
@@ -24,8 +28,8 @@ def main():
     except (OSError, ValueError) as exc:
         print(f"FAIL: {exc}")
         raise SystemExit(1)
-    if blocks[0] != blocks[1]:
-        print("FAIL: shared personal core differs between CLAUDE.md and AGENTS.md")
+    if any(block != blocks[0] for block in blocks[1:]):
+        print("FAIL: shared personal core differs across OpenCode, Claude Code, and Codex")
         raise SystemExit(1)
     print("PASS: shared personal core is byte-identical")
 

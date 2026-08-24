@@ -45,7 +45,7 @@ class OpenCodeSessionsTests(unittest.TestCase):
 
         def runner(command, **kwargs):
             calls.append(command)
-            return Result('{"data":[{"id":"ses_1","title":"Billing","nested":{"secret":"no"}}],"cursor":{"previous":null,"next":"next-page"}}')
+            return Result('{"data":[{"id":"ses_1","title":"Billing","subpath":"packages/api","location":{"directory":"/work","workspaceID":"wrk_1"},"nested":{"secret":"no"}}],"cursor":{"previous":null,"next":"next-page"}}')
 
         with patch.object(opencode_sessions.subprocess, "run", runner):
             code, output = self.run_main([
@@ -54,7 +54,7 @@ class OpenCodeSessionsTests(unittest.TestCase):
             ])
 
         self.assertEqual(code, 0)
-        self.assertEqual(output, {"cursor": {"next": "next-page", "previous": None}, "sessions": [{"id": "ses_1", "title": "Billing"}]})
+        self.assertEqual(output, {"cursor": {"next": "next-page", "previous": None}, "sessions": [{"id": "ses_1", "location": {"directory": "/work", "workspaceID": "wrk_1"}, "subpath": "packages/api", "title": "Billing"}]})
         self.assertEqual(calls[0][:4], ["opencode2", "api", "GET", "/api/session?parentID=null&search=billing&project=demo&directory=%2Fwork&order=desc&limit=7"])
 
     def test_messages_only_expose_text_parts(self) -> None:
@@ -98,6 +98,22 @@ class OpenCodeSessionsTests(unittest.TestCase):
             "messages": [{"id": "msg_user", "text": ["Question"], "time": {"created": 123}, "type": "user"}],
         })
         self.assertEqual(calls[0][:4], ["opencode2", "api", "GET", "/api/session/ses_1/message?limit=5&cursor=page-2"])
+
+    def test_messages_hide_internal_skill_text(self) -> None:
+        payload = {
+            "data": [{
+                "id": "msg_skill",
+                "type": "skill",
+                "text": "Private skill body",
+                "content": [{"type": "text", "text": "Private content"}],
+            }],
+            "cursor": {"previous": None, "next": None},
+        }
+        with patch.object(opencode_sessions.subprocess, "run", return_value=Result(json.dumps(payload))):
+            code, output = self.run_main(["messages", "ses_1"])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(output["messages"], [{"id": "msg_skill", "text": [], "type": "skill"}])
 
     def test_active_normalizes_session_map(self) -> None:
         payload = {"data": {"ses_1": {"type": "running"}, "ses_2": {"type": "running"}}}

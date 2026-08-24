@@ -29,6 +29,8 @@ jobs:
             python3 skills/x9-skill-creator/scripts/validate.py \
               --runtime portable --runtime claude --runtime codex "$skill"
           done
+          python3 skills/x9-skill-creator/scripts/validate.py \
+            --runtime claude --runtime codex .claude/skills/release
 
       - name: Run deterministic regression tests
         run: |
@@ -36,12 +38,15 @@ jobs:
           python3 skills/x9-diagrams/scripts/test_check_scene.py
           python3 skills/x9-okf-docs/scripts/test_okf.py
           python3 skills/x9-research/scripts/test_validate_html.py
+          python3 .claude/skills/release/scripts/check_global_files.py --published-only
 
       - name: Check repository instruction import
         run: printf '@AGENTS.md\n' | cmp - CLAUDE.md
 
       - name: Check plugin package metadata
-        run: python3 scripts/check_package.py
+        run: |
+          python3 scripts/test_check_package.py
+          python3 scripts/check_package.py
 
       - name: Check public data
         run: python3 scripts/check_public.py

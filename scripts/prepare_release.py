@@ -29,9 +29,20 @@ RELEASE_RELEVANT_PREFIXES = (
 RELEASE_RELEVANT_FILES = {
     "README.md",
     "README.ru.md",
+    "AGENTS.md",
+    "CLAUDE.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
     "CODE_OF_CONDUCT.md",
+    "scripts/check_package.py",
+    "scripts/check_public.py",
+    "scripts/prepare_release.py",
+    ".github/workflows/validate.yml",
+    ".github/workflows/release.yml",
+    ".claude/skills/release/SKILL.md",
+    ".claude/skills/release/references/checks.md",
+    ".claude/skills/release/references/version-confirmation.md",
+    ".claude/skills/release/scripts/check_global_files.py",
 }
 
 

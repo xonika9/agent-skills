@@ -17,16 +17,18 @@ from urllib.parse import quote, urlencode
 
 DEFAULT_LIMIT = 20
 SESSION_FIELDS = {
-    "directory",
+    "agent",
     "id",
+    "outcome",
     "parentID",
     "projectID",
-    "status",
+    "subpath",
     "title",
-    "version",
 }
+LOCATION_FIELDS = {"directory", "workspaceID"}
 MESSAGE_FIELDS = {"id", "sessionID", "timeCreated", "type"}
-TIME_FIELDS = {"created", "updated"}
+TIME_FIELDS = {"archived", "created", "idle", "updated", "viewed"}
+DIRECT_TEXT_TYPES = {"system", "synthetic", "user"}
 MESSAGE_ID_PATTERN = re.compile(r"^msg_[A-Za-z0-9_-]+$")
 
 
@@ -197,6 +199,10 @@ def normalize_session(value: Any) -> dict[str, Any]:
     normalized_time = selected_scalars(time, TIME_FIELDS)
     if normalized_time:
         session["time"] = normalized_time
+    location = value.get("location") if isinstance(value, dict) else None
+    normalized_location = selected_scalars(location, LOCATION_FIELDS)
+    if normalized_location:
+        session["location"] = normalized_location
     children = value.get("children") if isinstance(value, dict) else None
     if isinstance(children, list):
         session["children"] = [normalize_session(child) for child in children]
@@ -222,7 +228,13 @@ def normalize_message(value: Any) -> dict[str, Any]:
         message["text"] = []
         return message
     direct_text = value.get("text")
-    message["text"] = [direct_text] if isinstance(direct_text, str) else text_content(value.get("content"))
+    message_type = value.get("type")
+    if message_type in DIRECT_TEXT_TYPES and isinstance(direct_text, str):
+        message["text"] = [direct_text]
+    elif message_type == "assistant":
+        message["text"] = text_content(value.get("content"))
+    else:
+        message["text"] = []
     normalized_time = selected_scalars(value.get("time"), TIME_FIELDS)
     if normalized_time:
         message["time"] = normalized_time

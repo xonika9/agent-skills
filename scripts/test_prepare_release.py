@@ -76,17 +76,19 @@ def main() -> None:
     assert prepare_release.has_unreleased_entries(WITH_ENTRY)
     assert prepare_release.is_release_relevant("skills/x9-research/SKILL.md")
     assert prepare_release.is_release_relevant("README.md")
-    assert not prepare_release.is_release_relevant("scripts/check_public.py")
+    assert prepare_release.is_release_relevant("scripts/check_public.py")
+    assert prepare_release.is_release_relevant(".github/workflows/validate.yml")
+    assert prepare_release.is_release_relevant(".claude/skills/release/SKILL.md")
+    assert prepare_release.is_release_relevant(".claude/skills/release/references/version-confirmation.md")
+    assert not prepare_release.is_release_relevant("scripts/test_check_package.py")
+    assert not prepare_release.is_release_relevant(".claude/skills/release/references/notes.md")
 
     expect_failure(EMPTY, ["skills/x9-research/SKILL.md"])
     prepare_release.validate_development_changelog(
         WITH_ENTRY,
         ["skills/x9-research/SKILL.md"],
     )
-    prepare_release.validate_development_changelog(
-        EMPTY,
-        ["scripts/check_public.py"],
-    )
+    expect_failure(EMPTY, ["scripts/check_public.py"])
     test_changed_paths_include_both_sides_of_move()
     print("PASS: changelog coverage regression scenarios")
 
