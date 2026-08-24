@@ -70,6 +70,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Subagent delegation
 
-- Delegate substantive repository exploration, implementation, and test or log analysis to subagents. Keep coordination and final acceptance in the parent.
+- Treat the primary model as an orchestrator: delegate substantive repository exploration, implementation, and test or log analysis to the configured lower-cost subagents, even when the work is sequential rather than parallel.
+- Keep task decomposition, coordination, integration, and final acceptance in the parent.
 - Let Codex configuration choose the default subagent model and reasoning effort. Override them only when the user or an applicable skill explicitly requires another model.
 - Use `fork_turns: "none"` by default. Include recent conversation context only when the subagent's task cannot be made self-contained.

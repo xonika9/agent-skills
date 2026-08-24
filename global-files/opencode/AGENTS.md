@@ -57,6 +57,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Subagent coordination
 
+- Treat the primary model as an orchestrator: delegate substantive repository exploration, implementation, and test or log analysis to the configured lower-cost subagents, even when the work is sequential rather than parallel.
 - Use `terra-high` for general delegated work by default.
 - If the current session explicitly enables another delegation mode, follow that mode instead.
-- Keep coordination and final acceptance in the parent.
+- Keep task decomposition, coordination, integration, and final acceptance in the parent.
