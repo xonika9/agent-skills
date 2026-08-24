@@ -17,7 +17,7 @@ When the invocation omits the idea, recover the latest clearly discussed proposa
 |---|---|---|
 | default / omitted | «раскритикуй идею», «проверь на прочность» | one fresh Opus critic and one fresh GPT critic |
 | `opus` | «раскритикуй опусом» | one fresh Opus critic |
-| `gpt` | «спроси GPT», «раскритикуй через GPT» | one fresh GPT critic through Codex |
+| `gpt` | «спроси GPT», «раскритикуй через GPT» | one fresh GPT critic |
 | `full` | «разнеси по полной», «панель критиков» | one critic from each provider for each of 2–3 declared lenses |
 
 For `full`, select and declare exactly two or three applicable lenses before dispatch from feasibility/execution, user or market demand, and devil's-advocate/simpler alternative. Tell the user that this mode is slower and heavier, then start one critic per declared lens/provider pair as host capacity permits. That declared matrix is the completion boundary.
@@ -38,8 +38,9 @@ Exclude advocacy and solution-selling from the critic's role, but do not omit fa
 
 - **From Claude Code:** read [the Claude Code adapter](references/claude-code.md).
 - **From Codex:** read [the Codex adapter](references/codex.md).
+- **From OpenCode:** read [the OpenCode adapter](references/opencode.md).
 
-Both adapters must select a currently available model from the promised provider family. Honor an exact user-selected version only when live discovery confirms it; otherwise fail that route rather than silently substituting another family. Pass only the sealed brief and explicit evidence locations, and grant only the read surfaces needed to inspect load-bearing evidence.
+Every critic must run at `high` effort. Every adapter must select a currently available model from the promised provider family. Honor an exact user-selected version only when live discovery confirms it; otherwise fail that route rather than silently substituting another family. Pass only the sealed brief and explicit evidence locations, and grant only the read surfaces needed to inspect load-bearing evidence.
 
 ## Failure and synthesis
 

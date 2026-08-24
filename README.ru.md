@@ -77,6 +77,7 @@ codex plugin add x9-agent-skills@xonika9
 - Выбираешь товар на Wildberries: используй [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - Хочешь проверить идею до того, как вкладывать в неё время: вызови [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - Нужен хороший промпт или свежий взгляд на уже написанные инструкции: используй [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
+- Нужно найти, прочитать, скоординировать или продолжить другой чат OpenCode V2: используй [`x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md).
 - Новому или уже существующему репозиторию не хватает файлов AGENTS.md и CLAUDE.md: запусти [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - Постоянно повторяешь один и тот же многошаговый процесс вручную: спроектируй его через [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - Хочешь превратить процесс в скилл или проверить уже готовый: используй [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
@@ -109,6 +110,12 @@ codex plugin add x9-agent-skills@xonika9
 Он работает только с Wildberries и выполняется внутри текущей сессии Claude Code или Codex. Устанавливай вместе с `x9-browser-session`.
 
 ### Идеи и поведение агента
+
+#### [`x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md)
+
+Когда работа в OpenCode V2 расходится по отдельным корневым и дочерним сессиям, ими легко потерять управление. Скилл помогает найти точно выбранную сессию, увидеть её текстовые сообщения и активность без рассуждений и аргументов инструментов, дождаться завершения и собрать ответ.
+
+Для дочерних сессий текущего родителя он оставляет нативный `subagent`. Для остальных веток OpenCode использует V2 Sessions API через детерминированную обёртку. Перед отправкой сообщения она создаёт идентификатор, требует `--apply` и при неопределённом результате предлагает точечную сверку по этому идентификатору, а не повторную отправку. Claude Code, Codex и другие системы сессий намеренно вне области действия.
 
 #### [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md)
 

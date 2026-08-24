@@ -10,4 +10,4 @@ When the live CLI accepts the brief on stdin, materialize only the sealed brief 
 
 ## GPT route
 
-Follow the active global subagent contract, then use the native worker interface with `fork_turns: "none"`. Select a supported GPT-family model through the live schema; request an explicit effort only when the schema exposes it. If a GPT-family model cannot be selected, the route failed rather than falling back to another provider.
+Follow the active global subagent contract, then use the native worker interface with `fork_turns: "none"`. Select a supported GPT-family model through the live schema and set its effort to `high`. If a GPT-family model cannot be selected or `high` effort cannot be enforced, the route failed rather than falling back to another provider.

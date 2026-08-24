@@ -4,18 +4,26 @@
 
 ### Highlights
 
+- Documented the repository-wide package validation and release gates, including their evidence, blocking conditions, and known coverage gaps.
+- `x9-idea-critic` now runs every selected Opus and GPT critic at `high` effort, using the live-confirmed `sol-high` agent for OpenCode GPT routes and an explicit Codex effort override from Claude Code.
+- Added an OpenCode route to `x9-idea-critic`, combining fresh Claude CLI sessions for Opus critics with explicitly identified native GPT subagents.
+- Added `x9-opencode-sessions` for bounded OpenCode V2 session discovery, text-only message inspection, activity and completion checks, and preview-first cross-branch coordination.
 - Split the installable global instructions into dedicated OpenCode, Codex, and Claude Code files while preserving their shared personal core.
 
 ### Install / update
 
+- Full-plugin users receive `x9-opencode-sessions` on update. Individual installations require Python 3 and the OpenCode V2 `opencode2` CLI.
 - Existing users can link each harness to its matching file under `global-files/<harness>/`; back up local global instructions before replacing them with links.
 
 ### Compatibility
 
+- `x9-idea-critic` now supports independent OpenCode routes when Claude CLI exposes the required Opus controls or the live subagent catalog explicitly identifies a GPT-family agent; default and full runs still require every selected route for a complete result.
+- `x9-opencode-sessions` is OpenCode V2 only. It uses native `subagent` for the current parent session's children and the V2 Sessions API for other OpenCode branches; Claude Code, Codex, and cross-harness sessions are unsupported.
 - The former top-level `global-files/AGENTS.md` and `global-files/CLAUDE.md` paths were replaced by harness-specific paths.
 
 ### Breaking changes
 
+- None for the new skill.
 - Consumers of the published global files must update references to the new harness-specific paths.
 
 ## 2.4.0 - 2026-08-17

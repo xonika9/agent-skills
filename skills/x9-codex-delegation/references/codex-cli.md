@@ -39,8 +39,8 @@ Write the brief only after the trap and user-only permissions are in place. Pass
 
 This protects the transport file and process arguments, not Codex session history: the submitted prompt may still be persisted by the runtime. Do not put credentials or secret values in the brief. Refer to a local credential source that the authorized task can read instead.
 
-- Use `-c 'model_reasoning_effort="medium"'` when an explicit effort override is required. Plain `codex exec` has no `--effort` flag.
-- Use `-m <model>` only when the user explicitly requests an available model; otherwise inherit `~/.codex/config.toml`.
+- Use `-c 'model_reasoning_effort="<level>"'` with a live-supported value when the caller requires an explicit effort override. Plain `codex exec` has no `--effort` flag.
+- Use `-m <model>` only when the user explicitly requests an available model or the calling skill requires a confirmed model family; otherwise inherit `~/.codex/config.toml`.
 - `--skip-git-repo-check` is appropriate for a read-only one-shot outside a repository. Do not use it to bypass a task's repository contract.
 
 ## Resume

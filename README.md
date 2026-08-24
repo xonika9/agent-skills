@@ -77,6 +77,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - You need a strong prompt, or a second look at instructions you already wrote: use [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
+- You need to find, read, coordinate, or continue another OpenCode V2 chat: use [`x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md).
 - A new or existing repository needs `AGENTS.md` and `CLAUDE.md`: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
@@ -109,6 +110,12 @@ A Wildberries rating rarely tells the whole story: reviews may belong to another
 It is deliberately Wildberries-specific and runs inside the current Claude Code or Codex session. Install `x9-browser-session` with it.
 
 ### Ideas and agent behavior
+
+#### [`x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md)
+
+OpenCode V2 sessions can be hard to coordinate once work branches into separate roots and children. This skill finds a precisely identified session, shows its text messages and activity without exposing reasoning or tool arguments, waits for completion, and collects the result.
+
+For the current parent session's own children it keeps the native `subagent` route. For other OpenCode branches it uses the V2 Sessions API through a deterministic wrapper. Sending is preview-first: it gives the message an ID before dispatch, requires `--apply`, and reconciles by that ID instead of retrying after an uncertain outcome. Claude Code, Codex, and other session systems are deliberately out of scope.
 
 #### [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md)
 
