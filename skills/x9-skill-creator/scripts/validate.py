@@ -295,11 +295,14 @@ def validate(root: Path, runtimes=("portable",)):
     if metadata is not None:
         if not isinstance(metadata, dict):
             errors.append("frontmatter: metadata must be a mapping")
-        elif any(
-            not isinstance(key, str) or not isinstance(value, str)
-            for key, value in metadata.items()
-        ):
-            errors.append("frontmatter: metadata keys and values must be strings")
+        else:
+            for key, value in metadata.items():
+                if not isinstance(key, str) or (
+                    key != "internal" and not isinstance(value, str)
+                ):
+                    errors.append("frontmatter: metadata keys and values must be strings")
+                elif key == "internal" and type(value) is not bool:
+                    errors.append("frontmatter: metadata.internal must be boolean")
 
     hooks = fm.get("hooks")
     if hooks is not None and not isinstance(hooks, dict):

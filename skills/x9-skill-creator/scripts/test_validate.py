@@ -137,6 +137,45 @@ def main():
             result.stdout,
         )
 
+        internal_metadata = base / "internal-metadata"
+        skill(
+            internal_metadata,
+            "name: internal-metadata\ndescription: Use when testing. Do not use otherwise.\n"
+            "metadata:\n  internal: true",
+        )
+        result = run(internal_metadata, "portable", "claude", "codex")
+        expect(
+            "boolean metadata.internal",
+            result.returncode == 0,
+            result.stdout,
+        )
+
+        internal_string = base / "internal-string"
+        skill(
+            internal_string,
+            "name: internal-string\ndescription: Use when testing. Do not use otherwise.\n"
+            'metadata:\n  internal: "true"',
+        )
+        result = run(internal_string)
+        expect(
+            "string metadata.internal is rejected",
+            result.returncode != 0 and "metadata.internal must be boolean" in result.stdout,
+            result.stdout,
+        )
+
+        non_internal_boolean = base / "non-internal-boolean"
+        skill(
+            non_internal_boolean,
+            "name: non-internal-boolean\ndescription: Use when testing. Do not use otherwise.\n"
+            "metadata:\n  version: true",
+        )
+        result = run(non_internal_boolean)
+        expect(
+            "non-internal metadata boolean is rejected",
+            result.returncode != 0 and "must be strings" in result.stdout,
+            result.stdout,
+        )
+
         claude = base / "claude"
         skill(
             claude,

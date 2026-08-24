@@ -2,7 +2,7 @@
 name: release
 description: Use for this repository when the maintainer asks to prepare or publish a release — «подготовь релиз», «выпусти релиз», "prepare a release", "publish the release". Do not use for ordinary changelog edits, package validation, commits, pushes, or pull requests that are not explicitly a release.
 metadata:
-  internal: "true"
+  internal: true
 ---
 
 # Release

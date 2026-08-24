@@ -2,9 +2,11 @@
 
 Use the portable contract below for any Chromium browser. The Microsoft Edge/macOS
 recipe uses a dedicated profile, the Codex browser extension as the Codex primary
-outside the exceptions defined in the parent skill,
-local CDP on port `9222` as the Claude Code primary and Codex MCP route, and
-`agent-edge` as the last fallback attached to the same profile. The configuration intentionally follows
+outside the exceptions defined in the parent skill, local CDP on port `9222` as the
+Claude Code primary and Codex MCP route, and `agent-edge` as the last fallback attached
+to the same profile. In OpenCode, the live `chrome-devtools` MCP in the current tool
+catalog is the primary surface; verify its available operations rather than copying
+another runtime's configuration. The configuration intentionally follows
 `chrome-devtools-mcp@latest`; check its live help before configuring it because
 supported flags can change.
 
@@ -31,14 +33,16 @@ Choose these values for the target machine instead of copying the Edge-specific 
 | Launcher | Starts that executable with the dedicated profile and remote debugging enabled |
 | Codex Edge primary | Outside the exceptions defined in the parent skill, uses the Codex extension and creates a session-owned background tab |
 | Claude primary / Codex MCP route | Attaches to the existing CDP endpoint and creates a background page |
+| OpenCode primary | Uses the live `chrome-devtools` MCP in the current tool catalog and creates a background page; do not assume a configuration path, flags, or in-app browser |
 | Last fallback | Attaches to the same endpoint; it must not launch a clean browser |
 
 Before adding runtime configuration, verify that the Codex extension is connected and
-that the browser's local CDP discovery endpoint responds. If the browser exposes only a
-WebSocket endpoint, configure a controller that accepts that endpoint directly; do not
-assume `http://127.0.0.1:9222` works for every Chromium version. Keep the endpoint local,
-open a task-owned background page for verification, and close only pages created by the
-check.
+that the browser's local CDP discovery endpoint responds. In OpenCode, verify that the
+live tool catalog exposes `chrome-devtools`; a missing tool is not evidence for a
+particular configuration or restart. If the browser exposes only a WebSocket endpoint,
+configure a controller that accepts that endpoint directly; do not assume
+`http://127.0.0.1:9222` works for every Chromium version. Keep the endpoint local, open
+a task-owned background page for verification, and close only pages created by the check.
 
 ## Verified Microsoft Edge adapter on macOS
 
@@ -132,5 +136,8 @@ The wrapper must attach to the existing Edge profile. It must not launch a separ
    `tab new` and `tab switch` behavior can foreground the task tab.
 6. Close only pages created by the check.
 
-The setup passes when the Codex extension and MCP attach to the same profile, both
-complete the read without stealing focus, and all pre-existing tabs remain unchanged.
+For OpenCode, the verification passes when the live `chrome-devtools` MCP creates and
+reads a task-owned background page without stealing focus. For Claude Code and Codex,
+the setup passes when the configured MCP attaches to the profile, completes the read
+without stealing focus, and all pre-existing tabs remain unchanged; Codex additionally
+verifies its extension route.

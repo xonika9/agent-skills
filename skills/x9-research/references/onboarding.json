@@ -13,7 +13,7 @@
     },
     {
       "id": "browser-session",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["opencode", "claude", "codex"],
       "kind": "skill",
       "level": "optional",
       "needed_for": "Browser and social research.",
@@ -22,7 +22,7 @@
     },
     {
       "id": "authenticated-social-session",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["opencode", "claude", "codex"],
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Researching X and Twitter through a user session.",

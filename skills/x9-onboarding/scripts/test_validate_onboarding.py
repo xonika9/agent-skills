@@ -27,10 +27,16 @@ def write_declaration(skills_root: Path, skill_name: str, declaration: object) -
     path.write_text(json.dumps(declaration), encoding="utf-8")
 
 
-def declaration(requirements: list[object]) -> dict[str, object]:
+def declaration(
+    requirements: list[object], supported_runtimes: list[str] | None = None
+) -> dict[str, object]:
     return {
         "version": 1,
-        "supported_runtimes": ["opencode", "claude", "codex"],
+        "supported_runtimes": (
+            ["opencode", "claude", "codex"]
+            if supported_runtimes is None
+            else supported_runtimes
+        ),
         "requirements": requirements,
     }
 
@@ -113,6 +119,17 @@ def main() -> None:
             result.returncode == 0 and "PASS: 1 declaration file(s)" in result.stdout,
             result.stdout + result.stderr,
         )
+        write_declaration(
+            skills_root,
+            "x9-subset",
+            declaration([command_requirement()], ["opencode"]),
+        )
+        result = run(skills_root)
+        expect(
+            "valid requirement runtime subset",
+            result.returncode == 0 and "PASS: 2 declaration file(s)" in result.stdout,
+            result.stdout + result.stderr,
+        )
 
     cases: list[tuple[str, object, str]] = []
 
@@ -128,6 +145,7 @@ def main() -> None:
     add("unknown supported runtime", lambda data: data.update({"supported_runtimes": ["other"]}), "supported_runtimes[0]")
     add("duplicate supported runtime", lambda data: data.update({"supported_runtimes": ["claude", "claude"]}), "supported_runtimes[1]")
     add("unknown runtime", lambda data: data["requirements"][0].update({"runtimes": ["other"]}), "requirements[0].runtimes[0]")
+    add("runtime outside supported set", lambda data: data.update({"supported_runtimes": ["claude"]}), "requirements[0].runtimes[0]")
     add("unknown kind", lambda data: data["requirements"][0].update({"kind": "other"}), "requirements[0].kind")
     add("unknown level", lambda data: data["requirements"][0].update({"level": "other"}), "requirements[0].level")
     add("unknown check type", lambda data: data["requirements"][0]["check"].update({"type": "other"}), "requirements[0].check.type")
@@ -165,6 +183,44 @@ def main() -> None:
 
     for label, data, expected_path in cases:
         expect_invalid(label, data, expected_path)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        skills_root = Path(tmp) / "skills"
+        write_declaration(
+            skills_root,
+            "x9-demo",
+            declaration([command_requirement()], ["claude"]),
+        )
+        result = run(skills_root)
+        error_lines = [line for line in result.stdout.splitlines() if line.startswith("ERROR:")]
+        expect(
+            "runtime outside supported set reports one subset error",
+            error_lines
+            == [
+                "ERROR: x9-demo/references/onboarding.json: "
+                "requirements[0].runtimes[0]: runtime is not declared in supported_runtimes"
+            ],
+            result.stdout + result.stderr,
+        )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        skills_root = Path(tmp) / "skills"
+        write_declaration(
+            skills_root,
+            "x9-demo",
+            declaration([command_requirement()], ["claude", "other"]),
+        )
+        result = run(skills_root)
+        error_lines = [line for line in result.stdout.splitlines() if line.startswith("ERROR:")]
+        expect(
+            "invalid supported runtimes suppress subset errors",
+            error_lines
+            == [
+                "ERROR: x9-demo/references/onboarding.json: "
+                "supported_runtimes[1]: unknown runtime"
+            ],
+            result.stdout + result.stderr,
+        )
 
     with tempfile.TemporaryDirectory() as tmp:
         skills_root = Path(tmp) / "skills"

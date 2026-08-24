@@ -17,9 +17,11 @@ PUBLISHED_GLOBAL_FILES = (
     SKILL_FILE.parents[2] / "global-files/claude/CLAUDE.md",
     SKILL_FILE.parents[2] / "global-files/codex/AGENTS.md",
 )
-WORKER_BRIEF_RULE = b"Each worker brief gives the goal, only context the worker cannot derive"
-SCOPE_FIDELITY_RULE = b"Do not broaden or narrow the requested scope."
+WORKER_BRIEF_RULE = b"Each worker brief gives the goal; only context the worker cannot derive"
+SCOPE_FIDELITY_RULE = b"Do not broaden or narrow scope."
 SPECIALIST_OWNER_RULE = b"An active skill's specialist prompt and output contract remain authoritative"
+WORKER_LANGUAGE_RULE = b"Write worker briefs in English, preserve load-bearing source wording verbatim"
+USER_LANGUAGE_RULE = b"require user-facing results in the user's language."
 
 
 class ExtractTests(unittest.TestCase):
@@ -69,6 +71,8 @@ class SkillContractTests(unittest.TestCase):
             self.assertIn(WORKER_BRIEF_RULE, shared_core, path)
             self.assertIn(SCOPE_FIDELITY_RULE, shared_core, path)
             self.assertIn(SPECIALIST_OWNER_RULE, shared_core, path)
+            self.assertIn(WORKER_LANGUAGE_RULE, shared_core, path)
+            self.assertIn(USER_LANGUAGE_RULE, shared_core, path)
 
     def test_installed_skills_use_names_not_machine_paths(self):
         self.assertIn("Name an installed skill by its discoverable name", self.skill)

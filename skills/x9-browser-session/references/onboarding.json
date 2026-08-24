@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "supported_runtimes": ["claude", "codex"],
+  "supported_runtimes": ["opencode", "claude", "codex"],
   "requirements": [
     {
       "id": "native-browser-control",
       "group": "browser-control-route",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["opencode", "claude", "codex"],
       "kind": "runtime-feature",
       "level": "required",
       "needed_for": "Using native browser control.",
@@ -15,7 +15,7 @@
     {
       "id": "chrome-devtools-mcp",
       "group": "browser-control-route",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["opencode", "claude", "codex"],
       "kind": "mcp",
       "level": "required",
       "needed_for": "MCP browser control.",
@@ -25,7 +25,7 @@
     {
       "id": "agent-edge-command",
       "group": "browser-control-route",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Using the command line browser fallback.",
@@ -34,7 +34,7 @@
     },
     {
       "id": "authenticated-browser-profile",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["opencode", "claude", "codex"],
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Using authenticated browser sessions.",

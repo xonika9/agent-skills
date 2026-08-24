@@ -165,24 +165,29 @@ def validate_fields(
         error(errors, f"{path}.{field}" if path else field, "required field is missing")
 
 
-def validate_runtimes(value: Any, path: str, errors: list[str]) -> None:
+def validate_runtimes(value: Any, path: str, errors: list[str]) -> set[str] | None:
     if not isinstance(value, list):
         error(errors, path, "must be a non-empty array")
-        return
+        return None
     if not value:
         error(errors, path, "must not be empty")
-        return
+        return None
     seen: set[str] = set()
+    valid = True
     for index, runtime in enumerate(value):
         runtime_path = f"{path}[{index}]"
         if not isinstance(runtime, str):
             error(errors, runtime_path, "must be a string")
+            valid = False
         elif runtime not in RUNTIMES:
             error(errors, runtime_path, "unknown runtime")
+            valid = False
         elif runtime in seen:
             error(errors, runtime_path, "duplicates an earlier runtime")
+            valid = False
         else:
             seen.add(runtime)
+    return seen if valid else None
 
 
 def validate_check(value: Any, path: str, errors: list[str]) -> str | None:
@@ -216,7 +221,12 @@ def validate_check(value: Any, path: str, errors: list[str]) -> str | None:
 
 
 def validate_requirement(
-    value: Any, path: str, skills_root: Path, seen_ids: set[str], errors: list[str]
+    value: Any,
+    path: str,
+    skills_root: Path,
+    supported_runtimes: set[str] | None,
+    seen_ids: set[str],
+    errors: list[str],
 ) -> None:
     requirement = require_object(value, path, errors)
     if requirement is None:
@@ -238,7 +248,21 @@ def validate_requirement(
         else:
             seen_ids.add(identifier)
 
-    validate_runtimes(requirement.get("runtimes"), f"{path}.runtimes", errors)
+    runtimes = requirement.get("runtimes")
+    validate_runtimes(runtimes, f"{path}.runtimes", errors)
+    if isinstance(runtimes, list):
+        for index, runtime in enumerate(runtimes):
+            if (
+                isinstance(runtime, str)
+                and runtime in RUNTIMES
+                and supported_runtimes is not None
+                and runtime not in supported_runtimes
+            ):
+                error(
+                    errors,
+                    f"{path}.runtimes[{index}]",
+                    "runtime is not declared in supported_runtimes",
+                )
 
     kind = require_string(requirement.get("kind"), f"{path}.kind", errors)
     if kind is not None and kind not in KINDS:
@@ -296,7 +320,9 @@ def validate_declaration(path: Path, skills_root: Path) -> list[str]:
         error(errors, "version", "must be the integer 1")
     elif version != 1:
         error(errors, "version", "must be 1")
-    validate_runtimes(declaration.get("supported_runtimes"), "supported_runtimes", errors)
+    supported_runtimes = validate_runtimes(
+        declaration.get("supported_runtimes"), "supported_runtimes", errors
+    )
     requirements = declaration.get("requirements")
     if not isinstance(requirements, list):
         error(errors, "requirements", "must be a non-empty array")
@@ -305,7 +331,14 @@ def validate_declaration(path: Path, skills_root: Path) -> list[str]:
         error(errors, "requirements", "must not be empty")
     seen_ids: set[str] = set()
     for index, requirement in enumerate(requirements):
-        validate_requirement(requirement, f"requirements[{index}]", skills_root, seen_ids, errors)
+        validate_requirement(
+            requirement,
+            f"requirements[{index}]",
+            skills_root,
+            supported_runtimes,
+            seen_ids,
+            errors,
+        )
     groups: dict[str, list[tuple[int, dict[str, Any]]]] = {}
     for index, requirement in enumerate(requirements):
         if isinstance(requirement, dict) and isinstance(requirement.get("group"), str):

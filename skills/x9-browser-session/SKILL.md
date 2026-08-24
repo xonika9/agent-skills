@@ -5,15 +5,16 @@ description: Use when browser work requires choosing between a connector, a loca
 
 # Browser session
 
-Use this skill in Claude Code and Codex. It owns shared route selection, the verified
-Edge adapter, runtime-specific extension and in-app surfaces, CDP fallbacks, task-tab
-isolation, and focus safety. Re-check installed tool instructions and live schemas when
-a named surface is absent.
+Use this skill in OpenCode, Claude Code, and Codex. It owns shared route selection, the
+verified Edge adapter, runtime-specific extension and in-app surfaces, CDP fallbacks,
+task-tab isolation, and focus safety. Re-check installed tool instructions and live
+schemas when a named surface is absent.
 
 ## `chrome-devtools` MCP allowlist
 
-Targets in this list bypass the browser extension in both runtimes. An entry matches
-the exact hostname and its subdomains; do not infer sibling or look-alike domains.
+Targets in this list bypass the browser extension in every route that offers one. An
+entry matches the exact hostname and its subdomains; do not infer sibling or look-alike
+domains.
 
 - `avito.ru`
 
@@ -48,18 +49,21 @@ parent task. Avito work is sequential even when the rest of the research is dele
    operation. An explicit request to open, inspect, or operate a browser UI overrides
    this preference.
 2. When the target hostname matches the [`chrome-devtools` MCP allowlist](#chrome-devtools-mcp-allowlist),
-   use MCP against the verified Edge profile. This route overrides the runtime default
-   and an explicit in-app selection. If MCP cannot attach or complete the operation,
-   continue directly to the `agent-edge` fallback under the shared unattended-Edge
-   condition.
-3. If the user explicitly requests the runtime's in-app browser, use it immediately.
-   That explicit choice is sticky: do not substitute Edge or another browser after an
-   authentication or connection failure unless the user approves the switch.
-4. For local web development and previews, use the runtime's in-app browser unless the
-   user explicitly requests Edge:
+   use the runtime's MCP route: OpenCode uses the live `chrome-devtools` target in its
+   current tool catalog without inferring a profile; Claude Code and Codex use MCP
+   against the verified Edge profile. This route overrides the runtime default and an
+   explicit in-app selection. If MCP cannot attach or complete the operation, continue
+   directly to the `agent-edge` fallback under the shared unattended-Edge condition.
+3. In Claude Code or Codex, use the runtime's in-app browser immediately when the user
+   explicitly requests it. That explicit choice is sticky: do not substitute Edge or
+   another browser after an authentication or connection failure unless the user
+   approves the switch.
+4. In Claude Code or Codex, use the runtime's in-app browser for local web development
+   and previews unless the user explicitly requests Edge:
    - Codex: its in-app browser;
    - Claude Code: its Browser pane.
 5. For every other browser-control task, use the runtime-specific default:
+   - OpenCode: the live `chrome-devtools` MCP exposed in the current tool catalog;
    - Codex: its browser extension in the verified Edge profile;
    - Claude Code: `chrome-devtools` MCP against that Edge profile. Do not use the
      Claude browser extension unless the user explicitly requests it.
@@ -75,11 +79,11 @@ parent task. Avito work is sequential even when the rest of the research is dele
 8. Once a controller works, keep it through ordinary stale-reference, redraw, and
    timeout errors. Do not alternate controllers on the same task tab.
 
-Outside the allowlist route above, the in-app browser remains the isolated route for an
-explicit request and for local web development in both runtimes. It has a separate
-profile and does not carry the user's Edge extensions. Use Edge when exact account
-state, region, cart, saved data, personalized content, ad blocking, or another installed
-extension matters.
+Outside the allowlist route above, the in-app browser remains the isolated route in
+Claude Code and Codex for an explicit request and local web development. It has a
+separate profile and does not carry the user's Edge extensions. Use Edge when exact
+account state, region, cart, saved data, personalized content, ad blocking, or another
+installed extension matters.
 
 ## Shared Edge safety
 
@@ -121,6 +125,19 @@ a clean standalone `agent-browser` session for that work.
 
 Read before mutating. Posting, purchasing, sending, deleting, or changing account data still requires authority from the user's request.
 
+## OpenCode
+
+- Use the live `chrome-devtools` MCP in the current tool catalog as the primary
+  browser-control surface. Do not infer configuration paths, flags, or a separate
+  in-app browser from another runtime.
+- Create a task-owned page with `background: true`, select it with
+  `bringToFront: false`, and keep one controller on that task page. Apply the shared
+  private-surface safety and Avito traffic rules.
+- If the MCP is absent, use `agent-edge` only under the shared unattended-Edge
+  condition. A restart conclusion is permitted only when safe evidence shows that the
+  MCP is configured but not visible in the live catalog; otherwise return `DEGRADED` or
+  `BLOCKED` with the missing prerequisite.
+
 ## Claude Code
 
 - For local web development, previews, and an explicit request for the built-in
@@ -158,9 +175,9 @@ For the Avito signals defined in
 [Avito traffic discipline](#avito-traffic-discipline), follow that section's stop rule
 instead of entering the controller fallback chain.
 
-Report cancelled or failed browser calls as failures. For an implicit/default Edge
+Report cancelled or failed browser calls as failures. For an implicit/default browser
 selection, use the runtime-specific chain: Codex extension → MCP → `agent-edge`;
-Claude Code MCP → `agent-edge`; use the allowlist route defined in
+OpenCode MCP → `agent-edge`; Claude Code MCP → `agent-edge`; use the allowlist route defined in
 [Choose the surface](#choose-the-surface) instead of the Codex default. For an allowed
 explicit in-app choice, do not enter an Edge chain without approval. If an implicitly
 selected local-development browser is unavailable, use the runtime's Edge chain and
