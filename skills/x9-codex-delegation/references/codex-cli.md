@@ -7,7 +7,7 @@ Run `codex exec --help` and `codex exec resume --help` before relying on the exa
 Read-only:
 
 ```bash
-codex exec -s read-only --skip-git-repo-check "<self-contained prompt>" </dev/null
+codex exec --disable hooks -s read-only --skip-git-repo-check --ephemeral "<self-contained prompt>" </dev/null
 ```
 
 Write-capable:
@@ -37,9 +37,11 @@ chmod 600 "$DELEGATION_PROMPT_FILE" || exit 1
 
 Write the brief only after the trap and user-only permissions are in place. Pass it through stdin rather than argv. After `codex exec` returns, let the trap remove it and verify that the temporary directory no longer exists. Never reuse a fixed `/tmp` path or leave transport/output files in the repository, logs, or user artifacts.
 
-This protects the transport file and process arguments, not Codex session history: the submitted prompt may still be persisted by the runtime. Do not put credentials or secret values in the brief. Refer to a local credential source that the authorized task can read instead.
+Use `--ephemeral` when the brief must not create a resumable Codex session; omit it only when continuity is required. This protects local transport and session history, not provider-side processing or retention. Do not put credentials or secret values in the brief. Refer to a local credential source that the authorized task can read instead.
 
-- Use `-c 'model_reasoning_effort="<level>"'` with a live-supported value when the caller requires an explicit effort override. Plain `codex exec` has no `--effort` flag.
+For a sealed self-contained run, disable hooks through the live CLI feature control and inspect startup warnings. A shell shim or wrapper may re-enable them after argument parsing; if the run reports enabled hooks, stop rather than treating that invocation as sealed.
+
+- Use `-c 'model_reasoning_effort="<level>"'` when the caller requires an explicit effort override. Plain `codex exec` has no `--effort` flag: take valid levels from `codex debug models`, then require the run's `reasoning effort:` report to match because unsupported values may be accepted silently.
 - Use `-m <model>` only when the user explicitly requests an available model or the calling skill requires a confirmed model family; otherwise inherit `~/.codex/config.toml`.
 - `--skip-git-repo-check` is appropriate for a read-only one-shot outside a repository. Do not use it to bypass a task's repository contract.
 

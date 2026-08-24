@@ -24,15 +24,17 @@ For `full`, select and declare exactly two or three applicable lenses before dis
 
 ## Sealed brief
 
-Give each critic the same bounded brief:
+Before dispatch, collect the load-bearing evidence into one sealed packet. Give every critic the same factual packet:
 
 - the proposal in neutral language;
 - intended user/outcome and observable success criterion;
-- known constraints, evidence, and source paths/URLs;
+- known constraints and an evidence packet containing the relevant content or excerpt, its source path or URL as provenance, retrieval time when freshness matters, whether the packet includes the full source or an excerpt, and any extraction limits;
 - the critic's job: identify invalidating assumptions, failure modes, relevant competition, a cheaper or simpler path to the same outcome, the most likely practical cause of failure, and the cheapest disconfirming tests;
 - required output: `KILLER`, `SERIOUS`, `MINOR`, evidence/uncertainty, and a verdict.
 
-Exclude advocacy and solution-selling from the critic's role, but do not omit factual context that would make the critique a straw man. A critic making factual claims must be able to read the cited repository artifacts or live sources.
+For `full`, append exactly one declared lens to each critic's job; the lens is the only per-critic difference. A provenance path or URL identifies the supplied evidence but does not authorize the critic to read beyond the packet. Do not put credentials, secret values, or irrelevant private content in it.
+
+Exclude advocacy and solution-selling from the critic's role, but do not omit factual context that would make the critique a straw man. Critics work only from the sealed packet and must identify evidence gaps instead of searching for more context, using tools, or delegating.
 
 ## Runtime routes
 
@@ -40,14 +42,14 @@ Exclude advocacy and solution-selling from the critic's role, but do not omit fa
 - **From Codex:** read [the Codex adapter](references/codex.md).
 - **From OpenCode:** read [the OpenCode adapter](references/opencode.md).
 
-Every critic must run at `high` effort. Every adapter must select a currently available model from the promised provider family. Honor an exact user-selected version only when live discovery confirms it; otherwise fail that route rather than silently substituting another family. Pass only the sealed brief and explicit evidence locations, and grant only the read surfaces needed to inspect load-bearing evidence.
+Every critic must run at `high` effort. Every adapter must select a currently available model from the promised provider family. Honor an exact user-selected version only when live discovery confirms it; otherwise fail that route rather than silently substituting another family. An accepted runtime selector is evidence that the control was applied; when the runtime omits post-run effective-model or effort telemetry, record that property as `NOT_PROVEN` without failing an otherwise successful route.
 
 ## Failure and synthesis
 
 - Retry a failed route once only when the failure is transient and the retry changes something concrete.
 - Judge completeness against the selected mode. A successful `opus` or `gpt` run is `COMPLETE`; it is not degraded merely because the user requested one critic.
 - In default mode, one missing route yields `DEGRADED`. In `full`, a missing requested provider or lens yields `DEGRADED`.
-- If every requested route fails or no critic can inspect the load-bearing evidence, return `BLOCKED` with verdict `NOT_PROVEN`; do not manufacture a substantive verdict from the orchestrator's prior beliefs.
+- If every requested route fails or the orchestrator cannot assemble a sufficient packet of load-bearing evidence, return `BLOCKED` with verdict `NOT_PROVEN`; do not manufacture a substantive verdict from the orchestrator's prior beliefs.
 - Keep attribution: show which critic raised each invalidating point and whether the other independently agreed.
 - Resolve duplicate wording, not disagreement. Surface material conflicts and judge them against evidence.
 - Keep the synthesis concise by grouping overlap and separating required changes from optional improvements, not by dropping findings or dependencies that could change the verdict.

@@ -1,13 +1,11 @@
 # Codex adapter
 
-Use this adapter only when `x9-idea-critic` runs from Codex. Inspect the live Claude CLI help and native worker schema before dispatch because flags, model aliases, and worker parameters can change.
+Use this adapter only when `x9-idea-critic` runs from Codex. Inspect only the selected route's live interface before dispatch because model aliases and worker parameters can change.
 
 ## Opus route
 
-Run every Opus critic in a fresh non-persistent Claude CLI session. Live discovery must confirm equivalents for non-persistent print execution, explicit Opus-family model selection, `high` effort, and sealed-brief input; if any load-bearing control is unavailable, the route failed. Do not inherit the user's configured Claude model or effort.
-
-When the live CLI accepts the brief on stdin, materialize only the sealed brief in an OS temporary file created with `mktemp`, restrict it to the current user, and pass it through stdin rather than argv. Install cleanup with a shell trap or equivalent `finally` block before writing the brief, never place the transport file in the repository or logs, and treat verified deletion after success, failure, or interruption as part of route completion.
+Follow [the shared Claude CLI route](claude-cli.md).
 
 ## GPT route
 
-Follow the active global subagent contract, then use the native worker interface with `fork_turns: "none"`. Select a supported GPT-family model through the live schema and set its effort to `high`. If a GPT-family model cannot be selected or `high` effort cannot be enforced, the route failed rather than falling back to another provider.
+Follow the active global subagent contract, then use the native worker interface with `fork_turns: "none"`. Select a supported GPT-family model through the live schema, set its effort to `high`, pass only the sealed packet, and require direct execution without tools or delegation. `fork_turns: "none"` removes the parent conversation, not system, developer, or repository instructions. Record accepted selectors as control evidence; missing post-run effective telemetry is `NOT_PROVEN`, not route failure. If either selector is unavailable or rejected, the route failed rather than falling back to another provider.
