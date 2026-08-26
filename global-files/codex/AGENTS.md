@@ -50,7 +50,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Shared tool routing
 
-- Use the installed `find-docs` skill for library documentation, setup guides, API references, and framework-specific behavior.
+- For Telegram tasks, use the already-authenticated Telegram Web session in the browser instead of the macOS Telegram app or Computer Use, unless the user explicitly requests the desktop app.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
 - If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory. Stop only after `x9-browser-session`'s permitted routes are exhausted; then report the failed routes and missing prerequisite.
 - Resolve a selected skill from its catalog-provided location and read that exact `SKILL.md`. Skill directories may be symlinked, so before reporting one missing, verify the exact path or use symlink-aware traversal; an empty result from `rg --files` or `find ... -type f` does not prove absence.
@@ -58,11 +58,11 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Codex runtime
 
-### Code Mode batching
+### Tool-turn efficiency
 
-- When several already-known tool calls are independent and read-only, run them together in one `exec` with `await Promise.all([...])`.
-- Keep dependencies, writes, waits, approvals, and steps whose next call depends on a result sequential.
-- Keep combined output bounded and recover truncated evidence narrowly.
+- Minimize model round trips by batching already-known independent read-only calls. In Code Mode, use one `exec` with `await Promise.all([...])`; otherwise use native parallel tool calls or one combined read-only shell command.
+- Eligible calls include independent reads, searches, metadata queries, and non-mutating diagnostics or validations that cannot interfere through shared state. Keep writes, waits, approvals, and result-dependent work sequential.
+- Bound combined output and recover only truncated evidence that can still change the next decision.
 
 ### Local storage hygiene
 
@@ -79,3 +79,8 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 - Let Codex configuration choose the default subagent model and reasoning effort. Override them only when the user or an applicable skill explicitly requires another model.
 - Use `fork_turns: "none"` by default. Include recent conversation context only when the subagent's task cannot be made self-contained.
+- Complete all useful coordinator-owned work before waiting. When active direct descendants are the only remaining blocker, call `wait_agent` with a long timeout. It may return on a completion, material message, or timeout; process that event and wait again only if still blocked. Do not poll with short waits or repeated `list_agents` calls.
+- In direct-execution mode, a worker does not call `wait_agent`. In explicitly authorized nested-delegation mode, an agent may call `wait_agent` only for active direct descendants it spawned for the current assignment; it does not wait for its parent, siblings, remediation owned by another branch, or agents it did not spawn.
+- Worker briefs prohibit progress-only messages. A worker contacts the parent before completion only for a material dependency, decision, failure, or finding that can change ongoing work. Route a finding directly to another active worker only when that worker has explicit ownership; otherwise send it to the parent.
+- A reviewer completes its bounded pass, returns consolidated findings, and exits instead of waiting for remediation. The parent may reactivate it with `followup_task`.
+- After a long wait times out, inspect descendant state once. Do not interrupt, replace, or duplicate a worker without concrete evidence of failure.

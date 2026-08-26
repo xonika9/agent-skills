@@ -4,11 +4,20 @@
 
 ### Highlights
 
+- Telegram tasks now default to the authenticated Telegram Web session instead of the macOS app or Computer Use, while explicit desktop-app requests remain supported.
+- `x9-opencode-sessions` now preserves large Sessions API responses instead of receiving truncated JSON when the OpenCode CLI writes to a captured pipe.
+
 ### Install / update
+
+- Update `x9-opencode-sessions` to apply the large-transcript fix; its command interface is unchanged.
 
 ### Compatibility
 
+- Long OpenCode sessions can now be inspected without transcript degradation caused by the CLI pipe buffer.
+
 ### Breaking changes
+
+None.
 
 ## 3.0.0 - 2026-08-24
 

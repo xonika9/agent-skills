@@ -16,7 +16,7 @@ import opencode_sessions
 
 
 class Result:
-    def __init__(self, stdout: str = "", returncode: int = 0) -> None:
+    def __init__(self, stdout: str | None = "", returncode: int = 0) -> None:
         self.stdout = stdout
         self.returncode = returncode
 
@@ -78,6 +78,23 @@ class OpenCodeSessionsTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertEqual(output, {"cursor": None, "messages": [{"id": "m1", "text": ["Visible"], "type": "assistant"}]})
+
+    def test_messages_read_large_cli_output_from_file(self) -> None:
+        visible = "x" * (300 * 1024)
+        payload = json.dumps({
+            "data": [{"id": "m1", "type": "assistant", "content": [{"type": "text", "text": visible}]}],
+            "cursor": None,
+        })
+
+        def runner(_command, **kwargs):
+            kwargs["stdout"].write(payload.encode())
+            return Result(stdout=None)
+
+        with patch.object(opencode_sessions.subprocess, "run", runner):
+            code, output = self.run_main(["messages", "ses_1"])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(output["messages"], [{"id": "m1", "text": [visible], "type": "assistant"}])
 
     def test_messages_expose_direct_user_text_and_pagination(self) -> None:
         calls: list[list[str]] = []

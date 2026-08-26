@@ -9,6 +9,7 @@ import json
 import os
 import re
 import subprocess
+import tempfile
 import uuid
 from pathlib import Path
 from typing import Any, Sequence
@@ -136,13 +137,19 @@ def call_api(
     if data is not None:
         command.extend(["--data", json.dumps(data, ensure_ascii=False)])
     try:
-        result = (runner or subprocess.run)(
-            command,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            check=False,
-        )
+        with tempfile.TemporaryFile() as stdout:
+            result = (runner or subprocess.run)(
+                command,
+                stdout=stdout,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=timeout,
+                check=False,
+            )
+            output = result.stdout
+            if output is None:
+                stdout.seek(0)
+                output = stdout.read()
     except subprocess.TimeoutExpired:
         return False, None, "timeout"
     except OSError:
@@ -150,7 +157,12 @@ def call_api(
 
     if result.returncode != 0:
         return False, None, f"opencode2-exit-{result.returncode}"
-    output = result.stdout.strip()
+    if isinstance(output, bytes):
+        try:
+            output = output.decode("utf-8")
+        except UnicodeDecodeError:
+            return False, None, "non-json-response"
+    output = output.strip()
     if not output:
         return True, None, None
     try:
