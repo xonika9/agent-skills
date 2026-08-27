@@ -182,9 +182,9 @@ It accepts only a settled plan with explicit approval and does not reopen produc
 
 #### [`x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md)
 
-When a repository has competing architectural directions or unclear seams, this skill produces a read-only report on component boundaries, dependency direction, ownership, coupling, duplication, and change hotspots. It separates observations from inferences, compares plausible directions, and makes the evidence, risks, confidence, and next planning handoff inspectable.
+When a repository has competing architectural directions or unclear seams, this skill creates an HTML architecture report without changing production code or external systems. The report maps component boundaries, dependency direction, ownership, coupling, duplication, and change hotspots; separates observations from inferences; compares plausible directions; and makes the evidence, risks, confidence, and next planning handoff inspectable.
 
-It does not refactor or change production code. Structural report validation is separate from browser rendering evidence, so unavailable inspection is stated as `DEGRADED` or `NOT_PROVEN`, not treated as a pass.
+Structural report validation is separate from browser rendering evidence, so unavailable inspection is stated as `DEGRADED` or `NOT_PROVEN`, not treated as a pass.
 
 ### Repositories and reusable workflows
 

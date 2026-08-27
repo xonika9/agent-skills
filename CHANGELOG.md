@@ -14,6 +14,7 @@
 - `x9-skill-creator` now classifies invocation separately for every claimed runtime and checks the ownership boundary before it creates or judges a skill owner.
 - `x9-context-files-generator` now keeps root-local rules in root `AGENTS.md` while assigning branch-specific procedures to profile documents with verified conditional pointers.
 - `x9-agent-instructions` and `x9-context-files-generator` now distinguish model invocation in each supported runtime from portable structural compatibility.
+- The English and Russian skill catalog now state that `x9-architecture-scout` writes an HTML report and describe `x9-task-graph`'s runnable frontier without implying a queue.
 
 ### Install / update
 
