@@ -5,6 +5,8 @@ description: Use when writing a prompt or task brief for another agent without e
 
 # Agent instructions
 
+This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its portable claim is structural Agent Skills compatibility only, not proven invocation behavior.
+
 Own the prompt as an artifact: a one-off brief handed to another agent or a new chat, and the instructional content of files that hold prompts or agent instructions. One rubric drives both — writing applies it forward, review applies it backward.
 
 Write this skill and standing machine-facing policy in English. Write a user-delivered one-off prompt in the user's language; native worker briefs follow the runtime's standing language rule. Keep identifiers, commands, paths, UI labels, literal configuration values, and quotations exactly as they are. Use another language for the whole user-delivered prompt only when the receiving runtime has a load-bearing requirement for it; say why.

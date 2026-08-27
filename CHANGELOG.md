@@ -13,6 +13,7 @@
 - `x9-agent-instructions` now requires completion bars to account for known enumerable sets and makes branch-specific context pointers conditional and testable.
 - `x9-skill-creator` now classifies invocation separately for every claimed runtime and checks the ownership boundary before it creates or judges a skill owner.
 - `x9-context-files-generator` now keeps root-local rules in root `AGENTS.md` while assigning branch-specific procedures to profile documents with verified conditional pointers.
+- `x9-agent-instructions` and `x9-context-files-generator` now distinguish model invocation in each supported runtime from portable structural compatibility.
 
 ### Install / update
 

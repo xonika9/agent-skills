@@ -6,6 +6,8 @@ compatibility: Full creation, audit, or update of agent-facing repository instru
 
 # Repository context files
 
+This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its portable claim is structural Agent Skills compatibility only, not proven invocation behavior.
+
 Create concise, evidence-backed onboarding files for two audiences: agents (`AGENTS.md`/`CLAUDE.md`) and humans (`README.md`). Existing files are user-owned inputs, not blank templates.
 
 For every Create, Audit, or Update that touches agent-facing instructional prose in `AGENTS.md` or an explicitly exceptional `CLAUDE.md`, load and apply `x9-agent-instructions` before writing or judging that prose. It is a subordinate instruction-quality rubric, not the primary context-file workflow, and owns language, prescription, duplication, artifact references, and what earns a line. This skill remains the owner of repository evidence, audience selection, canonical files, merge and preservation behavior, `AGENTS.md`/`CLAUDE.md` normalization, and `README.md`.
