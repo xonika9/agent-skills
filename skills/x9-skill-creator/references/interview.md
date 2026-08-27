@@ -19,11 +19,14 @@ Surface only blind spots that plausibly apply. Do not perform an interview ritua
 
 - What real user phrases should trigger it, and what adjacent request should not?
 - Which runtimes and canonical location?
+- For each claimed runtime, is the skill `model-invoked` or `user-only`, and what real invocation path supports that choice?
+- Does another skill consume it?
 - What inputs and artifacts are in scope?
 - What actions may change local or external state?
 - Which step is deterministic enough to require a script?
 - What exact evidence separates complete, degraded, and failed?
 - Which existing skill already owns part of this contract, and what stays a link to it rather than a copy?
+- Does this meet the [ownership boundary](quality-rubric.md#ownership-boundary-j)? If it does not, which existing owner or directly linked shared file serves the need?
 
 ## Existing-skill action
 

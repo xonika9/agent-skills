@@ -78,12 +78,16 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - The task depends on your login, region, feed, cart, or private pages: add [`x9-browser-session`](skills/x9-browser-session/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
+- A large initiative still has choices that could change its direction or scope: map them before planning with [`x9-decision-map`](skills/x9-decision-map/SKILL.md).
+- You have an approved, implementation-ready plan and need connected tracker-ready work items: use [`x9-task-graph`](skills/x9-task-graph/SKILL.md).
 - You need a strong prompt, or a second look at instructions you already wrote: use [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md).
+- You explicitly did not understand the immediately previous answer and need that same point explained differently: use [`x9-explain-again`](skills/x9-explain-again/SKILL.md).
 - You need to find, read, coordinate, or continue another OpenCode V2 chat: use [`x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md).
 - You have installed or updated skills and need to know what is ready to use: ask [`x9-onboarding`](skills/x9-onboarding/SKILL.md) to check them.
 - A new or existing repository needs `AGENTS.md` and `CLAUDE.md`: run [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md).
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
+- You need a read-only view of a repository's architecture, trade-offs, and change hotspots: use [`x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md).
 - You need an editable diagram in Excalidraw, Mermaid, or draw.io: use [`x9-diagrams`](skills/x9-diagrams/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
 - Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md).
@@ -134,11 +138,17 @@ Use this when you want resistance, not another enthusiastic brainstorm. The skil
 
 It also turns the upheld findings into a self-contained stronger proposal and maps every material change back to the problem it addresses. The default uses one critic from each provider; focused and deeper panel modes are also available. The GPT route from Claude Code uses `x9-codex-delegation`.
 
+#### [`x9-decision-map`](skills/x9-decision-map/SKILL.md)
+
+Big initiatives can stall because open choices, missing evidence, and work that merely sounds useful get mixed together. This skill creates or updates one durable decision map before planning: it records decisions, sharp questions, unresolved fog, dependencies, and the next evidence-gathering frontier so a later session can recover the state.
+
+It is for choices that materially change direction, scope, or the plan. It is not an implementation plan and does not replace `x9-loop-engineering` for a recurring multi-stage agent workflow.
+
 #### [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md)
 
 This is the skill for “write me a prompt for this task.” Describe the outcome in your own words, including through speech-to-text, and it turns that input into a bounded brief with the goal, constraints, evidence, authority, deliverable, and completion bar.
 
-It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included. The first pass is report-only: every retained change gets a short explanation of the practical benefit and any material trade-off, followed by the smallest complete proposed diff. It edits only after explicit approval. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
+It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included. The first pass is report-only: every retained change gets a short explanation of the practical benefit and any material trade-off, followed by the smallest complete proposed diff. It edits only after explicit approval. For a known list of deliverables, the completion bar must cover every item or state each exclusion; branch-specific context belongs behind a pointer that names when it applies. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
 
 Based on:
 
@@ -148,6 +158,12 @@ Based on:
 - [The new rules of context engineering for Claude 5 generation models](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models)
 - [Using GPT-5.6](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-5.6)
 
+#### [`x9-explain-again`](skills/x9-explain-again/SKILL.md)
+
+When you explicitly say that you did not understand the immediately previous substantive answer, this skill repairs the unclear fragment with a different method: plainer wording, a concrete example, an analogy, or a causal breakdown. It stays small enough to solve the misunderstanding instead of restarting the whole topic.
+
+It only applies when the earlier answer is available in the same thread. If the unclear point is ambiguous, it asks one short question; a new request to explain a topic, a source explanation, or a durable visual explanation belongs elsewhere.
+
 ### Visual artifacts
 
 #### [`x9-diagrams`](skills/x9-diagrams/SKILL.md)
@@ -156,13 +172,27 @@ Choosing the diagram type and choosing its file format are different decisions. 
 
 Each route produces native editable source: `.excalidraw` JSON with checked bindings and current fonts, Mermaid text validated by the target renderer, or `.drawio` XML with pages, layers, containers, geometry, and resolvable connections. Structural validity and visual quality are separate gates, so completion requires a compatible render or editor inspection; unavailable native proof is reported as `DEGRADED`.
 
+### Planning and architecture
+
+#### [`x9-task-graph`](skills/x9-task-graph/SKILL.md)
+
+An approved, implementation-ready plan is still not a set of work items people can review or put in a tracker. This skill turns it into connected vertical slices with dependencies, a runnable frontier, and a coverage matrix that accounts for the source requirements, decisions, and work units.
+
+It accepts only a settled plan with explicit approval and does not reopen product decisions, invent implementation work, implement the items, or publish them without the authority requested for that action.
+
+#### [`x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md)
+
+When a repository has competing architectural directions or unclear seams, this skill produces a read-only report on component boundaries, dependency direction, ownership, coupling, duplication, and change hotspots. It separates observations from inferences, compares plausible directions, and makes the evidence, risks, confidence, and next planning handoff inspectable.
+
+It does not refactor or change production code. Structural report validation is separate from browser rendering evidence, so unavailable inspection is stated as `DEGRADED` or `NOT_PROVEN`, not treated as a pass.
+
 ### Repositories and reusable workflows
 
 #### [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md)
 
 On a new repository, it creates useful `README.md`, `AGENTS.md`, and `CLAUDE.md` files. On an existing codebase, it reads the real commands, structure, CI, and local constraints before updating them, so the result does not become a generated file tree or a pile of advice the agent could infer itself.
 
-For personal cross-runtime repositories, `AGENTS.md` stays the source of truth and `CLAUDE.md` imports it with `@AGENTS.md`. Claude Code and AGENTS-aware harnesses receive the same context without two copies drifting apart.
+For personal cross-runtime repositories, root `AGENTS.md` is the source of truth for root-local context and `CLAUDE.md` imports it with `@AGENTS.md`. A branch-specific procedure belongs in its profile document; root `AGENTS.md` may point to it only when the condition and target are explicit. Claude Code and AGENTS-aware harnesses receive the same root context without two copies drifting apart.
 
 For agent-facing prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying prompt-quality rules. The full plugin already includes both skills; install them together when copying `x9-context-files-generator` individually. Without the companion, repository and structural checks continue, but agent-file instruction quality is reported as degraded. README-only work does not require it.
 
@@ -171,6 +201,8 @@ For agent-facing prose, it loads `x9-agent-instructions` as a required companion
 Give it an already understood repeated process to package as an Agent Skill, or hand it an existing skill for an audit. When the idea is underspecified, it asks only the questions that change the design. It then builds or fixes the trigger contract, structure, references, runtime adapters, safety boundaries, and validation. If the process is a multi-stage autonomous loop, design that loop with `x9-loop-engineering` first.
 
 The method applies one cross-runtime quality contract to Claude Code and Codex skills. Structural validation uses explicit portable, Claude Code, and Codex profiles, so a passing check names the compatibility it actually proved. The skill supports both static audits and clean-context behavioral evaluation when the extra evidence is worth the cost.
+
+Before it writes frontmatter, the skill classifies each claimed runtime as model-invoked or user-only, records any cross-skill consumer separately, and checks whether the process has an independent owner. Claude-only invocation metadata does not become portable or Codex metadata just because the skill can be manually invoked there.
 
 For agent-facing instruction prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying those rules. The full plugin already includes both skills; install them together when copying individual skills. Without the companion, structural checks remain available, but the instruction-quality part of Create, Audit, and Fix is reported as degraded.
 

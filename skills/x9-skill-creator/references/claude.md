@@ -19,7 +19,7 @@ Build only the resource folders the contract needs. Prefer the runtime's current
 ## Frontmatter
 
 - Portable Agent Skills require `name` and `description`. Claude Code also accepts runtime extensions; discover the current fields from the official frontmatter reference before relying on one, and validate with the `claude` runtime profile.
-- For a **user-invoked-only** skill (run via `/<name>`, never auto-fired), set `disable-model-invocation: true` — this drops its `description` from the model's context budget entirely. The trade-off: you must remember the skill exists to invoke it, so reserve it for skills you reach for deliberately.
+- After the core has classified this runtime as `user-only`, set `disable-model-invocation: true` for a skill run via `/<name>` and never auto-fired. This removes its `description` from the model's context budget; reserve it for skills a user can deliberately invoke. This field is Claude-only, not portable or Codex metadata.
 - A personal skill does not need `agents/openai.yaml`.
 
 ## Triggering

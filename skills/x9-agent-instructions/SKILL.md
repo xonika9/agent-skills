@@ -23,10 +23,11 @@ Completeness of the specification helps; completeness of the path hurts. Describ
 - **Facts the executor cannot derive** — state, paths, commits, what is already done, what is known broken, decisions taken elsewhere. Length is not a concern here; nothing else can supply this.
 - **Constraints and scope fence** — what is forbidden and what is deliberately out of scope. Agents widen scope on their own, so leaving the fence implicit is how it happens.
 - **Required evidence** — what counts as proof: tests, a build, a reproduced scenario, a diff, a log.
-- **Completion bar** — an observable condition the executor and a third party can both check.
+- **Completion bar** — an observable condition the executor and a third party can both check. When a known enumerable set exists, require the completion bar to account for every member or explicitly explain each exclusion; the mere existence of an output is not completion.
 - **Authority, stated once** — what proceeds without asking (reading, in-scope local edits, tests) and what needs confirmation (external writes, irreversible or destructive actions, purchases, scope expansion). Repeating "ask first" produces needless approval requests on safe actions.
 - **Output contract** — one line, or a pointer to whoever owns the format.
 - **References to real artifacts** — point at the code, test, spec, or component that shows what is wanted. Source beats description, and a module in another language still conveys the semantics. Name an installed skill by its discoverable name, never by a machine-specific `SKILL.md` path. Use a file path when the file itself is the task artifact; when exact unpublished repository source matters, use a project-relative path and say why. Resolve a bundled resource path only after its owning skill has loaded.
+- **Conditional context pointers** — name the artifact and the independently testable condition or branch that makes it necessary. Keep material every branch needs in the main brief, and put only branch-specific material behind the pointer.
 - **Reasons behind constraints** — a rule with its motive generalizes to cases nobody enumerated; a bare prohibition does not.
 - **Structure** — separate blocks for background, task, constraints, and output; long inputs first and the task after them.
 - **Layer discipline** — system and developer instructions outrank user, repository, and skill instructions. Never write a lower layer as though it overrides a higher one.

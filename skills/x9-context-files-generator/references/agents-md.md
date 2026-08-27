@@ -32,17 +32,23 @@ Dependency inventories, copied signatures, visible file layouts, and mechanicall
 - Guessed commands or environment variables.
 - Global model/browser/tool mechanics; those belong to global instructions and runtime adapters.
 
+## Root and profile context
+
+Classify each repository rule by when an agent needs it. Keep a rule concise in root `AGENTS.md` when it must shape most work before the agent can select a task branch. Put a rule needed only for a recognizable branch or profile, such as a release procedure, in that profile document instead.
+
+Root `AGENTS.md` may retain a short repository-relative pointer only when the profile would otherwise not be discoverable. The pointer names the branch condition and target document; verify that target exists. Keep the procedure body in the profile, not in both files.
+
 ## Cross-runtime convention
 
 Agent harnesses do not share one universal repository-context filename. This convention targets Claude Code and `AGENTS.md`-aware harnesses such as Codex; verify another harness's current discovery rules before claiming compatibility. Claude Code reads `CLAUDE.md` and supports importing another file. Keeping two complete copies makes the rules drift, so use one source of truth plus a thin compatibility import when the normalization was requested or authorized.
 
-Root `AGENTS.md` is the single canonical source of local agent instructions. Root `CLAUDE.md` must contain exactly:
+Root `AGENTS.md` is the canonical source of root-local agent instructions; each profile document owns its branch-specific procedure. Root `CLAUDE.md` must contain exactly:
 
 ```text
 @AGENTS.md
 ```
 
-Keep the final newline. Add and update local rules only in `AGENTS.md` so Claude Code follows the import while Codex and other `AGENTS.md`-aware harnesses read the canonical file directly.
+Keep the final newline. Add and update root-local rules only in `AGENTS.md` so Claude Code follows the import while Codex and other `AGENTS.md`-aware harnesses read the canonical file directly.
 
 Before replacing an existing `CLAUDE.md` with the import, merge every unique local rule into `AGENTS.md` and verify the combined meaning. If a rule appears genuinely Claude-only or the runtime does not support the import, stop and ask whether this repository is an explicit exception; do not silently retain duplication or delete the rule.
 
@@ -50,5 +56,6 @@ Before replacing an existing `CLAUDE.md` with the import, merge every unique loc
 
 - Run safe documented commands or mark them unverified.
 - When canonical-file normalization was authorized and no exception applies, compare `CLAUDE.md` byte-for-byte with `@AGENTS.md\n` and confirm unique pre-existing rules survived in `AGENTS.md`.
+- For every root pointer to a profile, resolve its repository-relative target and confirm the procedure body appears only in the profile.
 - Check that a fresh-context agent can locate setup, constraints, and the relevant completion command.
 - Diff against the pre-edit file to prove no user rule disappeared silently.

@@ -6,14 +6,23 @@
 
 - Telegram tasks now default to the authenticated Telegram Web session instead of the macOS app or Computer Use, while explicit desktop-app requests remain supported.
 - `x9-opencode-sessions` now preserves large Sessions API responses instead of receiving truncated JSON when the OpenCode CLI writes to a captured pipe.
+- Added `x9-decision-map` for durable, pre-plan records of material decisions, sharp open questions, fog, dependencies, and the next evidence-gathering frontier.
+- Added `x9-task-graph` for turning an approved implementation-ready plan into dependency-aware, tracker-ready vertical work items with complete source coverage.
+- Added `x9-architecture-scout` for read-only architecture reports that compare plausible directions and expose boundaries, ownership, coupling, and change hotspots.
+- Added `x9-explain-again` for repairing explicit confusion about the immediately preceding substantive answer without turning a new explanation request into a false reference.
+- `x9-agent-instructions` now requires completion bars to account for known enumerable sets and makes branch-specific context pointers conditional and testable.
+- `x9-skill-creator` now classifies invocation separately for every claimed runtime and checks the ownership boundary before it creates or judges a skill owner.
+- `x9-context-files-generator` now keeps root-local rules in root `AGENTS.md` while assigning branch-specific procedures to profile documents with verified conditional pointers.
 
 ### Install / update
 
 - Update `x9-opencode-sessions` to apply the large-transcript fix; its command interface is unchanged.
+- Full-plugin users receive the four new skills on update. Selective installations can add only the process that matches the problem; `x9-task-graph` still requires an approved plan.
 
 ### Compatibility
 
 - Long OpenCode sessions can now be inspected without transcript degradation caused by the CLI pipe buffer.
+- The new skills are structurally compatible with Claude Code and Codex; their stated boundaries remain in force: decision maps are not implementation plans, task graphs do not publish or implement work, architecture scouting is read-only, and explanation repair needs a recoverable immediately previous answer.
 
 ### Breaking changes
 

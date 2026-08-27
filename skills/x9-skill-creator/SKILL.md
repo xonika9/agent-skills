@@ -29,6 +29,10 @@ Choose the evidence tier separately:
 
 Ask only when a missing answer is load-bearing. A fully specified request does not need an interview ritual.
 
+## Invocation and ownership
+
+Before writing frontmatter, apply the [runtime classification](references/quality-rubric.md#2-runtime-and-placement-jb) and [ownership boundary](references/quality-rubric.md#ownership-boundary-j). The claimed runtime's adapter owns the supported frontmatter mechanics.
+
 ## Invariants
 
 - No skill is written or judged except against [the rubric](references/quality-rubric.md). [patterns.md](references/patterns.md) supplies examples, not templates.

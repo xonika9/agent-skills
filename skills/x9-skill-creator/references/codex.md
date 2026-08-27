@@ -20,6 +20,7 @@ Paths to native `.system` tooling below can drift with Codex updates — if a sc
 
 - `name` and `description` are required. Usually add no other fields; if a short UI label is needed, `metadata.short-description` is allowed.
 - The description frames when to use the skill (all the "when" goes here, not in the body); do not turn it into a process summary (see rubric dimension 1).
+- Codex has no `disable-model-invocation` frontmatter field. Do not copy that Claude-only field into a Codex or portable skill. Classify a Codex skill as `user-only` only when its exclusive manual use is proven; the `$<name>` route alone proves that a user can invoke it, not that the model cannot.
 
 ## agents/openai.yaml (optional)
 

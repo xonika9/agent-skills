@@ -6,6 +6,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 - [Triggering and scope](#1-triggering-and-scope-sjb)
 - [Runtime and placement](#2-runtime-and-placement-jb)
+- [Ownership boundary](#ownership-boundary-j)
 - [Degree of freedom](#3-degree-of-freedom-j)
 - [Authority and preservation](#4-authority-and-preservation-jb)
 - [Context cost and freshness](#5-context-cost-and-freshness-sj)
@@ -26,7 +27,9 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 ## 2. Runtime and placement `[j+b]`
 
 - Name supported runtimes and canonical placement.
+- Before frontmatter, classify the skill separately in each claimed runtime as `model-invoked` or `user-only`; record cross-skill consumption separately from that classification. A `user-only` claim needs a real invocation path in that runtime.
 - Keep shared method in the core; isolate volatile metadata, tool, model, CLI, and browser facts in runtime adapters with live-discovery rules.
+- Do not treat a runtime-specific invocation mechanism as portable metadata or as evidence for another runtime.
 - With behavioral evidence, verify a representative run on each claimed runtime or mark the run `DEGRADED`. With static evidence, name unverified runtimes without turning that declared scope boundary into a finding.
 
 ## 3. Degree of freedom `[j]`
@@ -55,6 +58,12 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 - Metadata triggers; the body is a concise map; references/scripts/assets load only when needed.
 - Every agent-consumed resource is reachable from `SKILL.md`, directly or through a referenced resource. Runtime-loaded metadata and maintainer regression tests may instead be owned by their canonical loader or test command.
 - Cross-skill ownership is explicit rather than duplicated silently.
+- Shared material for multiple confirmed `user-only` skills is an ordinary accessible file, directly linked by every consumer. It is not a hidden owner or router skill.
+
+## Ownership boundary `[j]`
+
+- Create a new skill owner only for an independent user intent with a real invocation path in at least one claimed runtime, or for a proven independent consumer.
+- Growing an existing file, a shared reference, or a consumption relationship alone does not establish a new owner; extend the current owner or use the shared file instead.
 
 ## 7. Observable completion `[j+b]`
 
@@ -102,5 +111,7 @@ Answer yes/no with a concrete fix:
 6. Is Done externally observable?
 7. Is the evidence tier explicit, and did behavior pass when behavioral evidence was in scope?
 8. Are stopping and ambiguity rules unambiguous?
-9. Does every rule appear exactly once, with no pair that cannot both hold?
-10. Was `x9-agent-instructions` applied to every agent-facing instruction in scope, or was its absence recorded as `not applicable` or `degraded`?
+9. Is invocation classified separately for every claimed runtime, with consumption and runtime mechanics kept separate?
+10. Does a new owner meet the ownership boundary, and is shared `user-only` material directly accessible to every consumer?
+11. Does every rule appear exactly once, with no pair that cannot both hold?
+12. Was `x9-agent-instructions` applied to every agent-facing instruction in scope, or was its absence recorded as `not applicable` or `degraded`?
