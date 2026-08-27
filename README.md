@@ -230,7 +230,7 @@ The main skill file is a short route selector, so routine edits load only the ma
 
 ## Global instruction files
 
-The repository carries separate ready-to-install global files for [OpenCode](global-files/opencode/AGENTS.md), [Codex](global-files/codex/AGENTS.md), and [Claude Code](global-files/claude/CLAUDE.md). They share the same personal core while keeping each harness adapter separate. They cover language preferences, authority boundaries, preservation, uncertainty, observable completion, documentation and browser routing, and tested subagent behavior. Machine-specific installation paths are intentionally replaced with skill discovery by name.
+The repository carries separate ready-to-install global files for [OpenCode](global-files/opencode/AGENTS.md), [Codex](global-files/codex/AGENTS.md), and [Claude Code](global-files/claude/CLAUDE.md). They share the same personal core while keeping each harness adapter separate. They cover language preferences, authority boundaries, preservation, uncertainty, observable completion, browser routing, skill discovery, and tested subagent behavior. Machine-specific installation paths are intentionally replaced with skill discovery by name.
 
 Their standard destinations are `~/.config/opencode/AGENTS.md`, `~/.codex/AGENTS.md`, and
 `~/.claude/CLAUDE.md`, respectively. Merge or link only after backing up an existing file;

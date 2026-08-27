@@ -22,3 +22,5 @@ Follow the repository's report-location convention. When it has none, write one 
 Run `python3 scripts/validate_report.py <report.html>` from this skill directory against the actual report. It proves structural and accessibility-contract compliance only. Keep the validator result separate from the actual render status: only a browser check at `1280px` and `390px` can make rendering `PASS`; otherwise state `DEGRADED` or `NOT_PROVEN` with the missing evidence.
 
 Completion is one report that validates and makes the decision question, method/structure/render statuses, conclusion with confidence, candidate comparison, evidence, diagrams, risks, and next step inspectable without JavaScript. Report the artifact path, all three statuses, source scope, principal evidence, and the planning handoff or blocker.
+
+The [onboarding declaration](references/onboarding.json) lists external prerequisites.

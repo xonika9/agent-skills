@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "supported_runtimes": ["claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Validating HTML architecture reports.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "diagrams-skill",
+      "runtimes": ["claude", "codex"],
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Creating architecture diagrams.",
+      "check": {"type": "skill-present", "target_skill": "x9-diagrams"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}
