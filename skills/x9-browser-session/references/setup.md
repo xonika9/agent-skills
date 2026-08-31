@@ -2,7 +2,7 @@
 
 Use the portable contract below for any Chromium browser. The Microsoft Edge/macOS
 recipe uses a dedicated profile, the Codex browser extension as the Codex primary
-outside the exceptions defined in the parent skill, local CDP on port `9222` as the
+outside the exceptions defined in the parent skill, local CDP on port `9223` as the
 Claude Code primary and Codex MCP route, and `agent-edge` as the last fallback attached
 to the same profile. In OpenCode, the live `chrome-devtools` MCP in the current tool
 catalog is the primary surface; verify its available operations rather than copying
@@ -41,7 +41,7 @@ that the browser's local CDP discovery endpoint responds. In OpenCode, verify th
 live tool catalog exposes `chrome-devtools`; a missing tool is not evidence for a
 particular configuration or restart. If the browser exposes only a WebSocket endpoint,
 configure a controller that accepts that endpoint directly; do not assume
-`http://127.0.0.1:9222` works for every Chromium version. Keep the endpoint local, open
+`http://127.0.0.1:9223` works for every Chromium version. Keep the endpoint local, open
 a task-owned background page for verification, and close only pages created by the check.
 
 ## Verified Microsoft Edge adapter on macOS
@@ -51,7 +51,7 @@ a task-owned background page for verification, and close only pages created by t
 Create `~/Applications/Edge (Agent).app` in Script Editor and save it as an Application with this AppleScript:
 
 ```applescript
-do shell script "open -na \"Microsoft Edge\" --args --user-data-dir=\"$HOME/Library/Application Support/Microsoft Edge Automation\" --remote-debugging-port=9222"
+do shell script "open -gna \"Microsoft Edge\" --args --user-data-dir=\"$HOME/Library/Application Support/Microsoft Edge Automation\" --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223"
 ```
 
 Launch the app once. Edge creates the profile at:
@@ -83,7 +83,7 @@ Claude Code, in `~/.claude.json`:
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9222", "--no-usage-statistics", "--no-performance-crux", "--redactNetworkHeaders"]
+      "args": ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9223", "--no-usage-statistics", "--no-performance-crux", "--redactNetworkHeaders"]
     }
   }
 }
@@ -94,7 +94,7 @@ Codex, in `~/.codex/config.toml`:
 ```toml
 [mcp_servers.chrome-devtools]
 command = "npx"
-args = ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9222", "--no-usage-statistics", "--no-performance-crux", "--redactNetworkHeaders"]
+args = ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:9223", "--no-usage-statistics", "--no-performance-crux", "--redactNetworkHeaders"]
 startup_timeout_sec = 120.0
 ```
 
@@ -112,10 +112,18 @@ Install `agent-browser`, confirm that its current `--help` includes the required
 #!/usr/bin/env bash
 set -euo pipefail
 
-PORT=9222
+PORT=9223
+PROFILE="$HOME/Library/Application Support/Microsoft Edge Automation"
 
-if ! curl -s -m 3 -o /dev/null "http://127.0.0.1:$PORT/json/version"; then
+if ! curl --fail --silent --show-error --max-time 3 -o /dev/null "http://127.0.0.1:$PORT/json/version"; then
   echo "Edge (Agent) is not running on port $PORT" >&2
+  exit 1
+fi
+
+PID="$(lsof -tiTCP:"$PORT" -sTCP:LISTEN | head -n 1)"
+COMMAND="$(ps -p "$PID" -o command=)"
+if [[ "$COMMAND" != *"--user-data-dir=$PROFILE"* || "$COMMAND" != *"--remote-debugging-port=$PORT"* ]]; then
+  echo "Port $PORT does not belong to the Microsoft Edge Automation profile" >&2
   exit 1
 fi
 
@@ -129,7 +137,7 @@ The wrapper must attach to the existing Edge profile. It must not launch a separ
 1. Launch `~/Applications/Edge (Agent).app`.
 2. For Codex, verify its extension by creating an inactive task tab, navigating it to
    a harmless public URL, and confirming that the user's visible tab does not change.
-3. Confirm that `http://127.0.0.1:9222/json/version` responds locally.
+3. Confirm that `http://127.0.0.1:9223/json/version` responds locally.
 4. Attach with `chrome-devtools`, create a page with `background: true`, select it with
    `bringToFront: false`, navigate it, and confirm that the visible tab does not change.
 5. Verify `agent-edge` only while the user is not working in Edge; its current

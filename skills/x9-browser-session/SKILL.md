@@ -95,7 +95,13 @@ instead of copying the Edge-specific values below.
   default profile;
 - attach every controller to that same existing Edge profile rather than launching a
   clean browser;
+- before authenticated or private work, verify that the CDP discovery endpoint returns
+  success and belongs to the browser process using the expected automation profile;
+  controller availability alone does not establish profile identity;
 - create a task-owned background tab; never assume the user's active tab is the task tab;
+- when the task depends on the existing authenticated profile, never pass
+  `isolatedContext` or an equivalent new-context option; a task-owned tab provides
+  isolation without discarding that profile's cookies and storage;
 - with an extension, use its session-owned logical task tab and leave it inactive;
 - with `chrome-devtools`, create the page with `background: true`, select it with
   `bringToFront: false`, and never invoke `Page.bringToFront` or
@@ -110,13 +116,13 @@ a clean standalone `agent-browser` session for that work.
 ## Verified Edge adapter
 
 - Profile: `~/Library/Application Support/Microsoft Edge Automation`.
-- Launcher: `~/Applications/Edge (Agent).app` with remote-debugging port `9222`.
+- Launcher: `~/Applications/Edge (Agent).app` with remote-debugging port `9223`.
 - Codex primary outside the exceptions in [Choose the surface](#choose-the-surface):
   the ChatGPT browser extension installed in this Edge.
 - Claude Code primary outside the local-development exception: `chrome-devtools` MCP.
 - Codex MCP route: `chrome-devtools` MCP configured with
-  `--browserUrl http://127.0.0.1:9222`.
-- Last fallback: `agent-edge`, which wraps `agent-browser --cdp 9222` against the same
+  `--browserUrl http://127.0.0.1:9223`.
+- Last fallback: `agent-edge`, which wraps `agent-browser --cdp 9223` against the same
   profile.
 - Leave pre-existing tabs, windows, downloads, bookmarks, and settings untouched.
 - Re-snapshot after navigation, filtering, modal changes, and redraws because element references become stale.
