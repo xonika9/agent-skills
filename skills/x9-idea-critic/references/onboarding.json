@@ -3,22 +3,11 @@
   "supported_runtimes": ["opencode", "claude", "codex"],
   "requirements": [
     {
-      "id": "claude-opus-agent",
-      "group": "opus-critic-route",
-      "runtimes": ["claude"],
-      "kind": "agent",
-      "level": "required",
-      "needed_for": "Running Opus critics.",
-      "check": {"type": "runtime-component", "component_id": "opus-high"},
-      "guidance_id": "create-agent"
-    },
-    {
-      "id": "claude-opus-cli",
-      "group": "opus-critic-route",
+      "id": "claude-claude-cli",
       "runtimes": ["claude"],
       "kind": "command",
       "level": "required",
-      "needed_for": "Running Opus critics.",
+      "needed_for": "Running Claude critics through Claude CLI.",
       "check": {"type": "command-present", "command": "claude"},
       "guidance_id": "install-command"
     },
@@ -32,11 +21,11 @@
       "guidance_id": "install-skill"
     },
     {
-      "id": "opencode-opus-cli",
+      "id": "opencode-claude-cli",
       "runtimes": ["opencode"],
       "kind": "command",
       "level": "required",
-      "needed_for": "Running Opus critics.",
+      "needed_for": "Running Claude critics through Claude CLI.",
       "check": {"type": "command-present", "command": "claude"},
       "guidance_id": "install-command"
     },
@@ -45,16 +34,16 @@
       "runtimes": ["opencode"],
       "kind": "agent",
       "level": "required",
-      "needed_for": "Running GPT critics.",
-      "check": {"type": "runtime-component", "component_id": "sol-high"},
+      "needed_for": "Running GPT critics at high effort.",
+      "check": {"type": "runtime-component", "component_id": "astra-high"},
       "guidance_id": "create-agent"
     },
     {
-      "id": "codex-opus-cli",
+      "id": "codex-claude-cli",
       "runtimes": ["codex"],
       "kind": "command",
       "level": "required",
-      "needed_for": "Running Opus critics.",
+      "needed_for": "Running Claude critics through Claude CLI.",
       "check": {"type": "command-present", "command": "claude"},
       "guidance_id": "install-command"
     },

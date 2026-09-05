@@ -10,7 +10,7 @@ from check_globals import extract
 
 START = b"<!-- BEGIN SHARED PERSONAL CORE -->"
 END = b"<!-- END SHARED PERSONAL CORE -->"
-SKILL_FILE = Path(__file__).parent.parent / "SKILL.md"
+SKILL_FILE = Path(__file__).resolve().parent.parent / "SKILL.md"
 CONTEXT_SKILL_FILE = SKILL_FILE.parent.parent / "x9-context-files-generator" / "SKILL.md"
 PUBLISHED_GLOBAL_FILES = (
     SKILL_FILE.parents[2] / "global-files/opencode/AGENTS.md",

@@ -5,7 +5,7 @@ description: Use only when the user explicitly asks to criticize, red-team, pres
 
 # Idea critic
 
-Criticize through the routes the user selected. Opus and GPT are independent perspectives with different error profiles; neither route is a fallback or a quality tier.
+Criticize through the routes the user selected. Claude and GPT are independent perspectives with different error profiles; neither route is a fallback or a quality tier. Route names identify providers, not the currently selected models.
 
 The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
 
@@ -17,8 +17,8 @@ When the invocation omits the idea, recover the latest clearly discussed proposa
 
 | Mode | Natural-language examples | Critics |
 |---|---|---|
-| default / omitted | «раскритикуй идею», «проверь на прочность» | one fresh Opus critic and one fresh GPT critic |
-| `opus` | «раскритикуй опусом» | one fresh Opus critic |
+| default / omitted | «раскритикуй идею», «проверь на прочность» | one fresh Claude critic and one fresh GPT critic |
+| `claude` | «раскритикуй через Claude» | one fresh Claude critic |
 | `gpt` | «спроси GPT», «раскритикуй через GPT» | one fresh GPT critic |
 | `full` | «разнеси по полной», «панель критиков» | one critic from each provider for each of 2–3 declared lenses |
 
@@ -38,18 +38,31 @@ For `full`, append exactly one declared lens to each critic's job; the lens is t
 
 Exclude advocacy and solution-selling from the critic's role, but do not omit factual context that would make the critique a straw man. Critics work only from the sealed packet and must identify evidence gaps instead of searching for more context, using tools, or delegating.
 
+## Model defaults
+
+This table owns the current model selections. Adapters consume it rather than pinning models independently; changing a model does not rename a route or mode.
+
+| Route | Model selector | OpenCode native agent |
+|---|---|---|
+| Claude | `fable` | Not needed; uses Claude CLI |
+| GPT | `gpt-6-astra` | `astra-high` |
+
+Every critic runs at `high` effort. An official Claude CLI alias follows the service's current model in that alias's family, while an exact model ID stays pinned. These skill-specific selections override inherited model defaults, not higher-priority runtime restrictions or explicit user model choices.
+
+When replacing a model, change this table and confirm availability through the selected adapter. For OpenCode, the named agent must also be configured for that model and effort on every target machine; editing the skill does not update runtime configuration. If the agent ID changes, keep the component check in `references/onboarding.json` synchronized. Existing model-specific agents may remain for other tasks.
+
 ## Runtime routes
 
 - **From Claude Code:** read [the Claude Code adapter](references/claude-code.md).
 - **From Codex:** read [the Codex adapter](references/codex.md).
 - **From OpenCode:** read [the OpenCode adapter](references/opencode.md).
 
-Every critic must run at `high` effort. Every adapter must select a currently available model from the promised provider family. Honor an exact user-selected version only when live discovery confirms it; otherwise fail that route rather than silently substituting another family. An accepted runtime selector is evidence that the control was applied; when the runtime omits post-run effective-model or effort telemetry, record that property as `NOT_PROVEN` without failing an otherwise successful route.
+Every adapter must confirm that the selected model and effort controls are available. An explicit user-selected Claude or GPT model replaces that route's default only when live discovery confirms it; otherwise fail that route rather than silently substituting another model or provider. Record the requested selector and the actual model when reported. An accepted runtime selector is evidence that the control was applied; when the runtime omits post-run effective-model or effort telemetry, record that property as `NOT_PROVEN` without failing an otherwise successful route.
 
 ## Failure and synthesis
 
 - Retry a failed route once only when the failure is transient and the retry changes something concrete.
-- Judge completeness against the selected mode. A successful `opus` or `gpt` run is `COMPLETE`; it is not degraded merely because the user requested one critic.
+- Judge completeness against the selected mode. A successful `claude` or `gpt` run is `COMPLETE`; it is not degraded merely because the user requested one critic.
 - In default mode, one missing route yields `DEGRADED`. In `full`, a missing requested provider or lens yields `DEGRADED`.
 - If every requested route fails or the orchestrator cannot assemble a sufficient packet of load-bearing evidence, return `BLOCKED` with verdict `NOT_PROVEN`; do not manufacture a substantive verdict from the orchestrator's prior beliefs.
 - Keep attribution: show which critic raised each invalidating point and whether the other independently agreed.

@@ -4,19 +4,28 @@
 
 ### Highlights
 
+- `x9-idea-critic` now defaults to the current Fable model through the official `fable` alias and GPT-6 Astra, both at `high` effort, across Claude Code, Codex, and OpenCode.
+- Critic routes and modes are named `claude` and `gpt`, independently of model generations. Current model selections live in one `Model defaults` block rather than being pinned throughout the adapters. The English and Russian README catalogs use the same provider-level names and link to those defaults.
 - `x9-opencode-sessions` now finds standard per-user OpenCode V2 installations when automation runs with a minimal `PATH`.
 - Clarified agent guidance for instruction-layer precedence, evidence-based review findings, and resolving blind spots from available context.
+- Global instructions now explicitly prioritize user requirements over skill defaults, subject to higher-priority instructions.
 - Global instructions now favor direct execution in the primary session, with model inheritance for substantive Codex/OpenCode delegation and Terra reserved for bounded fact gathering. Authorized work continues without repeated approvals, validation stays tied to the requested result, and duplicate user tasks require explicit cleanup authority.
 
 ### Install / update
 
+- `x9-idea-critic` requires Claude CLI with Fable access in all three runtimes. OpenCode users need an `astra-high` subagent; its setup is documented in the skill and does not replace existing Sol agents or change local configuration automatically.
+- The documented `astra-high` profile is general-purpose and preserves normal runtime permissions. Critic-specific restrictions stay in the task brief rather than disabling tools or delegation for every use of that agent.
 - Codex/OpenCode users adopting model inheritance should remove lower-cost subagent defaults from their local configuration; the published instructions do not change runtime model settings automatically.
 
 ### Compatibility
 
+- `x9-idea-critic` retains the `gpt` mode. Official Claude aliases follow the service's current target; each Claude CLI result must identify the selected critic model.
 - OpenCode session inspection no longer depends on shell startup files exposing `~/.local/bin`.
+- `x9-agent-instructions` regression tests now resolve repository files correctly when launched through an installed skill symlink.
 
 ### Breaking changes
+
+- `x9-idea-critic` replaces the model-specific `opus` mode with the provider-level `claude` mode. The Claude Code Claude route now uses Claude CLI instead of an optional native Opus agent; explicit supported model choices still override the configured defaults.
 
 ## 3.1.0 - 2026-08-27
 

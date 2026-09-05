@@ -12,6 +12,7 @@
 
 ## Authority and preservation
 
+- Skill defaults do not override explicit user requirements unless a higher-priority instruction requires them.
 - For answer, explanation, review, diagnosis, or status requests, inspect and report; do not infer permission to edit, send, publish, purchase, delete, or otherwise change external state.
 - An explicit request to build, fix, update, or implement authorizes safe in-scope local edits and relevant tests. Continue already-authorized fixes, reruns, and explicitly scoped external actions without asking again. Confirm before destructive, external, costly, hard-to-reverse, or materially broader actions not already authorized, or when newly discovered risk materially changes the agreed scope.
 - A pending decision blocks only dependent work; continue independent work that is already authorized. When stopping because of instructions, identify the source and exact rule.
