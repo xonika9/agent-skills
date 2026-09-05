@@ -17,11 +17,11 @@ PUBLISHED_GLOBAL_FILES = (
     SKILL_FILE.parents[2] / "global-files/claude/CLAUDE.md",
     SKILL_FILE.parents[2] / "global-files/codex/AGENTS.md",
 )
-WORKER_BRIEF_RULE = b"Each worker brief gives the goal; only context the worker cannot derive"
-SCOPE_FIDELITY_RULE = b"Do not broaden or narrow scope."
-SPECIALIST_OWNER_RULE = b"An active skill's specialist prompt and output contract remain authoritative"
-WORKER_LANGUAGE_RULE = b"Write worker briefs in English, preserve load-bearing source wording verbatim"
-USER_LANGUAGE_RULE = b"require user-facing results in the user's language."
+WORKER_BRIEF_RULE = b"Include the goal, non-derivable context, scope and authority, required evidence, and expected output"
+SCOPE_FIDELITY_RULE = b"Avoid unrequested features, abstractions, and adjacent cleanup."
+SPECIALIST_OWNER_RULE = b"preserve load-bearing source wording and the active skill's specialist prompt and output contract"
+WORKER_LANGUAGE_RULE = b"Write worker briefs in English"
+USER_LANGUAGE_RULE = b"user-facing results in the user's language."
 
 
 class ExtractTests(unittest.TestCase):
@@ -79,6 +79,26 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("never by a machine-specific `SKILL.md` path", self.skill)
         self.assertIn("use a project-relative path and say why", self.skill)
         self.assertIn("when the target runtime loads it automatically", self.skill)
+
+    def test_shared_policy_defaults_to_primary_execution_with_scoped_authority(self):
+        for path in PUBLISHED_GLOBAL_FILES:
+            core = extract(path)
+            self.assertIn(b"Do substantive work in the primary session by default.", core, path)
+            self.assertIn(b"nested delegation is explicitly required", core, path)
+            self.assertIn(b"Continue already-authorized fixes, reruns, and explicitly scoped external actions", core, path)
+            self.assertIn(b"newly discovered risk materially changes the agreed scope", core, path)
+            self.assertIn(b"Intermediate checks do not replace the requested end-to-end result", core, path)
+            self.assertNotIn(b"configured lower-cost subagents execute", core, path)
+
+    def test_codex_and_opencode_inherit_models_for_substantive_delegation(self):
+        opencode = PUBLISHED_GLOBAL_FILES[0].read_text(encoding="utf-8")
+        codex = PUBLISHED_GLOBAL_FILES[2].read_text(encoding="utf-8")
+        self.assertIn("Use `inherit` for substantive delegated work", opencode)
+        self.assertIn("Inherit the primary session's model and reasoning effort", codex)
+        for text in (opencode, codex):
+            self.assertIn("only for bounded search and fact extraction", text)
+            self.assertIn("not complex diagnosis, implementation, or final acceptance", text)
+        self.assertIn("stop or archive them only when that cleanup is explicitly authorized", codex)
 
     def test_context_creator_uses_one_bounded_instruction_rubric(self):
         self.assertIn("load and apply `x9-agent-instructions`", self.context_skill)

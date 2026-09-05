@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import uuid
@@ -118,6 +119,16 @@ def api_path(path: str, query: dict[str, Any] | None = None) -> str:
     return path if not values else f"{path}?{urlencode(values)}"
 
 
+def opencode_cli() -> str:
+    discovered = shutil.which("opencode2")
+    if discovered:
+        return discovered
+    user_install = Path.home() / ".local" / "bin" / "opencode2"
+    if user_install.is_file() and os.access(user_install, os.X_OK):
+        return str(user_install)
+    return "opencode2"
+
+
 def session_path(session_id: str, message_id: str | None = None) -> str:
     path = f"/api/session/{quote(session_id, safe='')}"
     if message_id is not None:
@@ -133,7 +144,7 @@ def call_api(
     timeout: float | None = None,
     runner=None,
 ) -> tuple[bool, Any | None, str | None]:
-    command = ["opencode2", "api", method, path]
+    command = [opencode_cli(), "api", method, path]
     if data is not None:
         command.extend(["--data", json.dumps(data, ensure_ascii=False)])
     try:

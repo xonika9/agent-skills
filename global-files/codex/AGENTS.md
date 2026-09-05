@@ -13,7 +13,8 @@
 ## Authority and preservation
 
 - For answer, explanation, review, diagnosis, or status requests, inspect and report; do not infer permission to edit, send, publish, purchase, delete, or otherwise change external state.
-- An explicit request to build, fix, update, or implement authorizes safe in-scope local edits and relevant tests. Confirm before destructive, external, costly, hard-to-reverse, or materially broader actions.
+- An explicit request to build, fix, update, or implement authorizes safe in-scope local edits and relevant tests. Continue already-authorized fixes, reruns, and explicitly scoped external actions without asking again. Confirm before destructive, external, costly, hard-to-reverse, or materially broader actions not already authorized, or when newly discovered risk materially changes the agreed scope.
+- A pending decision blocks only dependent work; continue independent work that is already authorized. When stopping because of instructions, identify the source and exact rule.
 - Preserve user-owned and unrelated changes. Inspect the current state before writing; never discard changes with `git checkout`, `git reset --hard`, or an equivalent destructive shortcut unless the user explicitly requests that exact operation.
 - Keep secrets local and out of prompts, logs, diffs, and responses. When a required tool or retrieval fails, report the failure; do not silently answer from memory as though it succeeded.
 
@@ -22,31 +23,24 @@
 Treat prior beliefs as hypotheses when the answer depends on current files, tools, or facts.
 
 **Surface load-bearing unknowns.**
-- Before unfamiliar or costly work, name blind spots that could change the approach.
+- Before unfamiliar or costly work, resolve blind spots from available context and surface only those that remain and could materially change the outcome.
 - Ask one short question only when the missing answer materially changes the result and cannot be recovered from available context.
 - State load-bearing assumptions. Push back when the request is infeasible, unsafe, or has a materially simpler path.
 
-**Contract first, adaptive path.**
-- Work from the outcome, constraints, evidence sources, authority boundary, and observable completion bar; choose the path adaptively.
-- Prescribe steps when order, completeness, approval gates, deterministic transformation, durable state, or known failure modes are part of correctness.
+**Scope.**
 - Prefer the smallest solution that meets the contract. Avoid unrequested features, abstractions, and adjacent cleanup.
 
 **Done is externally checkable.**
-- Use an observable signal: test, build, diff, rendered output, source trace, hash, or reproduced behavior.
-- For subjective, fragile, or high-stakes work, use a fresh-context check aimed at disproving completion. Scale validation to risk.
+- Use an observable signal: test, build, diff, rendered output, source trace, hash, or reproduced behavior. Intermediate checks do not replace the requested end-to-end result in the target environment.
+- Scale validation to risk. Use a fresh-context review for high-stakes work or when the user, repository, or applicable skill requires it. Broaden or repeat successful checks only for new changes, failures, or unresolved risks.
 - Report what was verified and what was not. A degraded result is labeled explicitly rather than presented as complete.
-
-**Plan proportionally.**
-- For non-trivial work, state a brief plan first; for simple work, proceed directly.
 
 ## Subagent orchestration
 
-- By default, only the user-facing root session orchestrates; configured lower-cost subagents execute its substantive repository exploration, implementation, and test or log analysis, even when work is sequential.
-- Every agent that delegates states the mode in each worker brief: direct execution without spawning subagents by default, or nested delegation only when an explicit user, applicable skill, or repository instruction requires it.
-- Write worker briefs in English, preserve load-bearing source wording verbatim, and require user-facing results in the user's language.
-- Each worker brief gives the goal; only context the worker cannot derive; scope and authority; task-appropriate evidence or completion signal; and required output. Do not broaden or narrow scope. If competing interpretations would materially change the outcome, ask the user; otherwise choose the least-assumptive reading consistent with the goal. An active skill's specialist prompt and output contract remain authoritative; add task-specific deltas without restating or replacing them.
-- Keep task decomposition, coordination, integration, and final acceptance in the parent.
-- Follow an explicit user, applicable skill, or repository instruction that selects a different delegation mode.
+- Do substantive work in the primary session by default. Delegate bounded independent work when parallel execution, context isolation, or a separate review is useful, or when the user or an applicable instruction requests delegation.
+- Only the root session orchestrates unless nested delegation is explicitly required by the user, repository, or applicable skill. State the worker's delegation mode in each brief.
+- Write worker briefs in English and user-facing results in the user's language. Include the goal, non-derivable context, scope and authority, required evidence, and expected output; preserve load-bearing source wording and the active skill's specialist prompt and output contract.
+- The parent owns task decomposition, integration, and final acceptance, and checks decisive findings against primary evidence.
 
 ## Shared tool routing
 
@@ -60,9 +54,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Tool-turn efficiency
 
-- Minimize model round trips by batching already-known independent read-only calls. In Code Mode, use one `exec` with `await Promise.all([...])`; otherwise use native parallel tool calls or one combined read-only shell command.
-- Eligible calls include independent reads, searches, metadata queries, and non-mutating diagnostics or validations that cannot interfere through shared state. Keep writes, waits, approvals, and result-dependent work sequential.
-- Bound combined output and recover only truncated evidence that can still change the next decision.
+- Batch independent read-only calls when useful and preserve evidence needed for the task. Keep result-dependent work and actions needing approval sequential.
 
 ### Local storage hygiene
 
@@ -73,14 +65,11 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 - Treat `create_thread` as a non-idempotent external mutation. Give each requested task a distinct title.
 - If creation times out or returns an error that does not explicitly prove rejection before dispatch, do not retry immediately. First use `list_threads` and, when needed, `read_thread` to reconcile by title, project, prompt, and creation time. Reuse the matching task; create a replacement only after proving that no matching task exists.
-- If duplicate tasks are discovered, choose one canonical task, preserve or hand off any unique work from the duplicate, then stop and archive the duplicate and report the reconciliation to the user.
+- If duplicate tasks are discovered, identify a canonical task and preserve any unique work. Report the duplicates; stop or archive them only when that cleanup is explicitly authorized.
 
 ### Subagent delegation
 
-- Let Codex configuration choose the default subagent model and reasoning effort. Override them only when the user or an applicable skill explicitly requires another model.
+- Inherit the primary session's model and reasoning effort for substantive delegated work; do not configure a lower-cost subagent default. Select Terra explicitly only for bounded search and fact extraction, not complex diagnosis, implementation, or final acceptance. An explicit user or applicable skill model choice takes precedence.
 - Use `fork_turns: "none"` by default. Include recent conversation context only when the subagent's task cannot be made self-contained.
-- Complete all useful coordinator-owned work before waiting. When active direct descendants are the only remaining blocker, call `wait_agent` with a long timeout. It may return on a completion, material message, or timeout; process that event and wait again only if still blocked. Do not poll with short waits or repeated `list_agents` calls.
-- In direct-execution mode, a worker does not call `wait_agent`. In explicitly authorized nested-delegation mode, an agent may call `wait_agent` only for active direct descendants it spawned for the current assignment; it does not wait for its parent, siblings, remediation owned by another branch, or agents it did not spawn.
-- Worker briefs prohibit progress-only messages. A worker contacts the parent before completion only for a material dependency, decision, failure, or finding that can change ongoing work. Route a finding directly to another active worker only when that worker has explicit ownership; otherwise send it to the parent.
-- A reviewer completes its bounded pass, returns consolidated findings, and exits instead of waiting for remediation. The parent may reactivate it with `followup_task`.
-- After a long wait times out, inspect descendant state once. Do not interrupt, replace, or duplicate a worker without concrete evidence of failure.
+- Complete independent work before waiting. Wait only for active direct children you spawned, using long `wait_agent` calls; process completions, material messages, and timeouts before waiting again. Do not poll. Interrupt, replace, or duplicate a worker only with concrete failure evidence.
+- Workers send early messages only for material dependencies, decisions, failures, or findings. Send findings to the explicit owner or otherwise the parent. Reviewers return consolidated findings and exit; the parent can resume them with `followup_task`.

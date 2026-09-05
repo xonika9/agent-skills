@@ -32,7 +32,7 @@ Completeness of the specification helps; completeness of the path hurts. Describ
 - **Conditional context pointers** — name the artifact and the independently testable condition or branch that makes it necessary. Keep material every branch needs in the main brief, and put only branch-specific material behind the pointer.
 - **Reasons behind constraints** — a rule with its motive generalizes to cases nobody enumerated; a bare prohibition does not.
 - **Structure** — separate blocks for background, task, constraints, and output; long inputs first and the task after them.
-- **Layer discipline** — system and developer instructions outrank user, repository, and skill instructions. Never write a lower layer as though it overrides a higher one.
+- **Layer discipline** — system and developer instructions outrank user, repository, and skill instructions. Skill defaults do not override explicit user requirements unless a higher-priority instruction requires them. Never write a lower layer as though it overrides a higher one.
 
 ## What to leave out
 
@@ -80,6 +80,8 @@ On the report-only first pass, return:
 2. `Why these changes help`, with one matching entry for every retained change.
 3. The smallest complete proposed diff that resolves the retained changes and preserves the artifact's intent.
 4. What was and was not verified.
+
+For findings about pauses, permission requests, unfinished work, or divergence from user intent, cite the target file and exact rule. Distinguish observed behavior from predicted risk, and explicit requirements from the reviewer's interpretation.
 
 Each explanation uses no more than two short sentences. State the practical improvement rather than repeating the finding or diff; add the material cost or trade-off when the change affects dependencies, compatibility, authority, runtime behavior, or scope. Omit the section when there are no retained changes.
 

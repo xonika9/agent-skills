@@ -4,9 +4,17 @@
 
 ### Highlights
 
+- `x9-opencode-sessions` now finds standard per-user OpenCode V2 installations when automation runs with a minimal `PATH`.
+- Clarified agent guidance for instruction-layer precedence, evidence-based review findings, and resolving blind spots from available context.
+- Global instructions now favor direct execution in the primary session, with model inheritance for substantive Codex/OpenCode delegation and Terra reserved for bounded fact gathering. Authorized work continues without repeated approvals, validation stays tied to the requested result, and duplicate user tasks require explicit cleanup authority.
+
 ### Install / update
 
+- Codex/OpenCode users adopting model inheritance should remove lower-cost subagent defaults from their local configuration; the published instructions do not change runtime model settings automatically.
+
 ### Compatibility
+
+- OpenCode session inspection no longer depends on shell startup files exposing `~/.local/bin`.
 
 ### Breaking changes
 

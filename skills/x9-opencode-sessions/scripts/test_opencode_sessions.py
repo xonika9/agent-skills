@@ -29,8 +29,11 @@ class OpenCodeSessionsTests(unittest.TestCase):
             {"X9_OPENCODE_SESSIONS_STATE_DIR": self.state_directory.name},
         )
         self.environment.start()
+        self.cli_lookup = patch.object(opencode_sessions.shutil, "which", return_value="opencode2")
+        self.cli_lookup.start()
 
     def tearDown(self) -> None:
+        self.cli_lookup.stop()
         self.environment.stop()
         self.state_directory.cleanup()
 
@@ -148,6 +151,18 @@ class OpenCodeSessionsTests(unittest.TestCase):
             opencode_sessions.session_path("session/a", "message/b"),
             "/api/session/session%2Fa/message/message%2Fb",
         )
+
+    def test_cli_falls_back_to_standard_user_install(self) -> None:
+        with tempfile.TemporaryDirectory() as home:
+            cli = os.path.join(home, ".local", "bin", "opencode2")
+            os.makedirs(os.path.dirname(cli))
+            with open(cli, "w", encoding="utf-8") as file:
+                file.write("#!/bin/sh\n")
+            os.chmod(cli, 0o755)
+            with patch.object(opencode_sessions.shutil, "which", return_value=None), patch.object(
+                opencode_sessions.Path, "home", return_value=opencode_sessions.Path(home)
+            ):
+                self.assertEqual(opencode_sessions.opencode_cli(), cli)
 
     def test_prompt_is_preview_without_apply(self) -> None:
         with patch.object(opencode_sessions.subprocess, "run") as runner:
