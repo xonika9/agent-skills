@@ -4,30 +4,39 @@
 
 ### Highlights
 
-- `x9-agent-instructions` now preserves scope-critical user wording in continuation briefs and retains targeted behavioral guidance backed by observed failures or current model documentation.
-- Shared global instructions now require current primary evidence for fast-changing technical claims and apply independent read-only tool batching across all three runtimes.
-- `x9-idea-critic` now defaults to the current Fable model through the official `fable` alias and GPT-6 Astra, both at `high` effort, across Claude Code, Codex, and OpenCode.
-- Critic routes and modes are named `claude` and `gpt`, independently of model generations. Current model selections live in one `Model defaults` block rather than being pinned throughout the adapters. The English and Russian README catalogs use the same provider-level names and link to those defaults.
-- `x9-opencode-sessions` now finds standard per-user OpenCode V2 installations when automation runs with a minimal `PATH`.
-- Clarified agent guidance for instruction-layer precedence, evidence-based review findings, and resolving blind spots from available context.
-- Global instructions now explicitly prioritize user requirements over skill defaults, subject to higher-priority instructions.
-- Global instructions now favor direct execution in the primary session, with model inheritance for substantive Codex/OpenCode delegation and Terra reserved for bounded fact gathering. Authorized work continues without repeated approvals, validation stays tied to the requested result, and duplicate user tasks require explicit cleanup authority.
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 3.2.0 - 2026-09-05
+
+### Highlights
+
+- `x9-idea-critic` now uses provider-level `claude` and `gpt` routes with centralized model defaults: the official `fable` alias and GPT-6 Astra, both at `high` effort, across Claude Code, Codex, and OpenCode.
+- `x9-browser-session` hardens its verified Edge adapter by binding remote debugging to localhost, moving it to port `9223`, checking that the endpoint belongs to the expected automation profile, and preserving authenticated profile state without isolated browser contexts.
+- `x9-agent-instructions` now preserves scope-critical user wording in continuation briefs and retains targeted behavioral guidance only when observed failures or current model documentation support it.
+- Shared global instructions now require current primary evidence for fast-changing technical claims, batch independent read-only work, favor direct execution, and inherit the primary model for substantive Codex/OpenCode delegation.
+- `x9-opencode-sessions` now finds the standard per-user OpenCode V2 installation when automation runs with a minimal `PATH`.
 
 ### Install / update
 
-- `x9-idea-critic` requires Claude CLI with Fable access in all three runtimes. OpenCode users need an `astra-high` subagent; its setup is documented in the skill and does not replace existing Sol agents or change local configuration automatically.
-- The documented `astra-high` profile is general-purpose and preserves normal runtime permissions. Critic-specific restrictions stay in the task brief rather than disabling tools or delegation for every use of that agent.
+- Existing users of the documented Edge adapter must update the launcher, MCP endpoints, and `agent-edge` wrapper from port `9222` to `9223`; the wrapper now also verifies the owning browser process and profile.
+- `x9-idea-critic` requires Claude CLI with Fable access in all three runtimes. OpenCode users also need the documented general-purpose `astra-high` subagent; the skill does not modify local configuration automatically.
 - Codex/OpenCode users adopting model inheritance should remove lower-cost subagent defaults from their local configuration; the published instructions do not change runtime model settings automatically.
 
 ### Compatibility
 
-- `x9-idea-critic` retains the `gpt` mode. Official Claude aliases follow the service's current target; each Claude CLI result must identify the selected critic model.
+- `x9-idea-critic` retains the `gpt` mode. Official Claude aliases follow the service's current target, and every Claude CLI result must identify the selected critic model.
 - OpenCode session inspection no longer depends on shell startup files exposing `~/.local/bin`.
 - `x9-agent-instructions` regression tests now resolve repository files correctly when launched through an installed skill symlink.
+- Obsolete maintainer planning and audit snapshots were removed; no shipped skill or installation artifact depends on them.
 
 ### Breaking changes
 
-- `x9-idea-critic` replaces the model-specific `opus` mode with the provider-level `claude` mode. The Claude Code Claude route now uses Claude CLI instead of an optional native Opus agent; explicit supported model choices still override the configured defaults.
+- `x9-idea-critic` replaces the model-specific `opus` mode with the provider-level `claude` mode. Its Claude Code Claude route now requires Claude CLI instead of optionally using a native Opus agent.
+- The documented Edge adapter now uses CDP port `9223`; installations copied from the previous `9222` recipe must update the launcher, MCP configuration, and `agent-edge` wrapper together.
 
 ## 3.1.0 - 2026-08-27
 

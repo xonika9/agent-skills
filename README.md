@@ -116,6 +116,8 @@ A clean automation browser is enough to test a public website. It is the wrong t
 
 The [setup guide](skills/x9-browser-session/references/setup.md), which you can hand directly to an agent, includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. OpenCode uses the live `chrome-devtools` MCP from its current tool catalog. Claude Code and Codex use their in-app browser for local web development and explicit in-app requests unless the target appears in the skill's extensible MCP allowlist. Allowlisted domains, currently `avito.ru`, use the current live MCP target in OpenCode and MCP against the verified Edge profile in Claude Code and Codex. Other Codex browser work defaults to its Edge extension; other Claude Code browser work defaults to MCP. All three reserve `agent-edge` for unattended fallback.
 
+The verified Edge recipe uses localhost CDP port `9223` and checks that the endpoint belongs to the expected automation profile before private or authenticated work. Existing installations copied from the earlier `9222` recipe must update the launcher, MCP endpoint, and `agent-edge` wrapper together.
+
 Avito browsing uses one sequential lane across the parent task: the agent reuses captured listing data, passively rechecks a transient security interstitial once after five seconds, and stops with `DEGRADED` instead of switching controllers when throttling or access controls persist.
 
 #### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
