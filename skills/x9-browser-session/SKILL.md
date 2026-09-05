@@ -85,6 +85,25 @@ separate profile and does not carry the user's Edge extensions. Use Edge when ex
 account state, region, cart, saved data, personalized content, ad blocking, or another
 installed extension matters.
 
+## Browser and profile continuity
+
+Keep the browser and existing profile selected by this skill for all work within that
+surface, including local HTML previews and testing. Use task-owned background tabs;
+do not pass `isolatedContext` or an equivalent new-context option, create a fresh
+profile, or launch a clean browser unless the user explicitly requests that isolation.
+This preserves the selected testing environment, not just authentication.
+
+Establish the actual controller-to-browser/profile binding from the current runtime's
+connection evidence. For a CDP route, tie the controller's target endpoint to the
+browser process and expected profile. A separately reachable CDP port, controller
+availability, or a matching User-Agent does not establish that binding.
+
+After a browser restart or controller reconnection, discard stale page IDs. Resume
+only when the binding above is re-established, then enumerate the pages again. If it
+cannot be established, stop dependent browser work and report the missing evidence
+instead of creating another context. This recovery rule takes precedence over the
+general fallback chain for a lost connection to an already selected browser.
+
 ## Shared Edge safety
 
 Treat the executable, profile, extensions, localhost CDP endpoint, launcher, and
@@ -95,13 +114,9 @@ instead of copying the Edge-specific values below.
   default profile;
 - attach every controller to that same existing Edge profile rather than launching a
   clean browser;
-- before authenticated or private work, verify that the CDP discovery endpoint returns
-  success and belongs to the browser process using the expected automation profile;
-  controller availability alone does not establish profile identity;
+- apply [browser and profile continuity](#browser-and-profile-continuity) to the
+  actual Edge connection, including unauthenticated previews and tests;
 - create a task-owned background tab; never assume the user's active tab is the task tab;
-- when the task depends on the existing authenticated profile, never pass
-  `isolatedContext` or an equivalent new-context option; a task-owned tab provides
-  isolation without discarding that profile's cookies and storage;
 - with an extension, use its session-owned logical task tab and leave it inactive;
 - with `chrome-devtools`, create the page with `background: true`, select it with
   `bringToFront: false`, and never invoke `Page.bringToFront` or
@@ -110,8 +125,9 @@ instead of copying the Edge-specific values below.
 - keep credentials, cookies, tokens, and local storage in the dedicated browser profile rather than copying them into prompts or repository files;
 - assume the controller and model can receive inspected page contents and network data; avoid opening unrelated private surfaces, do not capture network headers unless the task requires them, and never echo secret header values into chat, logs, or files.
 
-Do not run browser-wide HAR or broad network capture in the personal Edge profile. Use
-a clean standalone `agent-browser` session for that work.
+Do not run browser-wide HAR or broad network capture in the personal Edge profile.
+That work requires the user's explicit approval of a separate disposable browser
+profile; without it, omit the capture rather than silently switching environments.
 
 ## Verified Edge adapter
 

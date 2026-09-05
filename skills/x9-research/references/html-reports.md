@@ -59,7 +59,8 @@ Then perform the checks that require judgment:
 
 - confirm visible prose uses the declared carrier language;
 - confirm the HTML preserves the Markdown facts, qualifiers, confidence, and claim-to-source relationships;
-- render the real HTML in a clean local browser at a wide and narrow viewport;
+- render the real HTML at wide and narrow viewports using the browser and existing
+  profile selected by `x9-browser-session`;
 - inspect hierarchy, overflow, tables, navigation, and `<details>`;
 - report if rendering was unavailable rather than claiming visual verification.
 

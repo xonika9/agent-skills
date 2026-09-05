@@ -144,8 +144,10 @@ The wrapper must attach to the existing Edge profile. It must not launch a separ
    `tab new` and `tab switch` behavior can foreground the task tab.
 6. Close only pages created by the check.
 
-For OpenCode, the verification passes when the live `chrome-devtools` MCP creates and
-reads a task-owned background page without stealing focus. For Claude Code and Codex,
+For OpenCode, the verification requires the
+[browser/profile binding](../SKILL.md#browser-and-profile-continuity) as well as the
+live `chrome-devtools` MCP creating and reading a task-owned background page without
+stealing focus. For Claude Code and Codex,
 the setup passes when the configured MCP attaches to the profile, completes the read
 without stealing focus, and all pre-existing tabs remain unchanged; Codex additionally
 verifies its extension route.

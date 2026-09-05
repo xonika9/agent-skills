@@ -4,11 +4,19 @@
 
 ### Highlights
 
+- Browser previews and tests now preserve the selected browser/profile instead of opening empty isolated contexts. Reconnection requires establishing the controller's actual target before continuing, and research HTML checks use the same browser-routing policy.
+
 ### Install / update
+
+- Update `x9-browser-session` and `x9-research` together to pick up the aligned preview instructions; no browser configuration changes are required by this update.
 
 ### Compatibility
 
+- Testing in the selected working browser remains supported. A disposable profile for broad network capture now requires explicit user approval.
+
 ### Breaking changes
+
+None.
 
 ## 3.2.0 - 2026-09-05
 
