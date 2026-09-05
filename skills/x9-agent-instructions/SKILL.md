@@ -22,7 +22,7 @@ Write this skill and standing machine-facing policy in English. Write a user-del
 Completeness of the specification helps; completeness of the path hurts. Describe the task fully and leave the executor to choose how.
 
 - **Goal** — one statement of what must be true when the work is done, not a list of activities.
-- **Facts the executor cannot derive** — state, paths, commits, what is already done, what is known broken, decisions taken elsewhere. Length is not a concern here; nothing else can supply this.
+- **Facts the executor cannot derive** — state, paths, commits, what is already done, what is known broken, decisions taken elsewhere. For continuation briefs, preserve the user's decisions, constraints, permissions, and prohibitions in their exact wording where paraphrase could change scope; distinguish them from agent inferences. Include rejected approaches and why, unresolved commitments, and hard-to-reconstruct references. Condense agent explanations before these facts. Length is not a concern here; nothing else can supply this.
 - **Constraints and scope fence** — what is forbidden and what is deliberately out of scope. Agents widen scope on their own, so leaving the fence implicit is how it happens.
 - **Required evidence** — what counts as proof: tests, a build, a reproduced scenario, a diff, a log.
 - **Completion bar** — an observable condition the executor and a third party can both check. When a known enumerable set exists, require the completion bar to account for every member or explicitly explain each exclusion; the mere existence of an output is not completion.
@@ -68,7 +68,7 @@ Lead a plan with the decisions most likely to change — data models, interfaces
 - A reader with no context could follow it.
 - Every line states the goal, supplies a fact the executor cannot derive, sets a boundary, defines the completion bar, or names an owner to load.
 - No requirement appears twice, and no two requirements conflict.
-- Nothing a competent executor would do unprompted is spelled out.
+- Omit generic reminders of competent behavior. Retain a targeted behavioral cue when an observed failure or current model guidance supports it and it fits the target runtime; state the specific failure it addresses rather than adding general pressure.
 - Installed skills are named rather than addressed through machine-specific paths; any surviving path identifies a task artifact, a justified project-relative unpublished source, or a bundled resource resolved after its owner loaded.
 - For each numbered step: when an invariant makes the wrong order impossible, the invariant replaces the step; the step survives only where a wrong order cannot be undone.
 

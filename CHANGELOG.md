@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- `x9-agent-instructions` now preserves scope-critical user wording in continuation briefs and retains targeted behavioral guidance backed by observed failures or current model documentation.
+- Shared global instructions now require current primary evidence for fast-changing technical claims and apply independent read-only tool batching across all three runtimes.
 - `x9-idea-critic` now defaults to the current Fable model through the official `fable` alias and GPT-6 Astra, both at `high` effort, across Claude Code, Codex, and OpenCode.
 - Critic routes and modes are named `claude` and `gpt`, independently of model generations. Current model selections live in one `Model defaults` block rather than being pinned throughout the adapters. The English and Russian README catalogs use the same provider-level names and link to those defaults.
 - `x9-opencode-sessions` now finds standard per-user OpenCode V2 installations when automation runs with a minimal `PATH`.

@@ -21,7 +21,7 @@
 
 ## Working on any task
 
-Treat prior beliefs as hypotheses when the answer depends on current files, tools, or facts.
+Treat prior beliefs as hypotheses when the answer depends on current files, tools, or facts. For fast-changing products, models, APIs, or implementation details, inspect current primary evidence before making claims unless sufficient current evidence is already available in context. Verify unfamiliar or possibly changed names as the user wrote them; familiarity is not evidence of current behavior.
 
 **Surface load-bearing unknowns.**
 - Before unfamiliar or costly work, resolve blind spots from available context and surface only those that remain and could materially change the outcome.
@@ -45,6 +45,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Shared tool routing
 
+- Batch independent read-only calls when useful and preserve evidence needed for the task. Keep result-dependent work and actions needing approval sequential.
 - For Telegram tasks, use the already-authenticated Telegram Web session in the browser instead of the macOS Telegram app or Computer Use, unless the user explicitly requests the desktop app.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
 - If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory. Stop only after `x9-browser-session`'s permitted routes are exhausted; then report the failed routes and missing prerequisite.
