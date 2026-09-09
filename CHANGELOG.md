@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- Added `x9-obsidian` for vault-scoped note edits, link-preserving moves, properties, Bases, and Canvas without imposing a personal organization system.
+
 - Browser previews and tests now preserve the selected browser/profile instead of opening empty isolated contexts. Reconnection requires establishing the controller's actual target before continuing, and research HTML checks use the same browser-routing policy.
 
 ### Install / update
@@ -11,6 +13,8 @@
 - Update `x9-browser-session` and `x9-research` together to pick up the aligned preview instructions; no browser configuration changes are required by this update.
 
 ### Compatibility
+
+- `x9-obsidian` supports filesystem work with optional Obsidian CLI access; app link resolution, view rendering, and sync delivery are reported separately from structural checks.
 
 - Testing in the selected working browser remains supported. A disposable profile for broad network capture now requires explicit user approval.
 

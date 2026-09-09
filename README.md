@@ -102,6 +102,12 @@ Installing a skill adds its files, but a usable workflow can still depend on a C
 
 It is read-only: it does not install software, sign in, run setup commands, change configuration or files, or restart a runtime. OpenCode, Claude Code, and Codex have adapters in version 1. Other runtimes receive `PARTIAL` coverage and `BLOCKED` readiness rather than a guess.
 
+### Obsidian notes
+
+#### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
+
+Find and edit notes in the intended vault, preserve links when moving files, and work with properties, Bases, and Canvas. The skill follows your existing organization. It discovers the installed Obsidian CLI when available and distinguishes filesystem checks from app validation and sync delivery.
+
 ### Research and personal browser automation
 
 #### [`x9-research`](skills/x9-research/SKILL.md)

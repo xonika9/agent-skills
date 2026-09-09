@@ -1,0 +1,11 @@
+# Link-preserving moves
+
+A move is complete only when the requested destination and affected references agree. Before mutation, record source and destination paths, collisions, and an inventory of incoming references plus relative outgoing references whose meaning may change. Include note links, embeds, heading/block anchors, relevant property links, Canvas file/background references, and known path-based queries or configuration. Also record existing unresolved references so they are not attributed to this operation.
+
+Prefer the installed CLI's move/rename operation. The [official CLI documentation](https://obsidian.md/help/cli) makes automatic internal-link updates conditional on the vault setting **Automatically update internal links**. Establish its value before relying on those updates. Do not change the setting silently. App-aware renaming still does not prove that arbitrary plugin queries, scripts, or external references were rewritten.
+
+With filesystem fallback, construct the old-to-new mapping and affected edit set first. Use scoped searches as candidate discovery, then resolve each affected link in context; a regex alone cannot implement Obsidian's resolution rules. Preserve display aliases, embed options, and subpaths. If ambiguous basename resolution or an unknown plugin format prevents a trustworthy mapping, leave the dependent move pending and report the missing evidence instead of performing a blind global replacement.
+
+Keep a recoverable pre-change copy outside the active note namespace or use the project's existing history mechanism. A destination collision requires reconciliation of both versions; never overwrite one merely because its name matches. A batch migration needs an explicit source-to-destination manifest and bounded stages, not a recursive move followed by hoped-for repair.
+
+Evidence consists of the destination contents, the changed-reference diff, and app-resolved affected links or opened targets. Compare the scoped unresolved baseline with the result. Filesystem-only evidence can establish existence and literal rewrites; label semantic link resolution unverified until Obsidian or another demonstrated resolver has checked it. Remote delivery remains a separate claim.

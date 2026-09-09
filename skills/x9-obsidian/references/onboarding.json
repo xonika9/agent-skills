@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "supported_runtimes": [
+    "opencode",
+    "claude",
+    "codex"
+  ],
+  "requirements": [
+    {
+      "id": "local-vault-access",
+      "runtimes": [
+        "opencode",
+        "claude",
+        "codex"
+      ],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Reading the intended vault with local filesystem tools.",
+      "check": {
+        "type": "manual"
+      },
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "obsidian-cli",
+      "runtimes": [
+        "opencode",
+        "claude",
+        "codex"
+      ],
+      "kind": "command",
+      "level": "optional",
+      "needed_for": "Resolving links and moving notes through the app.",
+      "check": {
+        "type": "command-present",
+        "command": "obsidian"
+      },
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "obsidian-cli-ready",
+      "runtimes": [
+        "opencode",
+        "claude",
+        "codex"
+      ],
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Confirming CLI registration and app access to the intended vault.",
+      "check": {
+        "type": "manual"
+      },
+      "guidance_id": "complete-user-action"
+    }
+  ]
+}
