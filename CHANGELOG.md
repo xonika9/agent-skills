@@ -4,6 +4,16 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 3.3.0 - 2026-09-13
+
+### Highlights
+
 - `x9-onboarding` now compares the active Codex, OpenCode, or Claude Code user configuration with sanitized maintainer profiles and can merge the explicitly approved settings while preserving unrelated private configuration and a local backup. The Claude profile keeps only the two core plugin recommendations and includes the maintainer's non-secret `375000`-token auto-compaction window.
 
 - Architecture-report checks resolve the supported narrow-screen CSS cascade instead of accepting an overridden or inapplicable declaration, and reject duplicate HTML attributes that could conceal unapproved resources or inline layout overrides. OpenCode reads reject malformed response envelopes, and unchanged OKF provenance retains its original YAML and full timestamp precision.
