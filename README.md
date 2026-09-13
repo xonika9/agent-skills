@@ -30,7 +30,7 @@ Start with the interactive installer. It lets you choose the skills, target agen
 npx skills add xonika9/agent-skills
 ```
 
-After installation or an update, ask your agent: "Check whether my installed x9 skills are ready to use." `x9-onboarding` reports readiness and any manual next steps without changing your environment. If you install selectively and want that check, choose `x9-onboarding` too.
+After installation or an update, ask your agent: "Check whether my installed x9 skills are ready to use." `x9-onboarding` reports readiness, compares the current Codex, OpenCode, or Claude Code user configuration with the bundled x9 profile, and proposes an exact merge. It changes configuration only after showing the differences and receiving your explicit approval. If you install selectively and want that check, choose `x9-onboarding` too.
 
 Some workflows compose multiple skills. If you install selectively, choose the companion skills named in the catalog as well; the installer does not resolve those relationships automatically.
 
@@ -100,7 +100,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 
 Installing a skill adds its files, but a usable workflow can still depend on a CLI, a user-controlled account, or a runtime component. This skill checks trusted local setup declarations after installation or an update, reports check coverage separately from readiness, and gives a manual checklist for what remains.
 
-It is read-only: it does not install software, sign in, run setup commands, change configuration or files, or restart a runtime. OpenCode, Claude Code, and Codex have adapters in version 1. Other runtimes receive `PARTIAL` coverage and `BLOCKED` readiness rather than a guess.
+It also compares the current harness's user configuration with sanitized, opinionated x9 profiles for OpenCode, Claude Code, and Codex. The first pass only reports current and recommended values, support evidence, and the practical effect of each difference. After explicit approval it merges only the shown settings, preserves unrelated private values and comments, and keeps a local backup. It never copies credentials, personal paths, SSH data, project state, or local hooks into the public profile. Other runtimes receive `PARTIAL` coverage and `BLOCKED` readiness rather than a guess.
 
 ### Obsidian notes
 

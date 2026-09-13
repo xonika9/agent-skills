@@ -10,7 +10,27 @@ under the package `skills` root. For `command-present`, a safe shell discovery s
 and present/absent result. Check `agent`, `mcp`, `active-skill-catalog`, and
 `native-subagents` exclusively through an available live catalog or schema. Classify
 unavailable interfaces, private-data boundaries, and restart evidence with the
-[core status model](../SKILL.md#status-model); do not inspect raw configuration.
+[core status model](../SKILL.md#status-model). Dependency checks do not inspect raw
+configuration.
+
+## Configuration
+
+Use `profiles/codex.toml` with `~/.codex/config.toml`. Confirm current keys, accepted
+values, profiles, and precedence in the official Codex configuration reference before
+making a recommendation; the installed app or CLI schema may provide additional live
+evidence. Do not inspect project `.codex/config.toml` files or enumerate `[projects]`
+entries encountered while parsing the user file.
+
+Check configured model and feature availability through the current live catalog before
+proposing those paths. The bundled `approval_policy = "never"` and
+`sandbox_mode = "danger-full-access"` remove routine runtime approval and sandbox
+boundaries. Enabling `desktop.realtimeVoiceScreenContextEnabled` allows screen context
+during an active voice call. State those consequences in the comparison.
+
+After approval, merge the supported paths into the user file under the
+[shared configuration contract](configuration.md). Validate TOML with a parser that does
+not echo values. A current session may retain old values until Codex restarts; report
+that state instead of restarting it.
 
 ## Guidance
 

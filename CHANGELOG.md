@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- `x9-onboarding` now compares the active Codex, OpenCode, or Claude Code user configuration with sanitized maintainer profiles and can merge the explicitly approved settings while preserving unrelated private configuration and a local backup. The Claude profile keeps only the two core plugin recommendations and includes the maintainer's non-secret `375000`-token auto-compaction window.
+
 - Architecture-report checks resolve the supported narrow-screen CSS cascade instead of accepting an overridden or inapplicable declaration, and reject duplicate HTML attributes that could conceal unapproved resources or inline layout overrides. OpenCode reads reject malformed response envelopes, and unchanged OKF provenance retains its original YAML and full timestamp precision.
 
 - Shared global instructions now allow the smallest sufficient set of material questions and give exploratory work an explicit evidence threshold or search boundary for completion.
@@ -20,11 +22,15 @@
 
 ### Install / update
 
+- Updating `x9-onboarding` adds configuration comparison but does not change a harness automatically. Applying the bundled profile requires a complete difference report followed by explicit user approval; model-, plugin-, provider-, and feature-specific settings remain conditional on live availability.
+
 - Update the skill package together to keep browser ownership, research/OKF prerequisites, onboarding contracts, and release checks aligned. The update does not modify installed runtime configuration.
 
 - Update `x9-browser-session` and `x9-research` together to pick up the aligned preview instructions; no browser configuration changes are required by this update.
 
 ### Compatibility
+
+- The bundled configuration profiles cover OpenCode V2, Claude Code, and Codex. They exclude literal credentials, personal paths, SSH data, project state, local hooks, and generated configuration; elevated permission and voice-screen settings must be disclosed before approval.
 
 - OKF operations use the same filesystem and Python/Ruby tools in OpenCode, Claude Code, and Codex. Runtime-specific model behavior is not established by the deterministic checks.
 

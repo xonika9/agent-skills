@@ -1,0 +1,28 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+personality = "pragmatic"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+suppress_unstable_features_warning = true
+
+[agents]
+max_depth = 4
+
+[features]
+default_mode_request_user_input = true
+goals = true
+hooks = true
+multi_agent = true
+
+[features.code_mode]
+enabled = true
+
+[features.context_management]
+experimental_mode = true
+
+[features.multi_agent_v2]
+default_wait_timeout_ms = 1200000
+enabled = true
+hide_spawn_agent_metadata = false
+max_concurrent_threads_per_session = 13
+tool_namespace = "agents"

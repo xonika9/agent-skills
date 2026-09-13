@@ -1,0 +1,136 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openai/gpt-6-astra",
+  "permissions": [
+    {
+      "action": "*",
+      "effect": "allow",
+      "resource": "*"
+    }
+  ],
+  "agents": {
+    "title": {
+      "model": "openai/gpt-5.6-luna#medium"
+    },
+    "explore": {
+      "model": "openai/gpt-5.6-terra#medium",
+      "permissions": [
+        {
+          "action": "subagent",
+          "effect": "deny",
+          "resource": "*"
+        }
+      ]
+    },
+    "general": {
+      "disabled": true
+    },
+    "inherit": {
+      "description": "General-purpose subagent inheriting the parent session model.",
+      "mode": "subagent"
+    },
+    "terra-medium": {
+      "description": "General-purpose subagent using GPT-5.6 Terra Medium.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-terra#medium"
+    },
+    "terra-fast-high": {
+      "description": "General-purpose subagent using GPT-5.6 Terra Fast High.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-terra-fast#high"
+    },
+    "terra-high": {
+      "description": "General-purpose subagent using GPT-5.6 Terra High.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-terra#high"
+    },
+    "terra-xhigh": {
+      "description": "General-purpose subagent using GPT-5.6 Terra XHigh.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-terra#xhigh"
+    },
+    "terra-max": {
+      "description": "General-purpose subagent using GPT-5.6 Terra Max.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-terra#max"
+    },
+    "sol-medium": {
+      "description": "General-purpose subagent using GPT-5.6 Sol Medium.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-sol#medium"
+    },
+    "sol-high": {
+      "description": "General-purpose subagent using GPT-5.6 Sol High.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-sol#high"
+    },
+    "astra-high": {
+      "description": "General-purpose subagent using GPT-6 Astra at high effort.",
+      "mode": "subagent",
+      "model": "openai/gpt-6-astra#high"
+    },
+    "sol-fast-high": {
+      "description": "General-purpose subagent using GPT-5.6 Sol Fast High.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.6-sol-fast#high"
+    },
+    "deepseek-high": {
+      "description": "General-purpose subagent using DeepSeek V4 Flash Vision Exp High.",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4-flash-vision-exp#high"
+    },
+    "deepseek-max": {
+      "description": "General-purpose subagent using DeepSeek V4 Flash Vision Exp Max.",
+      "mode": "subagent",
+      "model": "deepseek/deepseek-v4-flash-vision-exp#max"
+    }
+  },
+  "mcp": {
+    "servers": {
+      "chrome-devtools": {
+        "command": [
+          "npx",
+          "-y",
+          "chrome-devtools-mcp@latest",
+          "--browserUrl",
+          "http://127.0.0.1:9223",
+          "--no-usage-statistics",
+          "--no-performance-crux",
+          "--redactNetworkHeaders"
+        ],
+        "disabled": false,
+        "timeout": {
+          "catalog": 30000,
+          "execution": 120000
+        },
+        "type": "local"
+      },
+      "exa": {
+        "disabled": false,
+        "headers": {
+          "x-api-key": "{env:EXA_API_KEY}"
+        },
+        "oauth": false,
+        "type": "remote",
+        "url": "https://mcp.exa.ai/mcp"
+      }
+    }
+  },
+  "providers": {
+    "openai": {
+      "models": {
+        "gpt-6-astra": {
+          "settings": {
+            "reasoningEffort": "high"
+          }
+        }
+      }
+    }
+  },
+  "websearch": {
+    "provider": "exa"
+  },
+  "experimental": {
+    "subagent_depth": 4
+  }
+}
