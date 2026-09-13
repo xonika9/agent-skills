@@ -21,7 +21,7 @@ Do not load unrelated routes. `index.md` and `log.md` are reserved OKF files; `A
 
 ## Runtime
 
-The package-owned `skills/x9-okf-docs` directory is canonical for Claude Code and Codex. Its scripts require Python 3 and Ruby with Psych. Resolve script paths from this loaded skill directory.
+The package-owned `skills/x9-okf-docs` directory is canonical. The skill is model-invoked in OpenCode, Claude Code, and Codex. Its runtime-neutral scripts require Python 3 and Ruby with Psych; resolve their paths from this loaded skill directory.
 
 ## Completion
 

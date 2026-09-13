@@ -8,12 +8,9 @@ For `skill-present`, accept only a live catalog entry whose resolved physical pa
 under the package `skills` root. For `command-present`, a safe shell discovery such as
 `command -v` may establish presence without launching the command; retain only its name
 and present/absent result. Check `agent`, `mcp`, `active-skill-catalog`, and
-`native-subagents` exclusively through an available live catalog or schema. If it is not
-available without reading raw configuration, return `PARTIAL` and `BLOCKED`.
-
-Only emit `PENDING_RESTART` when a safe live interface shows a configured component while
-the current catalog does not expose it. Do not turn an unknown configuration state into a
-restart conclusion.
+`native-subagents` exclusively through an available live catalog or schema. Classify
+unavailable interfaces, private-data boundaries, and restart evidence with the
+[core status model](../SKILL.md#status-model); do not inspect raw configuration.
 
 ## Guidance
 

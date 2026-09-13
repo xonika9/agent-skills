@@ -25,7 +25,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 **Surface load-bearing unknowns.**
 - Before unfamiliar or costly work, resolve blind spots from available context and surface only those that remain and could materially change the outcome.
-- Ask one short question only when the missing answer materially changes the result and cannot be recovered from available context.
+- Ask only for missing facts that materially change the result and cannot be recovered from available context; use the smallest sufficient set of questions.
 - State load-bearing assumptions. Push back when the request is infeasible, unsafe, or has a materially simpler path.
 
 **Scope.**
@@ -34,6 +34,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 **Done is externally checkable.**
 - Use an observable signal: test, build, diff, rendered output, source trace, hash, or reproduced behavior. Intermediate checks do not replace the requested end-to-end result in the target environment.
 - Scale validation to risk. Use a fresh-context review for high-stakes work or when the user, repository, or applicable skill requires it. Broaden or repeat successful checks only for new changes, failures, or unresolved risks.
+- For exploratory work, define the question and evidence threshold or search boundary that ends the investigation.
 - Report what was verified and what was not. A degraded result is labeled explicitly rather than presented as complete.
 
 ## Subagent orchestration

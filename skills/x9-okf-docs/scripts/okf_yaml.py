@@ -30,6 +30,19 @@ def inspect_node(node, path, duplicates)
   end
 end
 
+def json_value(value)
+  case value
+  when Time
+    value.iso8601(9)
+  when Hash
+    value.transform_values { |item| json_value(item) }
+  when Array
+    value.map { |item| json_value(item) }
+  else
+    value
+  end
+end
+
 begin
   source = STDIN.read
   stream = Psych.parse_stream(source)
@@ -45,7 +58,7 @@ begin
       top_scalars[key.value] = value_node.value if value_node.is_a?(Psych::Nodes::Scalar)
     end
   end
-  value = YAML.safe_load(source, permitted_classes: [Time], permitted_symbols: [], aliases: false)
+  value = json_value(YAML.safe_load(source, permitted_classes: [Time], permitted_symbols: [], aliases: false))
   STDOUT.write(JSON.generate({"ok" => true, "value" => value, "top_keys" => top_keys, "top_scalars" => top_scalars}))
 rescue => e
   STDOUT.write(JSON.generate({"ok" => false, "error" => e.message})); exit 1

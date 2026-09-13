@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 import uuid
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
 from urllib.parse import quote, urlencode
 
 
@@ -32,6 +32,7 @@ MESSAGE_FIELDS = {"id", "sessionID", "timeCreated", "type"}
 TIME_FIELDS = {"archived", "created", "idle", "updated", "viewed"}
 DIRECT_TEXT_TYPES = {"system", "synthetic", "user"}
 MESSAGE_ID_PATTERN = re.compile(r"^msg_[A-Za-z0-9_-]+$")
+EMPTY_RESPONSE = object()
 
 
 def json_output(value: dict[str, Any]) -> None:
@@ -141,6 +142,7 @@ def call_api(
     path: str,
     *,
     data: dict[str, Any] | None = None,
+    empty_response_ok: bool = False,
     timeout: float | None = None,
     runner=None,
 ) -> tuple[bool, Any | None, str | None]:
@@ -175,23 +177,24 @@ def call_api(
             return False, None, "non-json-response"
     output = output.strip()
     if not output:
-        return True, None, None
+        if empty_response_ok:
+            return True, EMPTY_RESPONSE, None
+        return False, None, "empty-response"
     try:
         return True, json.loads(output), None
     except json.JSONDecodeError:
         return False, None, "non-json-response"
 
 
-def envelope(payload: Any) -> tuple[list[Any], dict[str, str | None] | None]:
-    if not isinstance(payload, dict):
-        return [], None
-    data = payload.get("data")
-    if isinstance(data, list):
-        items = data
-    elif data is None:
-        items = []
-    else:
-        items = [data]
+def envelope(
+    payload: Any,
+    data_validator: Callable[[Any], bool],
+) -> tuple[Any | None, dict[str, str | None] | None, str | None]:
+    if not isinstance(payload, dict) or "data" not in payload:
+        return None, None, "invalid-envelope"
+    data = payload["data"]
+    if not data_validator(data):
+        return None, None, "invalid-envelope"
     cursor = payload.get("cursor")
     if isinstance(cursor, dict):
         normalized_cursor = {
@@ -203,7 +206,40 @@ def envelope(payload: Any) -> tuple[list[Any], dict[str, str | None] | None]:
         normalized_cursor = {"next": cursor, "previous": None}
     else:
         normalized_cursor = None
-    return items, normalized_cursor
+    return data, normalized_cursor, None
+
+
+def session_record(value: Any) -> bool:
+    return isinstance(value, dict) and isinstance(value.get("id"), str) and bool(value["id"])
+
+
+def message_record(value: Any) -> bool:
+    return (
+        isinstance(value, dict)
+        and isinstance(value.get("id"), str)
+        and bool(value["id"])
+        and isinstance(value.get("type"), str)
+        and bool(value["type"])
+    )
+
+
+def session_collection(value: Any) -> bool:
+    return isinstance(value, list) and all(session_record(item) for item in value)
+
+
+def message_collection(value: Any) -> bool:
+    return isinstance(value, list) and all(message_record(item) for item in value)
+
+
+def active_session_map(value: Any) -> bool:
+    return isinstance(value, dict) and all(
+        isinstance(session_id, str)
+        and bool(session_id)
+        and isinstance(status, dict)
+        and isinstance(status.get("type"), str)
+        and bool(status["type"])
+        for session_id, status in value.items()
+    )
 
 
 def selected_scalars(value: Any, fields: set[str]) -> dict[str, Any]:
@@ -292,7 +328,9 @@ def command_list(args: argparse.Namespace) -> int:
     ok, payload, error = call_api("GET", api_path("/api/session", query), timeout=args.timeout)
     if not ok:
         return print_failure("list", error or "unknown")
-    data, cursor = envelope(payload)
+    data, cursor, error = envelope(payload, session_collection)
+    if error:
+        return print_failure("list", error)
     json_output({"cursor": cursor, "sessions": [normalize_session(item) for item in data]})
     return 0
 
@@ -301,8 +339,10 @@ def command_show(args: argparse.Namespace) -> int:
     ok, payload, error = call_api("GET", session_path(args.session_id), timeout=args.timeout)
     if not ok:
         return print_failure("show", error or "unknown")
-    data, _ = envelope(payload)
-    json_output({"session": normalize_session(data[0]) if data else {}})
+    data, _, error = envelope(payload, session_record)
+    if error:
+        return print_failure("show", error)
+    json_output({"session": normalize_session(data)})
     return 0
 
 
@@ -310,14 +350,14 @@ def command_active(args: argparse.Namespace) -> int:
     ok, payload, error = call_api("GET", "/api/session/active", timeout=args.timeout)
     if not ok:
         return print_failure("active", error or "unknown")
-    data = payload.get("data") if isinstance(payload, dict) else None
-    sessions = []
-    if isinstance(data, dict):
-        sessions = [
-            {"id": session_id, "status": status.get("type")}
-            for session_id, status in data.items()
-            if isinstance(session_id, str) and isinstance(status, dict) and isinstance(status.get("type"), str)
-        ]
+    data, _, error = envelope(payload, active_session_map)
+    if error:
+        return print_failure("active", error)
+    sessions = [
+        {"id": session_id, "status": status.get("type")}
+        for session_id, status in data.items()
+        if isinstance(session_id, str) and isinstance(status, dict) and isinstance(status.get("type"), str)
+    ]
     json_output({"sessions": sessions})
     return 0
 
@@ -330,7 +370,9 @@ def command_messages(args: argparse.Namespace) -> int:
     ok, payload, error = call_api("GET", path, timeout=args.timeout)
     if not ok:
         return print_failure("messages", error or "unknown")
-    data, cursor = envelope(payload)
+    data, cursor, error = envelope(payload, message_collection)
+    if error:
+        return print_failure("messages", error)
     json_output({"cursor": cursor, "messages": [normalize_message(item) for item in data]})
     return 0
 
@@ -340,8 +382,10 @@ def command_message(args: argparse.Namespace) -> int:
     ok, payload, error = call_api("GET", path, timeout=args.timeout)
     if not ok:
         return print_failure("message", error or "unknown")
-    data, _ = envelope(payload)
-    json_output({"message": normalize_message(data[0]) if data else {}})
+    data, _, error = envelope(payload, message_record)
+    if error:
+        return print_failure("message", error)
+    json_output({"message": normalize_message(data)})
     return 0
 
 
@@ -377,8 +421,10 @@ def command_prompt(args: argparse.Namespace) -> int:
     if not ok:
         finish_preview(dispatching, "unknown")
         return print_failure("prompt", error or "unknown", message_id=message_id)
-    data, _ = envelope(payload)
-    receipt = data[0] if data and isinstance(data[0], dict) else None
+    # A dispatch receipt needs the two matching identities, not a full message.
+    receipt, _, envelope_error = envelope(payload, lambda value: isinstance(value, dict))
+    if envelope_error:
+        receipt = None
     if receipt is None or receipt.get("id") != message_id or receipt.get("sessionID") != args.session_id:
         finish_preview(dispatching, "unknown")
         return print_failure("prompt", "unconfirmed-receipt", message_id=message_id)
@@ -398,11 +444,17 @@ def command_wait(args: argparse.Namespace) -> int:
     ok, payload, error = call_api(
         "POST",
         f"{session_path(args.session_id)}/wait",
+        empty_response_ok=True,
         timeout=args.timeout,
     )
     if not ok:
         return print_failure("wait", error or "unknown")
-    data, _ = envelope(payload)
+    if payload is EMPTY_RESPONSE:
+        data = []
+    else:
+        data, _, error = envelope(payload, message_collection)
+        if error:
+            return print_failure("wait", error)
     json_output(
         {
             "response": [selected_scalars(item, MESSAGE_FIELDS) for item in data],

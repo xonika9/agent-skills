@@ -13,10 +13,13 @@ declaration cannot contain commands to run, arguments, URLs, paths, secrets, or
 free-form setup steps. A skill without external requirements does not need this
 file.
 
-Validate a package root with:
+Resolve the loaded `x9-onboarding` directory from its loaded `SKILL.md`. Independently
+resolve the actual package `skills` root to validate; it may belong to another package,
+and neither path depends on the current working directory. Then run:
 
 ```bash
-python3 skills/x9-onboarding/scripts/validate_onboarding.py skills
+python3 <resolved-x9-onboarding-directory>/scripts/validate_onboarding.py \
+  <absolute-target-package-skills-root>
 ```
 
 The validator reads only immediate `skills/*/references/onboarding.json` files.
@@ -72,10 +75,9 @@ Every object is closed. Unknown fields and wrong JSON types are errors.
 Use the same lowercase hyphen-case `group` on two or more requirements when
 any one route satisfies one required capability. Every member is `required`
 and uses the same `runtimes`; individual rows stay visible, but readiness is
-computed once for the group. A group is ready when any member is ready. When
-none is ready, prefer an actionable known route (`PENDING_RESTART`, then
-`NEEDS_SETUP`, then `USER_ACTION`) over `BLOCKED`. Coverage remains `PARTIAL`
-when an unchecked member could still satisfy the group.
+computed once for the group. The exhaustive group and skill aggregation rules,
+including the ready-route short circuit and optional-row coverage, are owned by
+the [core status model](../SKILL.md#status-model).
 
 ## Typed Checks
 

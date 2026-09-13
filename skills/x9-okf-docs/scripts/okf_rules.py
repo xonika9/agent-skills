@@ -169,8 +169,8 @@ def validate_sources(fields: dict):
             or source["usage_count"] < 0
         ):
             issues.append(f"{name}.usage_count must be a non-negative integer")
-        if "last_modified" in source and not valid_date(source["last_modified"]):
-            issues.append(f"{name}.last_modified must be YYYY-MM-DD")
+        if "last_modified" in source and not valid_datetime(source["last_modified"]):
+            issues.append(f"{name}.last_modified must be ISO 8601 with timezone")
     if len(ids) != len(set(ids)):
         issues.append("sources ids must be unique")
     return issues
@@ -227,8 +227,10 @@ def validate_fields(
 
         if "status" in fields and fields["status"] not in {"draft", "stable", "deprecated"}:
             issues.append("status must be draft, stable, or deprecated")
-        if "stale_after" in fields and not valid_date(fields["stale_after"], raw_scalars.get("stale_after")):
-            issues.append("stale_after must be YYYY-MM-DD")
+        if "stale_after" in fields and not valid_datetime(
+            fields["stale_after"], raw_scalars.get("stale_after")
+        ):
+            issues.append("stale_after must be ISO 8601 with timezone")
         issues.extend(validate_sources(fields))
 
         if concept_type == "Attested Computation":

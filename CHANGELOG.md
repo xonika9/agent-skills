@@ -4,15 +4,29 @@
 
 ### Highlights
 
+- Architecture-report checks resolve the supported narrow-screen CSS cascade instead of accepting an overridden or inapplicable declaration, and reject duplicate HTML attributes that could conceal unapproved resources or inline layout overrides. OpenCode reads reject malformed response envelopes, and unchanged OKF provenance retains its original YAML and full timestamp precision.
+
+- Shared global instructions now allow the smallest sufficient set of material questions and give exploratory work an explicit evidence threshold or search boundary for completion.
+
+- Skill checks now reject malformed Excalidraw fields and non-finite tolerances, CSS that does not provide the required responsive layout, and empty OpenCode read responses. Task publication distinguishes recovery by native idempotency key from recovery by a searchable marker.
+- Onboarding reports use consistent privacy and alternative-route states. Browser routing follows the current Codex control interface, and context-file audits, research, critique, and loop instructions have clearer completion and ownership boundaries.
+- OKF metadata records new generation provenance from the explicit actor, and saved research retains OpenCode support through aligned OKF prerequisites. Local release checks include the service skill and architecture-report regressions required by CI.
+
+- Prompt and skill authoring now use shorter routing descriptions, preserve existing authorization for safe continuation, and calibrate completion and verification to the intended executor; behavioral evaluation details have a single conditional owner.
+
 - Added `x9-obsidian` for vault-scoped note edits, link-preserving moves, properties, Bases, and Canvas without imposing a personal organization system.
 
 - Browser previews and tests now preserve the selected browser/profile instead of opening empty isolated contexts. Reconnection requires establishing the controller's actual target before continuing, and research HTML checks use the same browser-routing policy.
 
 ### Install / update
 
+- Update the skill package together to keep browser ownership, research/OKF prerequisites, onboarding contracts, and release checks aligned. The update does not modify installed runtime configuration.
+
 - Update `x9-browser-session` and `x9-research` together to pick up the aligned preview instructions; no browser configuration changes are required by this update.
 
 ### Compatibility
+
+- OKF operations use the same filesystem and Python/Ruby tools in OpenCode, Claude Code, and Codex. Runtime-specific model behavior is not established by the deterministic checks.
 
 - `x9-obsidian` supports filesystem work with optional Obsidian CLI access; app link resolution, view rendering, and sync delivery are reported separately from structural checks.
 
@@ -20,7 +34,9 @@
 
 ### Breaking changes
 
-None.
+- Architecture reports now require grid layout selectors and media conditions from the documented deterministic subset: for example, replace `body main.report-grid` with `main.report-grid` inside `@media (max-width: 600px)`. Grid declarations must use simple compound selectors in style blocks, and layout media rules must use a pixel `max-width` from 390 up to (but not including) 1280. Unsupported conditions, shorthands on `.report-grid`, and declarations that leave it multi-column at the narrow checkpoint fail validation even if an older validator accepted them. Migrate existing reports using `x9-architecture-scout/references/report-contract.md` and recheck their rendering before release.
+
+- OKF v0.2 `stale_after` and `sources[].last_modified` now require ISO 8601 date-times with an explicit UTC offset. Previously accepted quoted date-only values must be corrected with an intentionally chosen time and offset; the tools do not infer a timezone or migrate those values automatically.
 
 ## 3.2.0 - 2026-09-05
 

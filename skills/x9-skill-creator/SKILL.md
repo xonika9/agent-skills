@@ -1,6 +1,6 @@
 ---
 name: x9-skill-creator
-description: Use when creating, auditing, fixing, or improving an Agent Skill for Claude Code or Codex — «создай скилл», «проверь скилл», «почини скилл», «улучши скилл», "create a skill", "audit skill". Do not use for ordinary code, non-skill prose, global agent instructions, or merely running an existing skill.
+description: Create, audit, fix, or improve Agent Skills for Claude Code or Codex. Excludes running existing skills and editing global agent instructions.
 compatibility: Requires Python 3 and Ruby with Psych for structural validation. Full Create, Audit, and Fix work on agent-facing prose also requires x9-agent-instructions.
 ---
 
@@ -57,18 +57,6 @@ python3 <resolved-x9-skill-creator-directory>/scripts/test_validate.py
 ```
 
 Use one `--runtime` per target runtime; repeat it to require one file to satisfy several runtimes. `portable` enforces the Agent Skills specification and is the default when the flag is omitted. Resolve the creator directory from the loaded skill resource and the target from the actual project/personal source under review; do not substitute a globally installed copy for a package-owned target. The first command validates that target. The second checks validator regression scenarios and is not a substitute for target validation. Structural checks cannot prove triggering, runtime-specific semantics, or output quality; verify platform-specific metadata in the target runtime during behavioral evaluation.
-
-## Optional behavioral check
-
-When behavioral evidence is selected, run in a fresh context:
-
-- a positive trigger;
-- a near-miss that must not trigger;
-- one ambiguity or authority boundary;
-- one tool-failure/degraded-result scenario when tools are part of the contract;
-- one observable completion assertion.
-
-For stable or release-gated substantive changes, compare old/new or with-skill/without-skill behavior on the same prompts. Record evidence, not the evaluator's impression. Rapidly changing personal skills may defer this until real use exposes a stable scenario worth retaining.
 
 ## Done
 

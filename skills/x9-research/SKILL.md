@@ -13,7 +13,7 @@ The [machine-readable onboarding contract](references/onboarding.json) lists ext
 ## Method
 
 1. Define the real question and the claims the answer depends on. Ask only when an unresolved ambiguity would change what is researched.
-2. Gather breadth first, then read the strongest primary or authoritative sources in depth.
+2. Choose search breadth by the claim: open the owning primary source directly for a specific authoritative fact; broaden the search when the question, source ownership, coverage, or disagreement remains unresolved.
 3. Match evidence to claim type:
    - A direct fact from its authoritative registry, specification, filing, or law may need one primary source.
    - Contested, inferential, surprising, or high-stakes claims need independent corroboration and an active search for disconfirmation.

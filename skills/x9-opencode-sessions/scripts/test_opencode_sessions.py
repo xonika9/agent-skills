@@ -146,6 +146,118 @@ class OpenCodeSessionsTests(unittest.TestCase):
             {"id": "ses_2", "status": "running"},
         ]})
 
+    def test_single_record_operations_normalize_object_data(self) -> None:
+        fixtures = (
+            (["show", "ses_1"], {"data": {"id": "ses_1", "title": "Billing"}}, {"session": {"id": "ses_1", "title": "Billing"}}),
+            (["message", "ses_1", "msg_1"], {"data": {"id": "msg_1", "sessionID": "ses_1", "type": "user", "text": "Question"}}, {"message": {"id": "msg_1", "sessionID": "ses_1", "text": ["Question"], "type": "user"}}),
+        )
+
+        for args, payload, expected in fixtures:
+            with self.subTest(operation=args[0]), patch.object(
+                opencode_sessions.subprocess,
+                "run",
+                return_value=Result(json.dumps(payload)),
+            ):
+                code, output = self.run_main(args)
+
+            self.assertEqual(code, 0)
+            self.assertEqual(output, expected)
+
+    def test_collection_operations_preserve_empty_results(self) -> None:
+        fixtures = (
+            (["list"], {"data": []}, {"cursor": None, "sessions": []}),
+            (["active"], {"data": {}}, {"sessions": []}),
+            (["messages", "ses_1"], {"data": []}, {"cursor": None, "messages": []}),
+        )
+
+        for args, payload, expected in fixtures:
+            with self.subTest(operation=args[0]), patch.object(
+                opencode_sessions.subprocess,
+                "run",
+                return_value=Result(json.dumps(payload)),
+            ):
+                code, output = self.run_main(args)
+
+            self.assertEqual(code, 0)
+            self.assertEqual(output, expected)
+
+    def test_read_operations_reject_missing_data(self) -> None:
+        operations = (
+            ["list"],
+            ["show", "ses_1"],
+            ["active"],
+            ["messages", "ses_1"],
+            ["message", "ses_1", "msg_1"],
+        )
+
+        for args in operations:
+            with self.subTest(operation=args[0]), patch.object(
+                opencode_sessions.subprocess,
+                "run",
+                return_value=Result("{}"),
+            ):
+                code, output = self.run_main(args)
+
+            self.assertEqual(code, 2)
+            self.assertEqual(output, {
+                "error": "invalid-envelope",
+                "operation": args[0],
+                "status": "blocked",
+            })
+
+    def test_read_operations_reject_wrong_data_shape(self) -> None:
+        fixtures = (
+            (["list"], {"data": {}}),
+            (["list"], {"data": [None]}),
+            (["show", "ses_1"], {"data": []}),
+            (["show", "ses_1"], {"data": {}}),
+            (["show", "ses_1"], {"data": {"unexpected": True}}),
+            (["active"], {"data": []}),
+            (["active"], {"data": {"ses_1": None}}),
+            (["messages", "ses_1"], {"data": {}}),
+            (["messages", "ses_1"], {"data": [None]}),
+            (["message", "ses_1", "msg_1"], {"data": []}),
+            (["message", "ses_1", "msg_1"], {"data": {}}),
+            (["message", "ses_1", "msg_1"], {"data": {"unexpected": True}}),
+        )
+
+        for args, payload in fixtures:
+            with self.subTest(operation=args[0]), patch.object(
+                opencode_sessions.subprocess,
+                "run",
+                return_value=Result(json.dumps(payload)),
+            ):
+                code, output = self.run_main(args)
+
+            self.assertEqual(code, 2)
+            self.assertEqual(output, {
+                "error": "invalid-envelope",
+                "operation": args[0],
+                "status": "blocked",
+            })
+
+    def test_read_operations_reject_empty_successful_response(self) -> None:
+        operations = (
+            ["list"],
+            ["show", "ses_1"],
+            ["active"],
+            ["messages", "ses_1"],
+            ["message", "ses_1", "msg_1"],
+        )
+
+        for args in operations:
+            with self.subTest(operation=args[0]), patch.object(
+                opencode_sessions.subprocess,
+                "run",
+                return_value=Result(),
+            ):
+                code, output = self.run_main(args)
+
+            self.assertEqual(code, 2)
+            self.assertEqual(output["operation"], args[0])
+            self.assertEqual(output["status"], "blocked")
+            self.assertEqual(output["error"], "empty-response")
+
     def test_message_path_escapes_identifiers(self) -> None:
         self.assertEqual(
             opencode_sessions.session_path("session/a", "message/b"),
@@ -216,6 +328,15 @@ class OpenCodeSessionsTests(unittest.TestCase):
         self.assertEqual(output["error"], "unconfirmed-receipt")
         self.assertEqual(output["message_id"], "msg_1")
 
+    def test_prompt_minimal_identity_receipt_is_confirmed(self) -> None:
+        payload = '{"data":{"id":"msg_1","sessionID":"ses_1"}}'
+        with patch.object(opencode_sessions.subprocess, "run", return_value=Result(payload)):
+            self.run_main(["prompt", "ses_1", "hello", "--message-id", "msg_1"])
+            code, output = self.run_main(["prompt", "ses_1", "hello", "--message-id", "msg_1", "--apply"])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(output["status"], "confirmed")
+
     def test_prompt_apply_rejects_unknown_preview(self) -> None:
         with patch.object(opencode_sessions.subprocess, "run") as runner:
             code, output = self.run_main(["prompt", "ses_1", "hello", "--message-id", "msg_1", "--apply"])
@@ -270,6 +391,28 @@ class OpenCodeSessionsTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertEqual(output, {"response": [], "session_id": "ses_1", "status": "complete"})
+
+    def test_wait_rejects_nonempty_invalid_envelope(self) -> None:
+        with patch.object(opencode_sessions.subprocess, "run", return_value=Result("{}")):
+            code, output = self.run_main(["wait", "ses_1"])
+
+        self.assertEqual(code, 2)
+        self.assertEqual(output, {
+            "error": "invalid-envelope",
+            "operation": "wait",
+            "status": "blocked",
+        })
+
+    def test_wait_rejects_json_null(self) -> None:
+        with patch.object(opencode_sessions.subprocess, "run", return_value=Result("null")):
+            code, output = self.run_main(["wait", "ses_1"])
+
+        self.assertEqual(code, 2)
+        self.assertEqual(output, {
+            "error": "invalid-envelope",
+            "operation": "wait",
+            "status": "blocked",
+        })
 
     def test_wait_service_unavailable_is_blocked(self) -> None:
         with patch.object(opencode_sessions.subprocess, "run", return_value=Result(returncode=1)):

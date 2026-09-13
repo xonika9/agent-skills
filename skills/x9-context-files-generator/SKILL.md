@@ -17,10 +17,10 @@ Do not apply the subordinate rubric to `README.md` or to a `CLAUDE.md` that cont
 ## Select the action
 
 - **Create or update:** an explicit request to create, update, fix, or rewrite a context file authorizes the requested in-scope edits; do not ask for the same permission again.
-- **Audit:** an explicit audit/check request is read-only. Report findings and proposed changes, then ask once whether to apply them.
+- **Audit:** an explicit audit/check request is read-only. Completion is a report accounting for every requested file, with source evidence and impact for each finding, the smallest complete proposed change, validation results, and unverified claims. Ask whether to apply proposals only when retained findings exist.
 - **Bare skill invocation:** inspect the current repository read-only by default. If changes would help, show the proposal and ask once before editing.
 
-Infer the action from the whole request, not only trigger words. When an authorized edit reveals an additional normalization outside the requested change, ask once before applying that extra change.
+Infer the action from the whole request, not only trigger words.
 
 ## Workflow
 
@@ -29,9 +29,9 @@ Infer the action from the whole request, not only trigger words. When an authori
    - Agent file: commands, dangerous gotchas, local constraints, non-inferable conventions, and verification contracts.
    - README: purpose, setup, normal usage, and links to deeper material.
 3. Keep one canonical owner for each fact. A short audience-specific summary is allowed when it changes behavior; link to the owner instead of copying full detail.
-4. Make root `AGENTS.md` the single canonical local instruction file and root `CLAUDE.md` exactly `@AGENTS.md` plus a final newline, unless the repository or user declares an exception. Put every new local rule in `AGENTS.md`. Before normalizing an existing `CLAUDE.md`, merge its unique rules into `AGENTS.md`; never discard them silently or preserve a duplicate copy by default. Apply this normalization immediately when it was explicitly requested or already required by repository policy; otherwise propose it and ask once before editing.
-5. Treat an existing `AGENTS.md`, `CLAUDE.md`, or `README.md` as merge-only unless the user explicitly requests replacement. Show a diff for substantive rewrites.
-6. For agent files, remove content that is cheap to reconstruct only when its absence would not change the reader's next decision or action; use the detailed test in [references/agents-md.md](references/agents-md.md). Include architecture only when the rationale or boundary cannot be recovered cheaply from code and materially affects decisions. Avoid generated file trees and generic overviews.
+4. For agent files, apply the canonical ownership, normalization, preservation, and verification contract in [references/agents-md.md](references/agents-md.md).
+5. Treat an existing `README.md` as merge-only unless the user explicitly requests replacement; show a diff for substantive rewrites. Agent-file preservation belongs to the linked agent-file contract.
+6. Judge agent-file content with the derivability test in that contract.
 7. Use English for machine-facing instructions by default; follow repository/user language when human maintenance or domain literals make that clearer.
 8. Run commands you present only when they are safe, local, and within the requested repository scope. Read-only inspection and ordinary local validation are allowed by default. Destructive, external, costly, deployment, migration, production-data, account-mutating, or credential-changing commands require explicit user authority; otherwise preserve the command and label it unverified with the reason.
 
@@ -42,12 +42,10 @@ Read [references/agents-md.md](references/agents-md.md) when editing agent files
 - Global `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` belong to `x9-agent-instructions`.
 - Skill folders belong to `x9-skill-creator`.
 - Do not put personal absolute paths such as `/Users/<name>/...` or `/home/<name>/...` in committed files. Prefer repository-relative paths or neutral placeholders; keep a machine-bound path only when the repository genuinely depends on that machine and the user explicitly wants it documented.
-- Do not overwrite existing instructions by position from a stale read; re-read immediately before applying a patch.
 
-## Done
+## Done for Create or update
 
-- Existing non-inferable rules are preserved or intentionally changed with user authority.
-- When canonical-file normalization was authorized and no exception applies, `CLAUDE.md` contains only `@AGENTS.md` and all local instructions are owned by `AGENTS.md`.
+- The delivered diff and verification evidence satisfy the applicable agent-file or README contract.
 - Commands and paths trace to the current repository.
 - Agent and human files contain only behavior-changing audience-specific material.
 - The instruction rubric is reported as `applied`, `not applicable`, or `degraded`; a complete or clean agent-file result requires `applied`.

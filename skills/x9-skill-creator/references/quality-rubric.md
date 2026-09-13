@@ -20,8 +20,8 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 ## 1. Triggering and scope `[s+j+b]`
 
-- `description` says when to use the skill, includes realistic trigger phrases and a near-miss, and does not summarize the workflow.
-- The leading concept appears early; `name` and folder match.
+- `description` states the distinct user intent concisely; it does not summarize the workflow. Add example phrases or a near-miss only when they resolve a real routing ambiguity; keep the full trigger cases in the audit or evaluation evidence.
+- Put the distinguishing use case first so the opening remains useful when a runtime shortens descriptions; `name` and folder match.
 - With static evidence, classify at least one realistic positive trigger and one near-miss against the metadata. With behavioral evidence, verify them in a fresh runtime.
 
 ## 2. Runtime and placement `[j+b]`

@@ -16,9 +16,13 @@ python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py messages <sessi
 python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py message <session-id> <message-id>
 ```
 
-After a successful `wait`, fetch that selected session's `messages` to collect its answer.
-The endpoint may return `503` when waiting is unavailable; report that as blocked and use
-`active` plus paginated `messages` rather than treating the session as complete.
+The inspection routes return JSON. An empty response body from any of them is an
+`empty-response` failure; an empty collection is represented by a JSON envelope whose
+`data` field is empty. `list` and `messages` require a data array, `active` requires a
+data object, and `show` and `message` require one non-empty data object. A missing `data`
+field or the wrong data shape is an `invalid-envelope` failure. Session records require
+a string `id`, message records require string `id` and `type` fields, and every `active`
+status requires a string `type`.
 
 `list` accepts `--parent-id`, `--roots`, `--search`, `--workspace`, `--project`,
 `--directory`, `--subpath`, `--order`, `--limit`, and `--cursor`. `--roots` sends
@@ -48,10 +52,9 @@ The prompt route is `POST /api/session/{sessionID}/prompt` with `text` and a cal
 `id` matching `^msg_`; the wrapper generates that ID during preview and reuses it for
 dispatch. Preview permanently reserves the ID and stores a one-use local receipt with the
 session ID and SHA-256 of the text, not the text itself. Apply atomically consumes that
-receipt before the network call, so a timeout cannot be retried or re-previewed with the
-same ID. A send is confirmed only when the
-server receipt repeats both that message ID and the selected session ID. `wait` calls
-`POST /api/session/{sessionID}/wait`, where a `204`
-response is successful completion and `503` means waiting is unavailable. A timeout or
-non-confirming dispatch has unknown outcome. The only recovery is the targeted message
-lookup above; never resend automatically.
+receipt before the network call. A send response is confirmed only when the server
+receipt repeats both that message ID and the selected session ID; an empty body does not
+confirm dispatch. `wait` calls `POST /api/session/{sessionID}/wait`, where a bodyless
+`204` response is successful completion and `503` means waiting is unavailable. The
+[main skill](../SKILL.md#sending-and-waiting) owns the recovery decisions for a timeout,
+non-confirming dispatch, or unavailable wait.

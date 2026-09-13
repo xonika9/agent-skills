@@ -42,7 +42,9 @@ Root `AGENTS.md` may retain a short repository-relative pointer only when the pr
 
 Agent harnesses do not share one universal repository-context filename. This convention targets Claude Code and `AGENTS.md`-aware harnesses such as Codex; verify another harness's current discovery rules before claiming compatibility. Claude Code reads `CLAUDE.md` and supports importing another file. Keeping two complete copies makes the rules drift, so use one source of truth plus a thin compatibility import when the normalization was requested or authorized.
 
-Root `AGENTS.md` is the canonical source of root-local agent instructions; each profile document owns its branch-specific procedure. Root `CLAUDE.md` must contain exactly:
+Apply normalization immediately when the user requested it or repository policy already requires it. Otherwise propose the additional normalization and ask once before editing. Honor an explicit repository or user exception.
+
+When no exception applies, root `AGENTS.md` is the canonical source of root-local agent instructions; each profile document owns its branch-specific procedure. Root `CLAUDE.md` must contain exactly:
 
 ```text
 @AGENTS.md
@@ -50,7 +52,7 @@ Root `AGENTS.md` is the canonical source of root-local agent instructions; each 
 
 Keep the final newline. Add and update root-local rules only in `AGENTS.md` so Claude Code follows the import while Codex and other `AGENTS.md`-aware harnesses read the canonical file directly.
 
-Before replacing an existing `CLAUDE.md` with the import, merge every unique local rule into `AGENTS.md` and verify the combined meaning. If a rule appears genuinely Claude-only or the runtime does not support the import, stop and ask whether this repository is an explicit exception; do not silently retain duplication or delete the rule.
+Before replacing an existing `CLAUDE.md` with the import, merge every unique local rule into `AGENTS.md` and verify the combined meaning. If a rule appears Claude-only or the runtime does not support the import, resolve the exception from existing repository or user instructions; ask only when that decision remains unresolved. Do not silently retain duplication or delete the rule.
 
 ## Verification
 

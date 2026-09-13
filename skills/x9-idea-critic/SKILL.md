@@ -5,7 +5,7 @@ description: Use only when the user explicitly asks to criticize, red-team, pres
 
 # Idea critic
 
-Criticize through the routes the user selected. Claude and GPT are independent perspectives with different error profiles; neither route is a fallback or a quality tier. Route names identify providers, not the currently selected models.
+Criticize through the routes the user selected. Run each provider route in a separate fresh context; neither route is a fallback or a quality tier. Route names identify providers, not the currently selected models.
 
 The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
 
@@ -65,7 +65,7 @@ Every adapter must confirm that the selected model and effort controls are avail
 - Judge completeness against the selected mode. A successful `claude` or `gpt` run is `COMPLETE`; it is not degraded merely because the user requested one critic.
 - In default mode, one missing route yields `DEGRADED`. In `full`, a missing requested provider or lens yields `DEGRADED`.
 - If every requested route fails or the orchestrator cannot assemble a sufficient packet of load-bearing evidence, return `BLOCKED` with verdict `NOT_PROVEN`; do not manufacture a substantive verdict from the orchestrator's prior beliefs.
-- Keep attribution: show which critic raised each invalidating point and whether the other independently agreed.
+- Keep attribution: show which critic raised each invalidating point and whether the other raised it separately. Cross-provider agreement supports the critique but is not independent factual evidence.
 - Resolve duplicate wording, not disagreement. Surface material conflicts and judge them against evidence.
 - Keep the synthesis concise by grouping overlap and separating required changes from optional improvements, not by dropping findings or dependencies that could change the verdict.
 - Critics own diagnosis; the orchestrator owns the post-critique rewrite. After resolving the findings, turn them into the strongest defensible next version of the idea rather than stopping at recommendations.

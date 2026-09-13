@@ -98,8 +98,9 @@ def merge_existing_meta(
 ):
     merged = dict(meta)
     preserved = []
+    raw_preserved = set()
     if not header:
-        return merged, preserved
+        return merged, preserved, raw_preserved
     existing = parsed_header(header)
     for key in SEMANTIC_FIELDS:
         value = existing.get(key)
@@ -124,7 +125,8 @@ def merge_existing_meta(
         if merged.get("generated") != existing_generated:
             merged["generated"] = existing_generated
             preserved.append("generated")
-    return merged, preserved
+        raw_preserved.add("generated")
+    return merged, preserved, raw_preserved
 
 
 def raw_preserved_fields(header: bytes, replaced_keys: set[str], removed_keys: set[str]):
@@ -175,14 +177,17 @@ def header_bytes(
     eol: bytes,
     existing_header: bytes = b"",
     removed_keys: set[str] | None = None,
+    raw_preserved_keys: set[str] | None = None,
 ):
     removed = removed_keys or set()
-    ordered = [key for key in CANONICAL_ORDER if key in meta]
-    ordered.extend(sorted(set(meta) - set(ordered)))
+    raw_preserved = raw_preserved_keys or set()
+    serialized_keys = set(meta) - raw_preserved
+    ordered = [key for key in CANONICAL_ORDER if key in serialized_keys]
+    ordered.extend(sorted(serialized_keys - set(ordered)))
     lines = ["---", *[f"{key}: {yaml_value(meta[key])}" for key in ordered]]
     output = eol.join(line.encode("utf-8") for line in lines) + eol
     preserved = normalize_eol(
-        raw_preserved_fields(existing_header, set(meta), removed),
+        raw_preserved_fields(existing_header, serialized_keys, removed),
         eol,
     )
     if preserved:
@@ -425,12 +430,12 @@ def apply_manifest(args, root: Path):
         try:
             existing_header, body, bom = preflight_inventory(data, before[rel])
             meta = dict(proposed)
-            if args.actor and "generated" not in meta and args.target_version == "0.2":
+            if args.actor and args.target_version == "0.2":
                 meta["generated"] = {
                     "by": args.actor,
                     "at": before[rel]["suggested_generated_at"],
                 }
-            effective_meta, preserved = merge_existing_meta(
+            effective_meta, preserved, raw_preserved = merge_existing_meta(
                 meta,
                 existing_header,
                 catalog,
@@ -450,7 +455,12 @@ def apply_manifest(args, root: Path):
             preserved_by_file[rel] = preserved
         output = (
             (BOM if bom else b"")
-            + header_bytes(effective_meta, preferred_eol(body, existing_header), existing_header)
+            + header_bytes(
+                effective_meta,
+                preferred_eol(body, existing_header),
+                existing_header,
+                raw_preserved_keys=raw_preserved,
+            )
             + body
         )
         if output != data:

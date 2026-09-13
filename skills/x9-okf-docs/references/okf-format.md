@@ -45,7 +45,8 @@ generated: {by: x9-okf-docs/<version>, at: "2026-07-15T12:00:00+03:00"}
 - `sources`: every entry has `resource`; optional `id` values are unique.
 - `verified`: one event or a list of events, each with truthful `by` and timezone-aware `at`.
 - `status`: `draft`, `stable`, or `deprecated`; absence means `stable`.
-- `stale_after`: an absolute `YYYY-MM-DD` date.
+- `stale_after`: an absolute ISO 8601 datetime with an explicit UTC offset. Date-only legacy values are invalid under OKF v0.2 and require an explicitly chosen migration instant.
+- `sources[].last_modified`: an ISO 8601 datetime with an explicit UTC offset when present.
 - `Attested Computation`: requires `runtime`; its other computation fields follow the official specification.
 
 Absence is preferable to invented provenance, verification, freshness, or lifecycle data.

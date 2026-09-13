@@ -19,10 +19,10 @@ target.
 
 Run [the wrapper](scripts/opencode_sessions.py) for API calls. It emits normalized JSON,
 shows only text message parts, and keeps reasoning bodies and tool arguments out of the
-default output. Read [the API reference](references/open-code-v2.md) for command forms,
-the selection rule, and the wait/reconciliation contract.
+default output. Read [the API reference](references/open-code-v2.md) for command forms
+and response semantics.
 
-## Sending
+## Sending and waiting
 
 `prompt` is preview-first. Run it without `--apply`, retain and show its generated
 `message_id`, then dispatch the same ID with `--apply` only after the user has explicitly

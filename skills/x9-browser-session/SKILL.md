@@ -173,14 +173,23 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 
 ## Codex
 
-- For local web development, previews, and an explicit request for the in-app browser,
-  read and follow `browser:control-in-app-browser` and select its distinct in-app
-  binding immediately. This exception remains primary for that scope.
-- Except for the allowlist route in [Choose the surface](#choose-the-surface),
-  select the Edge extension directly for other browser work. Do not let
-  `getDefault()` or `getForUrl()` silently choose the in-app browser. Read and follow
-  the installed `chrome:control-chrome` skill; it owns the current setup and extension
-  APIs.
+Use the live browser-control tool instructions as the API owner. The current desktop
+surface is `mcp__cua_repl.js`; read its entry-point contract before initializing it,
+then use only the `cua` APIs documented by that tool and its returned documentation.
+If that surface is absent, discover the installed browser controller rather than
+assuming a skill name or initialization method from another Codex version.
+
+- For the in-app branch selected by [Choose the surface](#choose-the-surface), select
+  the explicit `iab` binding. The current entry point is `cua.createBrowserTab` with
+  that browser identifier; choose visibility according to the requested preview.
+- For the Edge extension branch, select Edge explicitly through the documented
+  named-browser entry point. Do not let URL-based default selection choose a different
+  browser. Use the tool's session name and task-tab ownership contract; resolve a
+  user-mentioned existing tab through its documented inventory and selection route.
+- Verify the actual selected profile under [browser and profile continuity](#browser-and-profile-continuity).
+  Follow documented background-tab semantics; do not invent focus or profile options.
+  A route that cannot preserve the required profile or focus is unavailable for that
+  task and follows the permitted fallback chain.
 - The Codex MCP route uses `~/.codex/config.toml` and the shared focus-safe rules.
   Outside the earlier exceptions, enter it only after the Edge extension remains
   unavailable following its documented troubleshooting.

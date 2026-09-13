@@ -1,11 +1,15 @@
 ---
 name: x9-agent-instructions
-description: Use when writing a prompt or task brief for another agent without executing it, or when reviewing and improving an existing prompt or agent-instruction file — «напиши промпт», «нужен промпт под задачу», «посмотри инструкции в этом файле и предложи правки», «поправь глобальные правила», "write an agent prompt", "review these agent instructions". Global CLAUDE.md and AGENTS.md are one review target among others. Do not select this as the primary workflow for repository onboarding files (x9-context-files-generator), skill authoring (x9-skill-creator), ordinary prose, or actually handing a task to Codex (x9-codex-delegation); x9-context-files-generator and x9-skill-creator may load it as a subordinate instruction-quality rubric.
+description: Write or review prompts, task briefs, and agent-instruction files — «напиши промпт», «проверь инструкции», "review this agent prompt". Do not use as the primary workflow for repository onboarding files, skill authoring, ordinary prose, or executing or delegating the described task.
 ---
 
 # Agent instructions
 
 This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its portable claim is structural Agent Skills compatibility only, not proven invocation behavior.
+
+Judge behavioral guidance for the actual receiving model and runtime, including delegated workers; the author's model is not evidence of the executor's behavior.
+
+Repository onboarding files belong to `x9-context-files-generator`, skill authoring to `x9-skill-creator`, and actual Codex delegation in Claude Code to `x9-codex-delegation`. The first two may load this skill as a subordinate instruction-quality rubric.
 
 Own the prompt as an artifact: a one-off brief handed to another agent or a new chat, and the instructional content of files that hold prompts or agent instructions. One rubric drives both — writing applies it forward, review applies it backward.
 
@@ -25,8 +29,8 @@ Completeness of the specification helps; completeness of the path hurts. Describ
 - **Facts the executor cannot derive** — state, paths, commits, what is already done, what is known broken, decisions taken elsewhere. For continuation briefs, preserve the user's decisions, constraints, permissions, and prohibitions in their exact wording where paraphrase could change scope; distinguish them from agent inferences. Include rejected approaches and why, unresolved commitments, and hard-to-reconstruct references. Condense agent explanations before these facts. Length is not a concern here; nothing else can supply this.
 - **Constraints and scope fence** — what is forbidden and what is deliberately out of scope. Agents widen scope on their own, so leaving the fence implicit is how it happens.
 - **Required evidence** — what counts as proof: tests, a build, a reproduced scenario, a diff, a log.
-- **Completion bar** — an observable condition the executor and a third party can both check. When a known enumerable set exists, require the completion bar to account for every member or explicitly explain each exclusion; the mere existence of an output is not completion.
-- **Authority, stated once** — what proceeds without asking (reading, in-scope local edits, tests) and what needs confirmation (external writes, irreversible or destructive actions, purchases, scope expansion). Repeating "ask first" produces needless approval requests on safe actions.
+- **Completion bar** — an observable condition the executor and a third party can both check, tied to the requested end result in its target environment. When a known enumerable set exists, account for every member or explicitly explain each exclusion; an intermediate check or the mere existence of an output is not completion. For exploratory work, name the question and the evidence threshold or search boundary that ends exploration.
+- **Authority, stated once** — preserve the user's existing permissions and prohibitions. Name safe in-scope actions, including repairs and reruns, that may continue without another approval; include the environment facts that make that scope safe. Seek confirmation for external, irreversible, destructive, costly, or scope-expanding actions only when not already authorized or when newly discovered risk materially changes the agreed scope.
 - **Output contract** — one line, or a pointer to whoever owns the format.
 - **References to real artifacts** — point at the code, test, spec, or component that shows what is wanted. Source beats description, and a module in another language still conveys the semantics. Name an installed skill by its discoverable name, never by a machine-specific `SKILL.md` path. Use a file path when the file itself is the task artifact; when exact unpublished repository source matters, use a project-relative path and say why. Resolve a bundled resource path only after its owning skill has loaded.
 - **Conditional context pointers** — name the artifact and the independently testable condition or branch that makes it necessary. Keep material every branch needs in the main brief, and put only branch-specific material behind the pointer.
@@ -37,11 +41,11 @@ Completeness of the specification helps; completeness of the path hurts. Describ
 ## What to leave out
 
 - **A prescribed path** derivable from the goal and the constraints. It adds no knowledge and removes the executor's room to deviate. A sequence that appears in the request is not evidence that the order is load-bearing: before writing any numbered step, name the invariant that makes a wrong order impossible and write that instead.
-- **Verification instructions** — "add a final check", "double-check yourself", "re-read before sending". Agents verify their own work; ordering another pass over it buys passes, not quality. Two things are different and stay: naming the required evidence, and a reviewer that is part of the task's design — a separate agent with a different error profile, judging the artifact rather than the executor's account of it.
+- **Generic verification instructions** — "add a final check", "double-check yourself", "re-read before sending". Extra passes do not establish quality; use the evidence-based exception in Checks for a specific executor failure. Keep the required evidence and any reviewer that is part of the task's design, judging the artifact rather than the executor's account of it. Once required evidence passes, further checks need new changes, failures, or unresolved risks.
 - **Anything said twice.** One rule, one place.
 - **Contradictions.** Reconciling conflicting requirements consumes reasoning, and two rules that cannot both hold are worse than neither.
 - **Retellings of what the executor will load anyway** — a skill, plan, spec, contract, or repository instruction file its runtime already injects. Name the owner or artifact and supply only the deltas; do not tell an agent to read `AGENTS.md` or equivalent context when the target runtime loads it automatically.
-- **Pressure formatting** — caps, "CRITICAL", "you MUST". Written against under-triggering, now a cause of over-triggering.
+- **Pressure formatting** — caps, "CRITICAL", "you MUST" used for emphasis. State the actual condition and boundary; retain explicit prohibitions where safety or preservation requires them.
 - **Anti-laziness padding** — "be thorough", "when in doubt, use the tool".
 - **A prescribed line of reasoning.** A general direction outperforms a hand-written thinking plan.
 - **Filters that lower a review's yield** — "only report critical issues", "be conservative" are followed literally.

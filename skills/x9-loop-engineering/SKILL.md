@@ -60,15 +60,9 @@ Use [references/harvesting.md](references/harvesting.md) only after real runs ex
 
 ## Done
 
-- The design states why a loop is justified; an unqualified process is rejected or simplified.
-- The selected topology is the smallest one that satisfies the contract, and every additional node has a stated justification.
-- Every state transition, decision owner, stop condition, and irreversible gate is explicit.
-- Every load-bearing handoff has an explicit payload or artifact contract, receiving-side acceptance check, invalidation rule, and failure route.
-- Shared state and contended resources have explicit writers and merge or serialization rules.
-- When work is resumable, crash/resume preserves valid completed or partial work without relying on conversation memory.
-- A failed or changed dependency cannot leave downstream decisions silently accepted on stale evidence.
-- Selected retry and non-convergence budgets terminate honestly; recovery classes do not silently consume the wrong budget.
-- A failed verification route or exhausted budget yields an honest terminal status.
-- At least one representative success and one failure scenario were executed or clearly marked unverified.
-- For multi-node work, the run record explains consequential realized work, and shared graph-wide budgets exist only where fan-out, concurrency, or dynamic mutation creates shared risk.
-- When packaging was requested, the resulting Agent Skill preserves the validated workflow contract and passes `x9-skill-creator` checks.
+- The delivered workflow contract identifies the qualified outcome, selected topology,
+  applicable invariants, terminal statuses, and evidence for consequential decisions.
+- Validation records at least one representative success and one applicable failure
+  scenario as executed or unverified.
+- When packaging was requested, the resulting Agent Skill preserves this workflow
+  contract as its single design and passes `x9-skill-creator` checks.

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -16,6 +17,7 @@ INSERT = HERE / "insert_frontmatter.py"
 VALIDATE = HERE / "validate_okf.py"
 BOM = b"\xef\xbb\xbf"
 ACTOR = "x9-okf-docs/test"
+PRECISE_GENERATED_AT = "2020-01-01T00:00:00.123456789123+00:00"
 
 
 def run(*args):
@@ -108,6 +110,36 @@ def main():
         typed_result = run(VALIDATE, official, "--profile", "okf", "--types", "Metric")
         expect("type catalogs are explicit local policy", typed_result.returncode != 0 and "outside local profile catalog" in typed_result.stdout, typed_result)
 
+        temporal = official / "temporal.md"
+        temporal.write_text(
+            "---\ntype: Note\nstale_after: 2026-09-23T00:00:00Z\nsources:\n"
+            "  - resource: https://example.test/source\n"
+            "    last_modified: 2026-05-30T12:45:00+03:00\n---\n# Temporal\n",
+            encoding="utf-8",
+        )
+        temporal_result = run(VALIDATE, official, "--profile", "okf")
+        expect(
+            "official v0.2 accepts timezone-aware lifecycle and source datetimes",
+            temporal_result.returncode == 0,
+            temporal_result,
+        )
+        legacy_temporal = official / "legacy-temporal.md"
+        legacy_temporal.write_text(
+            "---\ntype: Note\nstale_after: '2026-09-23'\nsources:\n"
+            "  - resource: https://example.test/legacy\n"
+            "    last_modified: '2026-05-30'\n---\n# Legacy temporal values\n",
+            encoding="utf-8",
+        )
+        legacy_temporal_result = run(VALIDATE, official, "--profile", "okf")
+        expect(
+            "date-only lifecycle and source values require explicit migration instants",
+            legacy_temporal_result.returncode != 0
+            and "stale_after must be ISO 8601 with timezone" in legacy_temporal_result.stdout
+            and "sources[0].last_modified must be ISO 8601 with timezone" in legacy_temporal_result.stdout,
+            legacy_temporal_result,
+        )
+        legacy_temporal.unlink()
+
         computation = official / "calculation.md"
         computation.write_text("---\ntype: Attested Computation\n---\n# Computation\n", encoding="utf-8")
         computation_invalid = run(VALIDATE, official, "--profile", "okf")
@@ -179,7 +211,10 @@ def main():
         preserved_file = root / "preserved.md"
         preserved_file.write_text(
             f'---\ntype: Research Note\ntitle: Original\ndescription: Original description\ntags: [original, metadata]\n'
-            f'generated: {{"by": "{ACTOR}", "at": "2020-01-01T00:00:00+00:00"}}\n---\n# Preserved\n',
+            f'generated:\n  by: "{ACTOR}"\n  at: {PRECISE_GENERATED_AT}\n'
+            'sources:\n  - resource: https://example.test/precise\n'
+            '    last_modified: 2019-12-31T23:59:59.987654321+00:00\n'
+            '---\n# Preserved\n',
             encoding="utf-8",
         )
         (root / "AGENTS.md").write_text("# Config\n", encoding="utf-8")
@@ -218,10 +253,20 @@ def main():
         root_inventory_path = temp / "inventory.json"
         root_inventory = inventory(root, root_inventory_path)
         manifest = temp / "manifest.json"
+        doc_meta = meta("Body", "Primary byte-preservation fixture")
+        doc_meta["generated"] = {
+            "by": "process:untrusted-proposer",
+            "at": "1999-01-01T00:00:00+00:00",
+        }
+        preserved_meta = meta("Replacement", "Replacement fixture")
+        preserved_meta["generated"] = {
+            "by": "process:untrusted-proposer",
+            "at": "1999-01-01T00:00:00+00:00",
+        }
         write_manifest(manifest, {
-            "doc.md": meta("Body", "Primary byte-preservation fixture"),
+            "doc.md": doc_meta,
             "partial.md": meta("Partial", "Partial-header repair fixture", "Analysis"),
-            "preserved.md": meta("Replacement", "Replacement fixture"),
+            "preserved.md": preserved_meta,
         })
         self_declared_manifest = temp / "self-declared-manifest.json"
         forged_meta = meta("Body", "Forged provenance fixture")
@@ -256,6 +301,10 @@ def main():
         expect("BOM and CRLF body preserved", doc_bytes.startswith(BOM) and doc_bytes.endswith(body))
         expect("atomic replacement preserves file mode", (root / "doc.md").stat().st_mode & 0o777 == 0o640)
         expect("generated actor inserted", f'"by": "{ACTOR}"' in (root / "doc.md").read_text(encoding="utf-8-sig"))
+        expect(
+            "explicit actor replaces proposed provenance for a new generated field",
+            "process:untrusted-proposer" not in (root / "doc.md").read_text(encoding="utf-8-sig"),
+        )
         expect("legacy timestamp is not created for new v0.2 documents", "timestamp:" not in (root / "doc.md").read_text(encoding="utf-8-sig"))
         partial_text = (root / "partial.md").read_text(encoding="utf-8")
         expect(
@@ -263,9 +312,12 @@ def main():
             '"by": "x9-okf-docs/test"' in partial_text and '"at":' in partial_text,
         )
         expect(
-            "valid existing semantic metadata and provenance are preserved by default",
+            "inventory-manifest-apply preserves valid existing provenance source YAML",
             'title: "Original"' in preserved_file.read_text(encoding="utf-8")
-            and "2020-01-01T00:00:00+00:00" in preserved_file.read_text(encoding="utf-8"),
+            and f'generated:\n  by: "{ACTOR}"\n  at: {PRECISE_GENERATED_AT}\n'
+            in preserved_file.read_text(encoding="utf-8")
+            and "2019-12-31T23:59:59.987654321+00:00" in preserved_file.read_text(encoding="utf-8")
+            and "process:untrusted-proposer" not in preserved_file.read_text(encoding="utf-8"),
         )
         expect("curated v0.2 validates after insertion", run(VALIDATE, root, "--inventory", root_inventory_path).returncode == 0)
 
@@ -273,6 +325,7 @@ def main():
         inventory(root, replacement_inventory_path)
         replacement_manifest = temp / "replacement-manifest.json"
         write_manifest(replacement_manifest, {"preserved.md": meta("Replacement", "Replacement fixture")})
+        replacement_started_at = datetime.now().astimezone().replace(microsecond=0)
         replaced = run(
             INSERT,
             root,
@@ -284,13 +337,26 @@ def main():
             ACTOR,
             "--replace-existing-metadata",
         )
+        replacement_finished_at = datetime.now().astimezone().replace(microsecond=0)
         replaced_text = preserved_file.read_text(encoding="utf-8")
+        replacement_generated = re.search(
+            r'^generated: \{"by": "([^"]+)","at": "([^"]+)"\}$',
+            replaced_text,
+            re.MULTILINE,
+        )
+        replacement_generated_at = (
+            datetime.fromisoformat(replacement_generated.group(2))
+            if replacement_generated else None
+        )
         expect(
             "explicit replacement changes meaning and replaces operation provenance",
             replaced.returncode == 0
             and 'title: "Replacement"' in replaced_text
             and 'description: "Replacement fixture"' in replaced_text
-            and "2020-01-01T00:00:00+00:00" not in replaced_text,
+            and PRECISE_GENERATED_AT not in replaced_text
+            and replacement_generated is not None
+            and replacement_generated.group(1) == ACTOR
+            and replacement_started_at <= replacement_generated_at <= replacement_finished_at,
             replaced,
         )
 

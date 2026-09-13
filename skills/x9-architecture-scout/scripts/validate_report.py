@@ -68,6 +68,148 @@ def normalized_module_script(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def css_blocks(source: str) -> list[tuple[str, str]]:
+    """Return bounded top-level CSS blocks for the report's narrow CSS subset."""
+    blocks: list[tuple[str, str]] = []
+    start = 0
+    position = 0
+    quote: str | None = None
+    while position < len(source):
+        character = source[position]
+        if quote:
+            if character == quote:
+                quote = None
+            position += 1
+            continue
+        if character in {'"', "'"}:
+            quote = character
+            position += 1
+            continue
+        if character != "{":
+            position += 1
+            continue
+
+        prelude = source[start:position].strip()
+        body_start = position + 1
+        depth = 1
+        position = body_start
+        while position < len(source) and depth:
+            character = source[position]
+            if quote:
+                if character == quote:
+                    quote = None
+            elif character in {'"', "'"}:
+                quote = character
+            elif character == "{":
+                depth += 1
+            elif character == "}":
+                depth -= 1
+            position += 1
+        if depth:
+            raise ValueError("unclosed CSS block")
+        blocks.append((prelude, source[body_start : position - 1]))
+        start = position
+    if source[start:].strip():
+        raise ValueError("unsupported CSS outside a block")
+    return blocks
+
+
+def css_declarations(body: str) -> list[tuple[str, str]]:
+    """Split declarations without treating strings or function arguments as CSS."""
+    declarations = []
+    start = depth = 0
+    quote = None
+    for index, character in enumerate(body + ";"):
+        if quote:
+            if character == quote:
+                quote = None
+        elif character in {"'", '"'}:
+            quote = character
+        elif character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+        elif character == ";" and depth == 0:
+            name, separator, value = body[start:index].partition(":")
+            if separator:
+                declarations.append((name.strip().lower(), value.strip()))
+            start = index + 1
+    if quote or depth:
+        raise ValueError("unclosed CSS declaration")
+    return declarations
+
+
+def selector_specificity(selector: str, tag: str, attrs: dict[str, str]) -> tuple[int, int, int] | None:
+    """Match the simple compound selectors supported by the layout hook."""
+    if not re.fullmatch(r"(?:[a-zA-Z][\w-]*|\*)?(?:[.#][\w-]+)*", selector) or not selector:
+        raise ValueError("layout selectors must be simple compound selectors")
+    element = re.match(r"^[a-zA-Z][\w-]*", selector)
+    ids = re.findall(r"#([\w-]+)", selector)
+    classes = re.findall(r"\.([\w-]+)", selector)
+    if element and element[0].lower() != tag:
+        return None
+    if any(value != attrs.get("id") for value in ids) or not set(classes) <= class_set(attrs):
+        return None
+    return len(ids), len(classes), int(element is not None)
+
+
+LAYOUT_PROPERTIES = {"grid-template-columns", "grid-template", "grid", "all"}
+
+
+def has_narrow_report_grid_rule(css: str, nodes: list[tuple[str, dict[str, str]]]) -> bool:
+    """Resolve the supported cascade at the contract's 390px narrow viewport.
+
+    All accepted max-width conditions also apply below 390px. Unknown layout
+    selectors, nesting and shorthands fail closed; rendering remains separate.
+    """
+    winners: list[tuple[tuple[int, int, int, int, int], str] | None] = [None] * len(nodes)
+    responsive = [False] * len(nodes)
+    order = 0
+
+    def visit(source: str, media: bool = False) -> None:
+        nonlocal order
+        for selector, body in css_blocks(source):
+            if selector.startswith("@"):
+                # Non-layout at-rules cannot override the hook.
+                if not re.search(r"(?:^|[;{])\s*(?:grid(?:-template(?:-columns)?)?|all)\s*:", body, re.I):
+                    continue
+                match = re.fullmatch(
+                    r"@media\s+(?:screen\s+and\s+)?\(\s*max-width\s*:\s*(\d+(?:\.\d+)?)px\s*\)",
+                    selector, re.I,
+                )
+                if media or not match or not 390 <= float(match[1]) < 1280:
+                    raise ValueError("unsupported layout media condition")
+                visit(body, media=True)
+                continue
+            if "{" in body or "}" in body:
+                raise ValueError("nested CSS rules are unsupported")
+            declarations = [(name, value) for name, value in css_declarations(body) if name in LAYOUT_PROPERTIES]
+            if not declarations:
+                continue
+            for name, value in declarations:
+                order += 1
+                important = bool(re.search(r"!\s*important\s*$", value, re.I))
+                value = re.sub(r"!\s*important\s*$", "", value, flags=re.I).strip().lower()
+                for part in selector.split(","):
+                    for index, (tag, attrs) in enumerate(nodes):
+                        specificity = selector_specificity(part.strip(), tag, attrs)
+                        if specificity is None:
+                            continue
+                        if name != "grid-template-columns":
+                            raise ValueError("layout shorthands are unsupported on report-grid")
+                        priority = (int(important), *specificity, order)
+                        if winners[index] is None or priority >= winners[index][0]:
+                            winners[index] = priority, value
+                        if media and value == "1fr" and "report-grid" in re.findall(r"\.([\w-]+)", part):
+                            responsive[index] = True
+
+    try:
+        visit(css)
+    except ValueError:
+        return False
+    return bool(nodes) and all(responsive) and all(winner and winner[1] == "1fr" for winner in winners)
+
+
 class ReportParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -82,6 +224,8 @@ class ReportParser(HTMLParser):
         self.heading_parts: list[str] = []
         self.in_style = 0
         self.styles: list[str] = []
+        self.inline_styles: list[str] = []
+        self.report_grids: list[tuple[str, dict[str, str]]] = []
         self.scripts: list[dict[str, str]] = []
         self.script_stack: list[dict[str, str]] = []
         self.network_attrs: list[tuple[str, str, str]] = []
@@ -105,6 +249,9 @@ class ReportParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
+        duplicates = sorted(name for name, count in Counter(name.lower() for name, _ in attrs).items() if count > 1)
+        if duplicates:
+            self.errors.append(f"duplicate attributes on <{tag}>: {', '.join(duplicates)}")
         values = {name.lower(): value or "" for name, value in attrs}
         self.counts[tag] += 1
         if self.repo_depth and tag not in {"pre", "code"}:
@@ -113,6 +260,10 @@ class ReportParser(HTMLParser):
             self.stack.append(tag)
         if tag == "style":
             self.in_style += 1
+            if values.get("media", "").strip().lower() not in {"", "all", "screen"}:
+                self.errors.append("style blocks must apply to the screen")
+            if values.get("type", "").strip().lower() not in {"", "text/css"}:
+                self.errors.append("style blocks must use CSS")
         if tag in UNSAFE_ELEMENTS:
             self.errors.append(f"active or embedded element <{tag}> is not allowed")
         if tag == "meta" and values.get("http-equiv", "").strip().lower() == "refresh":
@@ -125,8 +276,10 @@ class ReportParser(HTMLParser):
             if name in NETWORK_CAPABLE_ATTRIBUTES:
                 self.network_attrs.append((tag, name, value))
             if name == "style":
-                self.styles.append(value)
+                self.inline_styles.append(value)
         classes = class_set(values)
+        if "report-grid" in classes:
+            self.report_grids.append((tag, values))
         if classes & FALLBACK_CLASSES and ("hidden" in classes or "hidden" in values):
             self.errors.append("fallback content must not use the hidden class or attribute")
         if classes & FALLBACK_CLASSES and re.search(r"(?:display\s*:\s*none|visibility\s*:\s*hidden)", values.get("style", ""), re.IGNORECASE):
@@ -283,21 +436,27 @@ class ReportParser(HTMLParser):
                 figure["fallback"][-1].append(data)
 
 
-def css_contract_errors(css: str) -> list[str]:
+def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inline_styles: list[str]) -> list[str]:
     errors: list[str] = []
-    if "\\" in css:
+    all_css = css + "\n" + "\n".join(inline_styles)
+    if "\\" in all_css:
         errors.append("CSS must not contain backslash escapes")
     compact = re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
-    if re.search(r"@import\b|url\s*\(", compact, re.IGNORECASE):
+    if re.search(r"@import\b|url\s*\(", re.sub(r"/\*.*?\*/", "", all_css, flags=re.DOTALL), re.IGNORECASE):
         errors.append("CSS must not load resources or use url()")
     for selector, declarations in re.findall(r"([^{}]+)\{([^{}]*)\}", compact, re.DOTALL):
         if any(re.search(rf"\b{re.escape(class_name)}\b", selector) for class_name in FALLBACK_CLASSES) and re.search(
             r"(?:display\s*:\s*none|visibility\s*:\s*hidden)", declarations, re.IGNORECASE
         ):
             errors.append("fallback content must not be hidden by CSS")
-    media = re.search(r"@media\s*\([^)]*max-width\s*:[^)]*\)\s*\{(?P<body>.*)", compact, re.IGNORECASE | re.DOTALL)
-    if not media or not re.search(r"grid-template-columns\s*:\s*1fr\b", media.group("body")):
-        errors.append("missing narrow one-column responsive rule")
+    if not has_narrow_report_grid_rule(compact, nodes):
+        errors.append("report-grid must resolve to one column through the supported narrow CSS rules")
+    for declarations in inline_styles:
+        try:
+            if any(name in LAYOUT_PROPERTIES for name, _ in css_declarations(re.sub(r"/\*.*?\*/", "", declarations, flags=re.DOTALL))):
+                errors.append("grid layout declarations must be in style blocks, not style attributes")
+        except ValueError:
+            errors.append("malformed inline CSS declaration")
     if not re.search(r"\.comparison-table[^}]*\{[^}]*display\s*:\s*(?:block|grid)", compact, re.IGNORECASE | re.DOTALL):
         errors.append("missing comparison reflow rule")
     if not re.search(r"\.diagram-container[^}]*\{[^}]*overflow-x\s*:\s*auto", compact, re.IGNORECASE | re.DOTALL):
@@ -441,7 +600,7 @@ def validate(path: Path) -> list[str]:
     ]
     if any(re.search(r"(?:@|/)latest(?:[/?#]|$)", url, re.IGNORECASE) for url in script_urls):
         errors.append("latest aliases are not allowed")
-    errors.extend(css_contract_errors("\n".join(parser.styles)))
+    errors.extend(css_contract_errors("\n".join(parser.styles), parser.report_grids, parser.inline_styles))
     return errors
 
 

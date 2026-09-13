@@ -31,7 +31,7 @@
     },
     {
       "id": "okf-documentation",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["opencode", "claude", "codex"],
       "kind": "skill",
       "level": "optional",
       "needed_for": "Saving or updating durable research.",

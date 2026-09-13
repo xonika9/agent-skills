@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import copy
+import contextlib
+import io
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from check_scene import compare_normalization_stability, main, validate_scene
+from check_scene import compare_normalization_stability, main, parse_args, validate_scene
 
 
 def common(element_id: str, element_type: str, x: int, y: int, width: int, height: int):
@@ -141,6 +143,43 @@ class ValidateSceneTests(unittest.TestCase):
         candidate["elements"][0]["type"] = "definitely-not-an-excalidraw-type"
         errors, _ = validate_scene(candidate)
         self.assertTrue(any("supported basic subset" in error for error in errors))
+
+    def test_rejects_invalid_common_scalar_types(self):
+        invalid_fields = {
+            "strokeColor": 42,
+            "backgroundColor": False,
+            "isDeleted": "false",
+            "locked": "false",
+            "frameId": 42,
+            "link": 42,
+        }
+        for field, invalid_value in invalid_fields.items():
+            with self.subTest(field=field):
+                candidate = scene()
+                candidate["elements"][0][field] = invalid_value
+                errors, _ = validate_scene(candidate)
+                self.assertTrue(
+                    any(f"left.{field} must be" in error for error in errors),
+                    errors,
+                )
+
+    def test_rejects_nonfinite_or_invalid_cli_numeric_bounds(self):
+        cases = (
+            ("--normalization-tolerance", "inf"),
+            ("--normalization-tolerance", "nan"),
+            ("--normalization-tolerance", "-1"),
+            ("--viewport-width", "inf"),
+            ("--viewport-width", "0"),
+            ("--viewport-height", "nan", "--viewport-width", "1600"),
+            ("--viewport-height", "0", "--viewport-width", "1600"),
+            ("--minimum-effective-font", "inf"),
+            ("--minimum-effective-font", "0"),
+        )
+        for arguments in cases:
+            with self.subTest(arguments=arguments):
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit):
+                        parse_args(["scene.excalidraw", *arguments])
 
     def test_rejects_bound_element_type_mismatch(self):
         candidate = scene()

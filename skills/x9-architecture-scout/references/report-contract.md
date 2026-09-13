@@ -29,7 +29,7 @@ These statuses answer different questions. A passing validator does not prove re
 
 ## Presentation and resources
 
-Use UTF-8, `<meta name="viewport" content="width=device-width, initial-scale=1">`, and responsive inline CSS. The validator requires these deterministic hooks, so include them literally (the breakpoint value and surrounding selector may differ):
+Use UTF-8, `<meta name="viewport" content="width=device-width, initial-scale=1">`, and responsive CSS in screen-applicable `<style>` blocks. The validator requires these deterministic hooks:
 
 ```css
 @media (max-width: 600px) {
@@ -40,7 +40,11 @@ Use UTF-8, `<meta name="viewport" content="width=device-width, initial-scale=1">
 .diagram-container { overflow-x: auto; }
 ```
 
-The `grid-template-columns: 1fr` declaration must be in a narrow `max-width` media rule. The `.comparison-table` rule must set `display` to `block` or `grid` for reflow. Only `.diagram-container` may provide horizontal scrolling; keep diagram labels and the textual equivalent outside that overflow region.
+For grid layout declarations, the checker accepts simple compound selectors (a tag, classes and IDs, optionally comma-separated) that match the actual `.report-grid` element. Include `.report-grid` explicitly in its one-column media rule. Use exactly `@media (max-width: Npx)` or `@media screen and (max-width: Npx)`, where `390 <= N < 1280`; these conditions cover the narrow render checkpoint and smaller widths. The winning `grid-template-columns` value must be `1fr`, accounting for declaration order, selector specificity and `!important` across all style blocks.
+
+Keep this layout hook in that supported CSS subset: descendant, sibling, attribute and pseudo-class selectors for grid declarations, nested or other conditional layout rules, inline grid declarations, and `grid`/`grid-template`/`all` resets on `.report-grid` are rejected. Migrate a rule such as `body main.report-grid { grid-template-columns: 1fr; }` to `main.report-grid { grid-template-columns: 1fr; }` inside the supported media rule, then inspect the rendered report. This deterministic contract is intentionally narrower than browser CSS support.
+
+The `.comparison-table` rule must set `display` to `block` or `grid` for reflow. Only `.diagram-container` may provide horizontal scrolling; keep diagram labels and the textual equivalent outside that overflow region.
 
 The only network-loaded resources are these exact pinned URLs:
 

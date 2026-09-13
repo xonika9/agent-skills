@@ -306,6 +306,20 @@ def validate_scene(
             if field in element and not _number(element[field]):
                 errors.append(f"{element_id}.{field} must be a finite number")
 
+        for field in ("strokeColor", "backgroundColor"):
+            if field in element and not isinstance(element[field], str):
+                errors.append(f"{element_id}.{field} must be a string")
+        for field in ("isDeleted", "locked"):
+            if field in element and type(element[field]) is not bool:
+                errors.append(f"{element_id}.{field} must be a boolean")
+        for field in ("frameId", "link"):
+            if (
+                field in element
+                and element[field] is not None
+                and not isinstance(element[field], str)
+            ):
+                errors.append(f"{element_id}.{field} must be a string or null")
+
         if _number(element.get("width")) and element["width"] < 0:
             errors.append(f"{element_id}.width must not be negative")
         if _number(element.get("height")) and element["height"] < 0:
@@ -715,8 +729,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     args = parser.parse_args(argv)
     if args.viewport_height is not None and args.viewport_width is None:
         parser.error("--viewport-height requires --viewport-width")
-    if args.normalization_tolerance < 0:
-        parser.error("--normalization-tolerance must not be negative")
+    if (
+        not math.isfinite(args.normalization_tolerance)
+        or args.normalization_tolerance < 0
+    ):
+        parser.error("--normalization-tolerance must be finite and not negative")
+    for option, value in (
+        ("--viewport-width", args.viewport_width),
+        ("--viewport-height", args.viewport_height),
+        ("--minimum-effective-font", args.minimum_effective_font),
+    ):
+        if value is not None and (not math.isfinite(value) or value <= 0):
+            parser.error(f"{option} must be finite and positive")
     if args.structural_only and args.normalization_result is not None:
         parser.error(
             "--structural-only cannot be combined with --normalization-result"

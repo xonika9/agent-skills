@@ -117,11 +117,128 @@ def main() -> int:
             "escaped CSS url": (report(extra='<style>.extra { background: u\\72l("diagram.svg"); }</style>'), False),
             "Mermaid source hidden by CSS": (report(extra='<style>.mermaid-source { display: none; }</style>'), False),
             "hidden diagram text equivalent": (report(extra='<style>.diagram-text-equivalent { visibility: hidden; }</style>'), False),
+            "one-column rule only outside narrow media": (
+                report(extra='<style>.report-grid { grid-template-columns: 1fr; }</style>').replace(
+                    '.report-grid { grid-template-columns: 1fr; } .comparison-table',
+                    '.report-grid { gap: 1rem; } .comparison-table',
+                ),
+                False,
+            ),
+            "one-column rule on unrelated selector inside narrow media": (
+                report().replace(
+                    '.report-grid { grid-template-columns: 1fr; } .comparison-table',
+                    '.unrelated { grid-template-columns: 1fr; } .comparison-table',
+                ),
+                False,
+            ),
+            "one-column rule on report-grid descendant": (
+                report().replace(
+                    '.report-grid { grid-template-columns: 1fr; } .comparison-table',
+                    '.report-grid .child { grid-template-columns: 1fr; } .comparison-table',
+                ),
+                False,
+            ),
+            "two-column rule beginning with one fraction": (
+                report().replace(
+                    'grid-template-columns: 1fr; } .comparison-table',
+                    'grid-template-columns: 1fr 1fr; } .comparison-table',
+                ),
+                False,
+            ),
+            "simple compound report-grid selector with important": (
+                report().replace(
+                    '.report-grid { grid-template-columns: 1fr; } .comparison-table',
+                    'main.report-grid { grid-template-columns: 1fr !important; } .comparison-table',
+                ),
+                True,
+            ),
+            "last declaration overrides narrow layout": (
+                report().replace('grid-template-columns: 1fr;', 'grid-template-columns: 1fr; grid-template-columns: 1fr 1fr;'), False,
+            ),
+            "later stylesheet overrides narrow layout": (
+                report(extra='<style>.report-grid { grid-template-columns: 1fr 1fr; }</style>'), False,
+            ),
+            "earlier more specific desktop rule wins": (
+                report().replace('.report-grid { display:grid;', 'main.report-grid { display:grid;'), False,
+            ),
+            "earlier important desktop rule wins": (
+                report().replace('grid-template-columns: 2fr 1fr;', 'grid-template-columns: 2fr 1fr !important;'), False,
+            ),
+            "important narrow declaration resists later normal declaration": (
+                report().replace('grid-template-columns: 1fr;', 'grid-template-columns: 1fr !important; grid-template-columns: 2fr 1fr;'), True,
+            ),
+            "more specific narrow rule resists later general rule": (
+                report(extra='<style>.report-grid { grid-template-columns: 2fr 1fr; }</style>').replace(
+                    '.report-grid { grid-template-columns: 1fr;', 'main.report-grid { grid-template-columns: 1fr;'), True,
+            ),
+            "earlier declaration restored to one column": (
+                report().replace('grid-template-columns: 1fr;', 'grid-template-columns: 2fr 1fr; grid-template-columns: 1fr;'), True,
+            ),
+            "layout shorthand resets columns": (
+                report(extra='<style>.report-grid { grid: auto / 1fr 1fr; }</style>'), False,
+            ),
+            "inline layout overrides stylesheet": (
+                report().replace('<main class="report-grid">', '<main class="report-grid" style="grid-template-columns: 1fr 1fr">'), False,
+            ),
+            "ordinary inline style preserves stylesheet parsing": (
+                report(extra_body='<p style="color: red">Note</p>'), True,
+            ),
+            "inline resource remains forbidden": (
+                report(extra_body='<p style="background: url(https://example.test/image)">Note</p>'), False,
+            ),
+            "layout hidden in unsupported at-rule": (
+                report(extra='<style>@supports (display: grid) { .report-grid { grid-template-columns: 1fr 1fr; } }</style>'), False,
+            ),
+            "selector must match actual grid element": (
+                report().replace('.report-grid { grid-template-columns: 1fr;', 'article.report-grid { grid-template-columns: 1fr;'), False,
+            ),
+            "selector requires absent class": (
+                report().replace('.report-grid { grid-template-columns: 1fr;', '.report-grid.missing { grid-template-columns: 1fr;'), False,
+            ),
+            "class names remain case sensitive": (
+                report().replace('.report-grid { grid-template-columns: 1fr;', '.REPORT-GRID { grid-template-columns: 1fr;'), False,
+            ),
+            "layout in string is not a declaration": (
+                report().replace('grid-template-columns: 1fr;', 'content: "; grid-template-columns: 1fr;";'), False,
+            ),
+            "selector list uses matching specificity only": (
+                report().replace('.report-grid { grid-template-columns: 1fr;', '#absent.report-grid, .report-grid { grid-template-columns: 1fr;').replace(
+                    '.report-grid { display:grid;', 'main.report-grid { display:grid;'), False,
+            ),
+            "missing report-grid node": (report().replace('<main class="report-grid">', '<main>'), False),
+            "unclosed stylesheet block": (report(extra='<style>.other { color: red;</style>'), False),
+            "stylesheet only applies to print": (report().replace('<style>', '<style media="print">'), False),
+            "stylesheet has a non-CSS type": (report().replace('<style>', '<style type="text/plain">'), False),
+            "stylesheet explicitly applies to screen": (report().replace('<style>', '<style media="screen" type="text/css">'), True),
+            "duplicate source conceals unapproved script": (
+                report().replace(f'<script src="{TAILWIND_URL}">', f'<script src="https://example.test/unapproved.js" SRC="{TAILWIND_URL}">'), False,
+            ),
+            "duplicate style conceals inline columns": (
+                report().replace('<main class="report-grid">', '<main class="report-grid" style="grid-template-columns: 2fr 1fr" STYLE="color:red">'), False,
+            ),
+            "duplicate class conceals absent report-grid": (
+                report().replace('<main class="report-grid">', '<main class="other" CLASS="report-grid">'), False,
+            ),
             "Mermaid source hidden by class": (report().replace('class="mermaid-source"', 'class="mermaid-source hidden"'), False),
             "Mermaid source hidden by attribute": (report().replace('class="mermaid-source"', 'class="mermaid-source" hidden'), False),
             "self-closing void metadata": (report().replace('<meta charset="utf-8">', '<meta charset="utf-8" />'), True),
             "mismatched structure status": (report(structure_status="FAIL"), False),
         }
+        for condition, passing in [
+            ('screen and (max-width: 760px)', True),
+            ('(max-width: 390px)', True),
+            ('(max-width: 760.5px)', True),
+            ('print and (max-width: 760px)', False),
+            ('not all and (max-width: 760px)', False),
+            ('(max-width: 0px)', False),
+            ('(max-width: -1px)', False),
+            ('(max-width: 1px)', False),
+            ('(max-width: 1280px)', False),
+            ('(max-width: 40rem)', False),
+            ('(min-width: 700px) and (max-width: 600px)', False),
+            ('(max-width: 600px), print', False),
+        ]:
+            cases['media ' + condition] = (report().replace('(max-width: 600px)', condition), passing)
         for index, (label, (contents, passing)) in enumerate(cases.items()):
             path = root / f"case-{index}.html"
             path.write_text(contents, encoding="utf-8")
