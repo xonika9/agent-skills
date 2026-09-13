@@ -48,12 +48,17 @@ parent task. Avito work is sequential even when the rest of the research is dele
 1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic
    operation. An explicit request to open, inspect, or operate a browser UI overrides
    this preference.
-2. When the target hostname matches the [`chrome-devtools` MCP allowlist](#chrome-devtools-mcp-allowlist),
-   use the runtime's MCP route: OpenCode uses the live `chrome-devtools` target in its
-   current tool catalog without inferring a profile; Claude Code and Codex use MCP
-   against the verified Edge profile. This route overrides the runtime default and an
-   explicit in-app selection. If MCP cannot attach or complete the operation, continue
-   directly to the `agent-edge` fallback under the shared unattended-Edge condition.
+2. Resolve the allowlist branch before initializing any browser controller. When the
+   target hostname matches the
+   [`chrome-devtools` MCP allowlist](#chrome-devtools-mcp-allowlist), use the runtime's
+   MCP route: OpenCode uses the live `chrome-devtools` target in its current tool catalog
+   without inferring a profile; Claude Code and Codex use MCP against the verified Edge
+   profile. Before declaring MCP unavailable, inspect both the directly exposed and
+   lazily discoverable live tool catalog; absence from the primary tool list is not
+   evidence that the MCP is unavailable. This route overrides the runtime default and
+   an explicit in-app selection. If MCP cannot attach or complete the operation,
+   continue directly to the `agent-edge` fallback under the shared unattended-Edge
+   condition.
 3. In Claude Code or Codex, use the runtime's in-app browser immediately when the user
    explicitly requests it. That explicit choice is sticky: do not substitute Edge or
    another browser after an authentication or connection failure unless the user
@@ -173,9 +178,17 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 
 ## Codex
 
-Use the live browser-control tool instructions as the API owner. The current desktop
-surface is `mcp__cua_repl.js`; read its entry-point contract before initializing it,
-then use only the `cua` APIs documented by that tool and its returned documentation.
+Resolve the hostname and its allowlist branch before calling any Codex browser-control
+tool. For an allowlisted hostname, inspect the live lazy tool catalog for
+`mcp__chrome_devtools__list_pages` and the related `mcp__chrome_devtools__*` tools. In
+the current Codex runtime, this catalog is available as `ALL_TOOLS` inside
+`functions.exec`. When the tools are present, begin with
+`mcp__chrome_devtools__list_pages`; do not initialize `mcp__cua_repl` on this branch.
+
+When the selected branch is the in-app browser or Edge extension, use the live
+browser-control tool instructions as the API owner. The current desktop surface for
+those branches is `mcp__cua_repl.js`; read its entry-point contract before initializing
+it, then use only the `cua` APIs documented by that tool and its returned documentation.
 If that surface is absent, discover the installed browser controller rather than
 assuming a skill name or initialization method from another Codex version.
 
@@ -191,8 +204,8 @@ assuming a skill name or initialization method from another Codex version.
   A route that cannot preserve the required profile or focus is unavailable for that
   task and follows the permitted fallback chain.
 - The Codex MCP route uses `~/.codex/config.toml` and the shared focus-safe rules.
-  Outside the earlier exceptions, enter it only after the Edge extension remains
-  unavailable following its documented troubleshooting.
+  It is primary for allowlisted hostnames. Outside the allowlist, enter it only after
+  the Edge extension remains unavailable following its documented troubleshooting.
 - If MCP tools are absent after Edge is running, restart Codex once. Use `agent-edge`
   only under the shared unattended-Edge condition.
 
