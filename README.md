@@ -106,7 +106,7 @@ It also compares the current harness's user configuration with sanitized, opinio
 
 #### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
 
-Find and edit notes in the intended vault, preserve links when moving files, and work with properties, Bases, and Canvas. The skill follows your existing organization. It discovers the installed Obsidian CLI when available and distinguishes filesystem checks from app validation and sync delivery.
+Find, audit, and edit notes in the intended vault, preserve links when moving files, and work with properties, Bases, and Canvas. Audits separate structural findings from repairs, and coordinated edits stop when a target changed after inspection. The skill follows your existing organization, confines internal paths to the selected vault, and distinguishes filesystem checks from app validation and sync delivery.
 
 ### Research and personal browser automation
 

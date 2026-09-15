@@ -4,11 +4,25 @@
 
 ### Highlights
 
+- `x9-obsidian` now audits vault health separately from repair, confines internal paths to the selected vault, detects stale coordinated edits, checks Canvas geometry, and keeps remote-preview validation within authorized network scope.
+
+- `x9-diagrams` now recommends prose or a table when either answers more directly, removes diagram elements that do not contribute to the stated question, and treats indistinguishable connector paths as a visual failure.
+
 ### Install / update
+
+- Update `x9-obsidian` to receive the audit and path-safety guidance; existing vault structure, metadata, and settings remain unchanged.
+
+- Update `x9-diagrams` to receive the refined medium-selection, removal, and connector-traceability guidance; existing native diagram files remain unchanged.
 
 ### Compatibility
 
+- Vault audits use a verified Obsidian CLI when available and otherwise report bounded filesystem evidence. The change adds no runtime dependency or required vault convention.
+
+- The shared diagram method remains format-independent and adds no runtime dependency or new delivery format.
+
 ### Breaking changes
+
+None.
 
 ## 3.3.0 - 2026-09-13
 

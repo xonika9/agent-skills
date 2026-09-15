@@ -4,11 +4,15 @@ Use this reference for decisions shared by Excalidraw, Mermaid, and draw.io. For
 
 ## Start with one question and one path
 
+When the delivery medium is open, compare the diagram with a short paragraph or table. Recommend the medium that answers the question more directly.
+
 Write the one-sentence question the diagram answers. Rank content as:
 
 1. primary: necessary to answer the question in the declared delivery mode;
 2. secondary: useful explanation at normal reading or editing scale;
 3. detail: better placed in a focused view, note, or linked artifact.
+
+For a new diagram or an explicitly authorized redesign, remove or merge any node, connector, or label whose absence leaves that answer intact. Do not retain decoration merely to fill space.
 
 For a revision, preserve the existing view type, dominant reading direction, canvas orientation, major topology, node identity, and meaningful boundaries. A request to review, fix, polish, or improve does not authorize changing them; only an explicit redesign request does.
 
@@ -55,6 +59,7 @@ Use a connector when the relationship must be followed; position alone is not en
 
 - Follow the dominant reading direction for the main path.
 - Give fan-out and convergence their own visual lanes.
+- Keep every connector individually traceable from source to target. Do not overlap routes or reuse an attachment point when that makes relationships indistinguishable; if automatic layout does so, revise the source or split the view.
 - Keep connectors out of unrelated nodes, text, and boundary headings.
 - Minimize crossings and keep labels away from intersections.
 - Use short relationship labels in clear connector space.

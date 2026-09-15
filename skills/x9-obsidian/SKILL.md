@@ -1,6 +1,6 @@
 ---
 name: x9-obsidian
-description: Use when working with an Obsidian vault or its notes, links, embeds, properties, Bases, or Canvas — «найди заметку в Obsidian», «переименуй заметку и сохрани ссылки», "edit this vault", "fix this .base", "update this .canvas". Do not use for ordinary Markdown outside Obsidian, choosing a personal productivity system, research itself, or generic diagram design.
+description: Use when finding, auditing, or safely editing content in an Obsidian vault — notes, links, embeds, properties, Bases, or Canvas; includes «найди заметку», «проверь битые ссылки», «переименуй и сохрани ссылки», "audit this vault", "fix this .base", and "update this .canvas". Do not use for ordinary Markdown outside Obsidian, choosing a personal productivity system, research itself, or generic diagram design.
 ---
 
 # Obsidian
@@ -9,9 +9,11 @@ Operate on the intended vault while preserving its links, structure, and local c
 
 ## Target and authority
 
-Resolve the vault from the user's request, workspace, and available local configuration. A parent directory may contain several vaults, independent Git repositories, and different sharing boundaries; establish the actual vault root and target file before operating. Discover applicable nested instructions when entering a target subtree outside the already-loaded workspace context. Ask only if the remaining ambiguity changes the target or authority.
+Resolve the vault from the user's request, workspace, and available local configuration. A parent directory may contain several vaults, independent Git repositories, and different sharing boundaries; establish the actual vault root and target file before operating. An explicit absolute path may identify that root or a target. Discover applicable nested instructions when entering a target subtree outside the already-loaded workspace context. Ask only if the remaining ambiguity changes the target or authority.
 
-A read or audit request authorizes a report. An edit request authorizes its safe local changes; broader reorganization, deletion, publication, plugin installation, and sync configuration require their own authorization. Do not turn an approved edit into another approval ritual. If permission is pending, prepare the concrete diff or move map and continue independent authorized work; elapsed time is not approval. Never delete archives or history as an organizational shortcut.
+After selection, canonicalize the vault root and identify operation targets by vault-relative paths. Preserve link literals in the vault's established format; when resolving one, normalize `.` and `..` from its applicable base, do not expand a leading `~` as a home shortcut, resolve every symlink or junction component, and require the result to remain inside the root. Reject escapes and destination collisions with a different entry after Unicode normalization and case folding. A case-only rename of the source needs a verified app-aware operation or a recoverable intermediate name rather than treating the source itself as a collision.
+
+A read request authorizes a report. An edit request authorizes its safe local changes; broader reorganization, deletion, publication, plugin installation, and sync configuration require their own authorization. Do not turn an approved edit into another approval ritual. If permission is pending, prepare the concrete diff or move map and continue independent authorized work; elapsed time is not approval. Never delete archives or history as an organizational shortcut.
 
 Keep personal facts, folder choices, task systems, and sharing policies in the vault's instructions or configuration. Do not impose a taxonomy, new metadata scheme, or folder migration. Git exclusions do not establish sync exclusions. A move across vaults or sharing boundaries needs an explicit destination and access scope; do not infer those from a shared parent path.
 
@@ -21,11 +23,13 @@ Start with filenames, a relevant index, or bounded search results, then read the
 
 Use the [CLI adapter](references/cli.md) when Obsidian can supply resolved links or app-visible behavior. Filesystem tools remain suitable for bounded search and text edits. Resolve duplicate basenames with exact vault-relative paths; an alias is display metadata, not evidence that two files are interchangeable. Preserve the established Markdown-link or wikilink style.
 
+For vault health checks, load [vault audits](references/audit.md). It owns audit scope, finding semantics, evidence, and the boundary between diagnosis and repair.
+
 ## Edit notes
 
-Read the current target immediately before a write. Use a narrow patch against that content, preserve unrelated properties and formatting, and detect intervening changes before replacing a whole file. If the user or sync changed the source, rebase the edit on the fresh version; do not overwrite a conflict copy or dismiss it as a duplicate. A failed write with an uncertain result requires a fresh read before retrying, especially for append operations.
+Read the current target immediately before a write. Use a narrow patch against that content, preserve unrelated properties and formatting, and detect intervening changes before replacing a whole file. For one coordinated multi-file change, record an exact content snapshot or hash for every dependent target after the final read and verify all of them before the first write; one writer applies the set. If the user, sync, or another writer changed any target, invalidate the set and rebase it on fresh content rather than mixing old and new assumptions. Portable file edits are not an atomic transaction: if a mismatch or failure appears after some writes, stop dependent writes, preserve the current files, and report the partial changed set before reconciling from fresh state. Do not overwrite a conflict copy or dismiss it as a duplicate. A failed write with an uncertain result requires a fresh read before retrying, especially for append operations.
 
-Load [Markdown and properties](references/markdown.md) for link, embed, heading, block, or property edits. Keep heading and block identifiers stable unless changing them is part of the task: callers can depend on those anchors. Requested prose edits do not authorize wholesale metadata normalization.
+Load [Markdown and properties](references/markdown.md) for link, embed, heading, block, or property edits.
 
 For a rename or move, load [link-preserving moves](references/moves.md) before mutation. For `.base` views or `.canvas` scenes, use [structured formats](references/formats.md). Those formats are not ordinary Markdown files.
 

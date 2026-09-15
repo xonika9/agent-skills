@@ -1,6 +1,6 @@
 # Link-preserving moves
 
-A move is complete only when the requested destination and affected references agree. Before mutation, record source and destination paths, collisions, and an inventory of incoming references plus relative outgoing references whose meaning may change. Include note links, embeds, heading/block anchors, relevant property links, Canvas file/background references, and known path-based queries or configuration. Also record existing unresolved references so they are not attributed to this operation.
+A move is complete only when the requested destination and affected references agree. Apply the main skill's root-confinement contract to the source and destination before mutation. Record both paths and an inventory of incoming references plus relative outgoing references whose meaning may change. Include note links, embeds, heading/block anchors, relevant property links, Canvas file/background references, and known path-based queries or configuration. Also record existing unresolved references so they are not attributed to this operation.
 
 Prefer the installed CLI's move/rename operation. The [official CLI documentation](https://obsidian.md/help/cli) makes automatic internal-link updates conditional on the vault setting **Automatically update internal links**. Establish its value before relying on those updates. Do not change the setting silently. App-aware renaming still does not prove that arbitrary plugin queries, scripts, or external references were rewritten.
 
