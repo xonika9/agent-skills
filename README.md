@@ -180,7 +180,7 @@ It only applies when the earlier answer is available in the same thread. If the 
 
 #### [`x9-diagrams`](skills/x9-diagrams/SKILL.md)
 
-Choosing the diagram type and choosing its file format are different decisions. This skill first identifies the relationship the visual must explain, then selects Excalidraw, Mermaid, or draw.io from the delivery constraints. The shared method controls the question, audience, reading direction, hierarchy, density, boundaries, labels, routing, and the point where one overloaded diagram should split.
+Choosing the diagram type and choosing its file format are different decisions. When the medium is open, this skill first checks whether a short paragraph or table would answer more directly. If a diagram is warranted, it identifies the relationship the visual must explain, then selects Excalidraw, Mermaid, or draw.io from the delivery constraints. The shared method controls the question, audience, reading direction, hierarchy, density, boundaries, labels, routing, and the point where one overloaded diagram should split.
 
 Each route produces native editable source: `.excalidraw` JSON with checked bindings and current fonts, Mermaid text validated by the target renderer, or `.drawio` XML with pages, layers, containers, geometry, and resolvable connections. Structural validity and visual quality are separate gates, so completion requires a compatible render or editor inspection; unavailable native proof is reported as `DEGRADED`.
 

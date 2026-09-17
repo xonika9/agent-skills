@@ -4,20 +4,30 @@
 
 ### Highlights
 
-- `x9-obsidian` now audits vault health separately from repair, confines internal paths to the selected vault, detects stale coordinated edits, checks Canvas geometry, and keeps remote-preview validation within authorized network scope.
+### Install / update
 
+### Compatibility
+
+### Breaking changes
+
+## 3.4.0 - 2026-09-17
+
+### Highlights
+
+- `x9-browser-session` now resolves allowlisted hosts before initializing a controller and checks lazily discoverable live tools before declaring the `chrome-devtools` MCP route unavailable.
+- `x9-obsidian` now audits vault health separately from repair, confines internal paths to the selected vault, detects stale coordinated edits, checks Canvas geometry, and keeps remote-preview validation within authorized network scope.
 - `x9-diagrams` now recommends prose or a table when either answers more directly, removes diagram elements that do not contribute to the stated question, and treats indistinguishable connector paths as a visual failure.
 
 ### Install / update
 
+- Update `x9-browser-session` to receive the corrected allowlist and MCP-discovery order; existing browser profiles and controller configuration remain unchanged.
 - Update `x9-obsidian` to receive the audit and path-safety guidance; existing vault structure, metadata, and settings remain unchanged.
-
 - Update `x9-diagrams` to receive the refined medium-selection, removal, and connector-traceability guidance; existing native diagram files remain unchanged.
 
 ### Compatibility
 
+- OpenCode, Claude Code, and Codex retain their existing browser surfaces and fallback routes; the change only clarifies when the allowlisted MCP branch is selected and how its live tools are discovered.
 - Vault audits use a verified Obsidian CLI when available and otherwise report bounded filesystem evidence. The change adds no runtime dependency or required vault convention.
-
 - The shared diagram method remains format-independent and adds no runtime dependency or new delivery format.
 
 ### Breaking changes
