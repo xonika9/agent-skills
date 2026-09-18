@@ -6,7 +6,7 @@
     "compound-engineering@compound-engineering-plugin": true
   },
   "env": {
-    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "375000"
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "450000"
   },
   "model": "opus[1m]",
   "modelSettings": {
