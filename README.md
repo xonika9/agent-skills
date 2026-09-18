@@ -142,11 +142,11 @@ For the current parent session's own children it keeps the native `subagent` rou
 
 #### [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md)
 
-Use this when you want resistance, not another enthusiastic brainstorm. The skill sends a neutral brief to independent Claude and GPT critics. The main agent then combines agreements, disagreements, fatal assumptions, cheaper alternatives, and the quickest tests that could prove the idea wrong.
+Use this when you want resistance, not another enthusiastic brainstorm. The skill sends a neutral brief to independent Claude and GPT critics, then treats their responses as private working material rather than showing separate critic reports.
 
-It also turns the upheld findings into a self-contained stronger proposal and maps every material change back to the problem it addresses. The default uses one critic from each provider. Use `claude` or `gpt` for one critic, or `full` for a deeper panel.
+The result is a concise decision aid: a recommendation, grouped changes covering every material issue, a self-contained stronger proposal, and one next step with a pass/fail signal. Critics have no arbitrary finding limit; brevity comes from synthesis rather than discarded objections. The default uses one critic from each provider. Use `claude` or `gpt` for one critic, or `full` for a deeper panel.
 
-Route names stay the same when models change. Current model selections live in the skill's [Model defaults](skills/x9-idea-critic/SKILL.md#model-defaults) section. The GPT route from Claude Code uses `x9-codex-delegation`.
+Route names stay the same when models change. The two current model selections live in the skill's [`config.json`](skills/x9-idea-critic/config.json); adapters read them instead of pinning their own defaults. The GPT route from Claude Code uses `x9-codex-delegation`.
 
 #### [`x9-decision-map`](skills/x9-decision-map/SKILL.md)
 

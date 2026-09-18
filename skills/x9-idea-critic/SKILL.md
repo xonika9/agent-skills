@@ -31,25 +31,23 @@ Before dispatch, collect the load-bearing evidence into one sealed packet. Give 
 - the proposal in neutral language;
 - intended user/outcome and observable success criterion;
 - known constraints and an evidence packet containing the relevant content or excerpt, its source path or URL as provenance, retrieval time when freshness matters, whether the packet includes the full source or an excerpt, and any extraction limits;
-- the critic's job: identify invalidating assumptions, failure modes, relevant competition, a cheaper or simpler path to the same outcome, the most likely practical cause of failure, and the cheapest disconfirming tests;
-- required output: `KILLER`, `SERIOUS`, `MINOR`, evidence/uncertainty, and a verdict.
+- the critic's job: identify the few issues most likely to change the decision, the most likely practical cause of failure, a cheaper or simpler path to the same outcome, and the cheapest disconfirming test;
+- required output: a `STOP`, `REVISE`, `PROCEED`, or `NOT_PROVEN` recommendation, followed by every distinct issue that could materially change the decision, rewritten proposal, or next action; prioritize them by impact, and for each state the evidence or uncertainty and the change or test it warrants.
 
 For `full`, append exactly one declared lens to each critic's job; the lens is the only per-critic difference. A provenance path or URL identifies the supplied evidence but does not authorize the critic to read beyond the packet. Do not put credentials, secret values, or irrelevant private content in it.
 
-Exclude advocacy and solution-selling from the critic's role, but do not omit factual context that would make the critique a straw man. Critics work only from the sealed packet and must identify evidence gaps instead of searching for more context, using tools, or delegating.
+Exclude advocacy, solution-selling, compliments, generic risk lists, and restatements of the proposal from the critic's role, but do not omit factual context that would make the critique a straw man. Critics work only from the sealed packet and must identify evidence gaps instead of searching for more context, using tools, or delegating.
 
-## Model defaults
+## Model configuration
 
-This table owns the current model selections. Adapters consume it rather than pinning models independently; changing a model does not rename a route or mode.
+Before dispatch, read [`config.json`](config.json). Its two values are the sole source of default model selections:
 
-| Route | Model selector | OpenCode native agent |
-|---|---|---|
-| Claude | `fable` | Not needed; uses Claude CLI |
-| GPT | `gpt-6-astra` | `astra-high` |
+- `claude_model` is the selector passed to Claude CLI;
+- `gpt_model` is the OpenAI model selector resolved through the active runtime's live model catalog.
 
-Every critic runs at `high` effort. An official Claude CLI alias follows the service's current model in that alias's family, while an exact model ID stays pinned. These skill-specific selections override inherited model defaults, not higher-priority runtime restrictions or explicit user model choices.
+Every critic runs at `high` effort, which remains a skill invariant rather than a configurable value. An official Claude CLI alias follows the service's current model in that alias's family, while an exact model ID stays pinned. These skill-specific selections override inherited model defaults, not higher-priority runtime restrictions or explicit user model choices.
 
-When replacing a model, change this table and confirm availability through the selected adapter. For OpenCode, the named agent must also be configured for that model and effort on every target machine; editing the skill does not update runtime configuration. If the agent ID changes, keep the component check in `references/onboarding.json` synchronized. Existing model-specific agents may remain for other tasks.
+Change only `config.json` to replace either default model. Do not mirror its values in adapters or onboarding declarations. Confirm the configured selector and `high` effort through the selected adapter before each dispatch; editing the skill does not install a model or create a runtime agent.
 
 ## Runtime routes
 
@@ -57,36 +55,29 @@ When replacing a model, change this table and confirm availability through the s
 - **From Codex:** read [the Codex adapter](references/codex.md).
 - **From OpenCode:** read [the OpenCode adapter](references/opencode.md).
 
-Every adapter must confirm that the selected model and effort controls are available. An explicit user-selected Claude or GPT model replaces that route's default only when live discovery confirms it; otherwise fail that route rather than silently substituting another model or provider. Record the requested selector and the actual model when reported. An accepted runtime selector is evidence that the control was applied; when the runtime omits post-run effective-model or effort telemetry, record that property as `NOT_PROVEN` without failing an otherwise successful route.
+Every adapter must confirm that the selected model and effort controls are available. An explicit user-selected Claude or GPT model replaces that route's default only when live discovery confirms it; otherwise fail that route rather than silently substituting another model or provider. Keep the requested selector and actual model as execution evidence, not as a user-facing section unless a mismatch or failure affects the recommendation. An accepted runtime selector is evidence that the control was applied; when the runtime omits post-run effective-model or effort telemetry, record that property as `NOT_PROVEN` without failing an otherwise successful route.
 
 ## Failure and synthesis
 
 - Retry a failed route once only when the failure is transient and the retry changes something concrete.
-- Judge completeness against the selected mode. A successful `claude` or `gpt` run is `COMPLETE`; it is not degraded merely because the user requested one critic.
-- In default mode, one missing route yields `DEGRADED`. In `full`, a missing requested provider or lens yields `DEGRADED`.
-- If every requested route fails or the orchestrator cannot assemble a sufficient packet of load-bearing evidence, return `BLOCKED` with verdict `NOT_PROVEN`; do not manufacture a substantive verdict from the orchestrator's prior beliefs.
-- Keep attribution: show which critic raised each invalidating point and whether the other raised it separately. Cross-provider agreement supports the critique but is not independent factual evidence.
-- Resolve duplicate wording, not disagreement. Surface material conflicts and judge them against evidence.
-- Keep the synthesis concise by grouping overlap and separating required changes from optional improvements, not by dropping findings or dependencies that could change the verdict.
-- Critics own diagnosis; the orchestrator owns the post-critique rewrite. After resolving the findings, turn them into the strongest defensible next version of the idea rather than stopping at recommendations.
-- Base the rewrite only on findings upheld during synthesis and available evidence. Preserve the intended outcome and success criterion unless they were invalidated; change the intended user, scope, mechanism, assumptions, or delivery model where necessary.
+- Judge completeness against the selected mode. A successful requested route is complete; in default mode one missing route is degraded, and in `full` any missing provider/lens pair is degraded.
+- If every requested route fails or the orchestrator cannot assemble a sufficient evidence packet, the result is blocked and not proven; do not manufacture a recommendation from prior beliefs.
+- Treat critic responses as private working material. Do not paste them, summarize them route by route, or preserve their structure in the user-facing answer.
+- Test each objection against the evidence packet. Discard repetition, unsupported speculation, generic advice, and points that would not change the decision, proposal, or next action.
+- Do not impose a numeric limit on material objections. Compression belongs in synthesis: group related findings without dropping any upheld issue that could change the recommendation or rewrite.
+- Resolve duplicate wording, not disagreement. Mention a disagreement only when it materially changes the recommendation or the test needed to decide.
+- Convert each retained issue into a concrete change to the proposal. Critics own diagnosis; the orchestrator owns prioritization, synthesis, and the rewritten proposal.
+- Base the rewrite only on upheld issues and available evidence. Preserve the intended outcome and success criterion unless invalidated; change the intended user, scope, mechanism, assumptions, or delivery model where necessary.
 
-## Output
+## User-facing answer
 
-1. Status: `COMPLETE`, `DEGRADED`, or `BLOCKED`.
-2. Verdict: `KILL`, `REVISE`, `SURVIVES`, or `NOT_PROVEN` when blocked.
-3. Invalidating findings with evidence and attribution.
-4. Serious/minor risks.
-5. For a substantive verdict, the best defensible next version: a self-contained rewritten proposal covering its intended user, outcome, operating mechanism, scope, and success criterion. It must be understandable without rereading the critique.
-6. Change map connecting every material difference from the original proposal to the upheld finding or evidence that justifies it. Group overlapping work, show dependencies, and distinguish changes required by `KILLER` or `SERIOUS` findings from optional improvements, accepted risks, or deferred work associated with `MINOR` findings.
-7. Cheapest tests that could falsify the remaining assumptions.
-8. Missing evidence and unresolved disagreement.
-9. Questions, only when needed. Ask the smallest sufficient set of questions whose answers could materially change the verdict, rewritten proposal, or next action. Do not ask rhetorical questions or repeat information already available. Omit this section when no user input is needed.
-10. What to do next. End with:
-    - `Decision:` state whether to stop the original proposal, adopt the rewritten proposal, proceed with the hardened proposal, or defer judgment.
-    - `Do now:` name one concrete immediate action.
-    - `Then:` state the observable result that permits proceeding or requires revising or killing the proposal.
+Write for the person deciding what to do, not for another agent auditing the critique. Use the user's language and natural headings rather than internal status or severity codes.
 
-The final section must be understandable without reading the full critique. When unanswered questions block a defensible decision, set `Do now` to answering those questions and explain which answer would change the direction. Otherwise, choose the most valuable falsification test or the first implementation action. For `KILL`, do not recommend implementing the original proposal. For `REVISE`, treat the rewrite as the next candidate, not as proven. For `SURVIVES`, proceed unless a remaining assumption makes a named test a prerequisite. For `NOT_PROVEN`, obtain the named missing evidence before deciding.
+1. **Recommendation.** In one short paragraph, say whether to stop, revise, proceed, or gather missing evidence, and give the decisive reason.
+2. **What to change.** Give the smallest set of grouped, prioritized changes that covers every upheld issue material to viability. Connect each change to the practical problem it solves; do not omit a material issue to keep the list short.
+3. **Better version.** Present the strongest defensible version of the idea as a compact, self-contained proposal covering its intended user, outcome, mechanism, scope, and success criterion. It must make sense without rereading the critique.
+4. **Next step.** End with one concrete action and the observable result that determines whether to proceed, revise again, or stop.
 
-For `REVISE`, rewrite the original proposal and include every change needed to address upheld `KILLER` and `SERIOUS` findings. For `SURVIVES`, return a hardened version with only the changes justified by the findings. For `KILL`, do not disguise the invalidated core as a revision: return the closest evidence-supported replacement for the same intended outcome, or state that no defensible replacement is proven. For `BLOCKED`, do not manufacture a rewrite; explain what evidence is needed before one can be produced.
+Use only these four sections by default. Do not add separate critic reports, status fields, severity tables, risk registers, evidence inventories, change maps, test lists, or a second summary; include supporting evidence inline only when it changes confidence in the recommendation. Add a short limitation only when a route failed, evidence is missing, or unresolved disagreement could change the recommendation. Ask questions only when their answers are required to make a defensible recommendation or rewrite; in that case, the next step is to obtain those answers and state what would change direction.
+
+When the original core fails, do not disguise it as a revision: offer the closest evidence-supported replacement for the same outcome, or state that none is proven. When evidence is insufficient, do not manufacture a better version. Otherwise, return the improved proposal directly rather than a catalogue of critic findings.

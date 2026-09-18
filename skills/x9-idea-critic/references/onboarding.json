@@ -32,11 +32,11 @@
     {
       "id": "opencode-gpt-agent",
       "runtimes": ["opencode"],
-      "kind": "agent",
+      "kind": "runtime-feature",
       "level": "required",
-      "needed_for": "Running GPT critics at high effort.",
-      "check": {"type": "runtime-component", "component_id": "astra-high"},
-      "guidance_id": "create-agent"
+      "needed_for": "Running the configured GPT critic through a matching native subagent.",
+      "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
+      "guidance_id": "enable-runtime-feature"
     },
     {
       "id": "codex-claude-cli",

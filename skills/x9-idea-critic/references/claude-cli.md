@@ -1,6 +1,6 @@
 # Claude CLI route
 
-Use this route only after live `claude --help` confirms equivalents for explicit Claude model selection, `high` effort, non-persistent print execution, text input on stdin, safe mode, disabled tools, and structured JSON output. Pass the core skill's selected Claude model to `--model` and set `--effort high`. Run with all required controls explicitly; inherited model, effort, customizations, or a request for `high` inside the brief do not satisfy the contract.
+Use this route only after live `claude --help` confirms equivalents for explicit Claude model selection, `high` effort, non-persistent print execution, text input on stdin, safe mode, disabled tools, and structured JSON output. Pass `claude_model` from the core configuration to `--model` and set `--effort high`. Run with all required controls explicitly; inherited model, effort, customizations, or a request for `high` inside the brief do not satisfy the contract.
 
 Materialize only the sealed packet in an OS temporary directory created with `mktemp`, set the directory to `700` and the file to `600`, and install cleanup for exit and catchable interruption before writing it. Pass the file through stdin rather than argv, never place it in the repository or logs, and verify its deletion after the command returns.
 
