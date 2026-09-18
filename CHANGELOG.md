@@ -4,11 +4,21 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 3.5.0 - 2026-09-18
+
+### Highlights
+
 - `x9-idea-critic` now keeps its Claude and GPT model selectors in a two-value `config.json`; the defaults use Claude Opus and GPT-5.6 Sol at `high` effort across supported runtimes. Its critics retain every decision-relevant objection for private synthesis without an arbitrary finding cap, while the user receives a concise recommendation, grouped changes, a stronger proposal, and one testable next step instead of route-by-route reports and audit-oriented status fields.
 
 ### Install / update
 
-- Update `x9-idea-critic` to switch future model changes through `skills/x9-idea-critic/config.json`. OpenCode resolves any native subagent whose live assignment matches the configured GPT model and `high` effort, so the skill no longer pins an agent name.
+- Update `x9-idea-critic` to switch future model changes through `skills/x9-idea-critic/config.json`. OpenCode resolves any native subagent whose live assignment matches the configured GPT model and `high` effort, so the skill no longer pins an agent name; onboarding reports confirmation of that matching assignment as an explicit user check.
 
 ### Compatibility
 

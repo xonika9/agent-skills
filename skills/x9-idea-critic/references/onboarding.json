@@ -30,13 +30,22 @@
       "guidance_id": "install-command"
     },
     {
-      "id": "opencode-gpt-agent",
+      "id": "opencode-native-subagents",
       "runtimes": ["opencode"],
       "kind": "runtime-feature",
       "level": "required",
-      "needed_for": "Running the configured GPT critic through a matching native subagent.",
+      "needed_for": "Running GPT critics through native subagents.",
       "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
       "guidance_id": "enable-runtime-feature"
+    },
+    {
+      "id": "opencode-gpt-agent",
+      "runtimes": ["opencode"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Confirming that a native subagent matches the configured GPT model under the OpenAI provider at high effort.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
     },
     {
       "id": "codex-claude-cli",
