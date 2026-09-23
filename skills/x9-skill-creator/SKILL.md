@@ -53,10 +53,9 @@ For a genuinely underspecified new skill, use the focused questions in [referenc
 python3 <resolved-x9-skill-creator-directory>/scripts/validate.py \
   --runtime <portable|claude|codex> \
   <absolute-target-skill-directory>
-python3 <resolved-x9-skill-creator-directory>/scripts/test_validate.py
 ```
 
-Use one `--runtime` per target runtime; repeat it to require one file to satisfy several runtimes. `portable` enforces the Agent Skills specification and is the default when the flag is omitted. Resolve the creator directory from the loaded skill resource and the target from the actual project/personal source under review; do not substitute a globally installed copy for a package-owned target. The first command validates that target. The second checks validator regression scenarios and is not a substitute for target validation. Structural checks cannot prove triggering, runtime-specific semantics, or output quality; verify platform-specific metadata in the target runtime during behavioral evaluation.
+Use one `--runtime` per target runtime; repeat it to require one file to satisfy several runtimes. `portable` enforces the Agent Skills specification and is the default when the flag is omitted. Resolve the creator directory from the loaded skill resource and the target from the actual project/personal source under review; do not substitute a globally installed copy for a package-owned target. Run `python3 <resolved-x9-skill-creator-directory>/scripts/test_validate.py` when changing the validator or its regression scenarios; it does not substitute for target validation. Structural checks cannot prove triggering, runtime-specific semantics, or output quality; verify platform-specific metadata in the target runtime during behavioral evaluation.
 
 ## Done
 

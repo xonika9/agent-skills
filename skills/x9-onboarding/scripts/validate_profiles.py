@@ -100,7 +100,7 @@ REQUIRED_PROFILE_SETTINGS = {
     "claude": {
         "enabledPlugins.codex@openai-codex": True,
         "enabledPlugins.compound-engineering@compound-engineering-plugin": True,
-        "env.CLAUDE_CODE_AUTO_COMPACT_WINDOW": "375000",
+        "env.CLAUDE_CODE_AUTO_COMPACT_WINDOW": "450000",
     },
 }
 ALLOWED_CLAUDE_ENV = {"CLAUDE_CODE_AUTO_COMPACT_WINDOW"}

@@ -55,6 +55,10 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## OpenCode runtime
 
+### Copy-ready prompts
+
+- When delivering a one-off prompt for the user to copy into another chat or agent, put the complete prompt in a single fenced code block with no language tag. Keep any explanation outside the block; do not format the prompt as a blockquote or split it across blocks. If the prompt contains fenced code, use a longer outer fence so the entire prompt remains in one copyable block.
+
 ### Subagent coordination
 
 - Use `inherit` for substantive delegated work so the child inherits the primary session's model and reasoning level. Use `explore` or a Terra profile only for bounded search and fact extraction, not complex diagnosis, implementation, or final acceptance. An explicit user or applicable skill model choice takes precedence.

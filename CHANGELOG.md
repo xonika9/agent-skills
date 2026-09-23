@@ -10,6 +10,26 @@
 
 ### Breaking changes
 
+## 3.6.0 - 2026-09-23
+
+### Highlights
+
+- `x9-onboarding` now recommends a `450000`-token auto-compaction window for Claude Code instead of `375000`.
+- `x9-agent-instructions` distinguishes pasted source material from user instructions when drafting prompts and keeps authorized work moving around reversible obstacles. `x9-skill-creator` runs validator regression tests when the validator changes while continuing to validate each target skill.
+- OpenCode presents prompts intended for another chat as one copyable code block. Both READMEs link to the Claude Opus 5.5 prompting guide alongside the existing GPT-6 guide.
+
+### Install / update
+
+- Update the plugin or affected skills to receive the revised instructions and onboarding profile. Existing Claude Code configuration changes only if you explicitly approve the new recommendation through `x9-onboarding`.
+
+### Compatibility
+
+- The skill package retains its Claude Code, Codex, and OpenCode routes; the copy-ready prompt rule is specific to OpenCode. No new dependency is required.
+
+### Breaking changes
+
+None.
+
 ## 3.5.0 - 2026-09-18
 
 ### Highlights
