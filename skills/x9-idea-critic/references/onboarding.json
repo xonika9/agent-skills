@@ -7,6 +7,7 @@
       "runtimes": ["claude"],
       "kind": "command",
       "level": "required",
+      "group": "claude-provider-route",
       "needed_for": "Running Claude critics through Claude CLI.",
       "check": {"type": "command-present", "command": "claude"},
       "guidance_id": "install-command"
@@ -16,6 +17,7 @@
       "runtimes": ["claude"],
       "kind": "skill",
       "level": "required",
+      "group": "claude-provider-route",
       "needed_for": "Running GPT critics.",
       "check": {"type": "skill-present", "target_skill": "x9-codex-delegation"},
       "guidance_id": "install-skill"
@@ -25,6 +27,7 @@
       "runtimes": ["opencode"],
       "kind": "command",
       "level": "required",
+      "group": "opencode-provider-route",
       "needed_for": "Running Claude critics through Claude CLI.",
       "check": {"type": "command-present", "command": "claude"},
       "guidance_id": "install-command"
@@ -34,6 +37,7 @@
       "runtimes": ["opencode"],
       "kind": "runtime-feature",
       "level": "required",
+      "group": "opencode-provider-route",
       "needed_for": "Running GPT critics through native subagents.",
       "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
       "guidance_id": "enable-runtime-feature"
@@ -42,8 +46,8 @@
       "id": "opencode-gpt-agent",
       "runtimes": ["opencode"],
       "kind": "user-action",
-      "level": "required",
-      "needed_for": "Confirming that a native subagent matches the configured GPT model under the OpenAI provider at high effort.",
+      "level": "optional",
+      "needed_for": "Confirming that a native subagent matches the configured GPT model and effort under the OpenAI provider.",
       "check": {"type": "manual"},
       "guidance_id": "complete-user-action"
     },
@@ -52,6 +56,7 @@
       "runtimes": ["codex"],
       "kind": "command",
       "level": "required",
+      "group": "codex-provider-route",
       "needed_for": "Running Claude critics through Claude CLI.",
       "check": {"type": "command-present", "command": "claude"},
       "guidance_id": "install-command"
@@ -61,6 +66,7 @@
       "runtimes": ["codex"],
       "kind": "runtime-feature",
       "level": "required",
+      "group": "codex-provider-route",
       "needed_for": "Running GPT critics.",
       "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
       "guidance_id": "enable-runtime-feature"

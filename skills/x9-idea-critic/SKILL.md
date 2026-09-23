@@ -5,7 +5,7 @@ description: Use only when the user explicitly asks to criticize, red-team, pres
 
 # Idea critic
 
-Criticize through the routes the user selected. Run each provider route in a separate fresh context; neither route is a fallback or a quality tier. Route names identify providers, not the currently selected models.
+Criticize through the routes the user selected. Run each provider route in a separate fresh context; neither route is a fallback or a quality tier. Route names identify providers, not the currently selected models. An unavailable provider does not become a second vote from the available provider.
 
 The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
 
@@ -40,14 +40,16 @@ Exclude advocacy, solution-selling, compliments, generic risk lists, and restate
 
 ## Model configuration
 
-Before dispatch, read [`config.json`](config.json). Its two values are the sole source of default model selections:
+Before dispatch, read [`config.json`](config.json). Its four values are the sole source of default model and effort selections:
 
 - `claude_model` is the selector passed to Claude CLI;
-- `gpt_model` is the OpenAI model selector resolved through the active runtime's live model catalog.
+- `claude_effort` is the effort passed to Claude CLI;
+- `gpt_model` is the OpenAI model selector resolved through the active runtime's live model catalog;
+- `gpt_effort` is the GPT effort/variant selected through that runtime.
 
-Every critic runs at `high` effort, which remains a skill invariant rather than a configurable value. An official Claude CLI alias follows the service's current model in that alias's family, while an exact model ID stays pinned. These skill-specific selections override inherited model defaults, not higher-priority runtime restrictions or explicit user model choices.
+An official Claude CLI alias follows the service's current model in that alias's family, while an exact model ID stays pinned. These skill-specific selections override inherited model and effort defaults, not higher-priority runtime restrictions or explicit user model/effort choices.
 
-Change only `config.json` to replace either default model. Do not mirror its values in adapters or onboarding declarations. Confirm the configured selector and `high` effort through the selected adapter before each dispatch; editing the skill does not install a model or create a runtime agent.
+Change only `config.json` to replace either default model or effort. Do not mirror its values in adapters or onboarding declarations. Confirm the configured model and effort through the selected adapter before each dispatch; editing the skill does not install a model or create a runtime agent.
 
 ## Runtime routes
 
@@ -55,11 +57,12 @@ Change only `config.json` to replace either default model. Do not mirror its val
 - **From Codex:** read [the Codex adapter](references/codex.md).
 - **From OpenCode:** read [the OpenCode adapter](references/opencode.md).
 
-Every adapter must confirm that the selected model and effort controls are available. An explicit user-selected Claude or GPT model replaces that route's default only when live discovery confirms it; otherwise fail that route rather than silently substituting another model or provider. Keep the requested selector and actual model as execution evidence, not as a user-facing section unless a mismatch or failure affects the recommendation. An accepted runtime selector is evidence that the control was applied; when the runtime omits post-run effective-model or effort telemetry, record that property as `NOT_PROVEN` without failing an otherwise successful route.
+Every adapter must confirm that the selected model and effort controls are available. An explicit user-selected Claude or GPT model or effort replaces that route's default only when live discovery confirms it; otherwise fail that route rather than silently substituting another model, effort, or provider. Keep the requested selector and actual model as execution evidence, not as a user-facing section unless a mismatch or failure affects the recommendation. An accepted runtime selector is evidence that the control was applied; when the runtime omits post-run effective-model or effort telemetry, record that property as `NOT_PROVEN` without failing an otherwise successful route.
 
 ## Failure and synthesis
 
 - Retry a failed route once only when the failure is transient and the retry changes something concrete.
+- Treat a missing subscription, authentication, or exhausted quota as an unavailable route, not a transient failure. Continue the other selected provider without asking the user to subscribe or repeating the available provider as a stand-in.
 - Judge completeness against the selected mode. A successful requested route is complete; in default mode one missing route is degraded, and in `full` any missing provider/lens pair is degraded.
 - If every requested route fails or the orchestrator cannot assemble a sufficient evidence packet, the result is blocked and not proven; do not manufacture a recommendation from prior beliefs.
 - Treat critic responses as private working material. Do not paste them, summarize them route by route, or preserve their structure in the user-facing answer.

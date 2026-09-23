@@ -10,6 +10,24 @@
 
 ### Breaking changes
 
+## 3.7.0 - 2026-09-23
+
+### Highlights
+
+- `x9-idea-critic` can critique with one available provider when the other subscription is unavailable and clearly marks the loss of independent review. Claude and GPT effort levels are configurable separately; both default to `medium` to limit usage on newer models.
+
+### Install / update
+
+- Update `x9-idea-critic` to receive the new defaults. OpenCode users should match their critic subagent's model and effort to `skills/x9-idea-critic/config.json` when configuring that route.
+
+### Compatibility
+
+- Existing `claude`, `gpt`, and `full` modes remain available. Set `claude_effort` or `gpt_effort` to `high` in `config.json` to retain the previous default effort.
+
+### Breaking changes
+
+None.
+
 ## 3.6.0 - 2026-09-23
 
 ### Highlights

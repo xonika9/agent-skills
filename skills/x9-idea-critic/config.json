@@ -1,4 +1,6 @@
 {
   "claude_model": "opus",
-  "gpt_model": "gpt-5.6-sol"
+  "claude_effort": "medium",
+  "gpt_model": "gpt-6-sol",
+  "gpt_effort": "medium"
 }
