@@ -30,16 +30,19 @@ parent task. Avito work is sequential even when the rest of the research is dele
 - let the current page finish loading and inspect it before requesting the next page;
   shortlist from search results and reuse captured data instead of repeatedly reopening
   or refreshing listings;
-- do not bulk-load listings, paginate rapidly, poll availability, or run retry loops;
-- when Avito shows an IP or security-check interstitial that requires no user action,
-  keep the same page, controller, and profile. Wait five seconds once without
-  reloading, navigating, or initiating another request, then inspect the same page
-  again. Continue serial browsing if the requested content is visible;
-- if the same interstitial remains on the second inspection, or Avito returns a CAPTCHA
-  requiring user action, `429`, timeout, access-denied, or an error page, treat it as
-  site throttling rather than a controller failure. Stop Avito requests across the
-  parent task, preserve collected results, and return `DEGRADED`; do not switch
-  controllers, profiles, agents, or IP addresses to continue;
+- do not bulk-load listings, paginate rapidly, poll availability, or repeat searches
+  and listing loads to work around throttling;
+- when Avito shows a security warning, a `Продолжить`/`Continue` button leading to
+  CAPTCHA, or the CAPTCHA itself, keep the same page, controller, and profile. Wait
+  five seconds without another request and inspect it. If the challenge remains,
+  refresh that page at most twice, waiting five seconds and inspecting after each
+  refresh. Do not click that button or attempt to solve the CAPTCHA. Continue serial
+  browsing as soon as the requested content is visible;
+- use the same bounded refreshes for a transient Avito error or site timeout page only
+  when the page can be safely reloaded. If the challenge or error remains after them,
+  or Avito returns `429` or access-denied, stop Avito requests across the parent task,
+  preserve collected results, and return `DEGRADED`. Do not switch controllers,
+  profiles, agents, or IP addresses to continue;
 - resume only when the user requests another check or ordinary access is already
   visibly restored. Perform that check serially through the same browser profile.
 
@@ -89,6 +92,18 @@ Claude Code and Codex for an explicit request and local web development. It has 
 separate profile and does not carry the user's Edge extensions. Use Edge when exact
 account state, region, cart, saved data, personalized content, ad blocking, or another
 installed extension matters.
+
+## Transient page recovery
+
+When an inspected page shows a temporary loading error, a blank page in place of
+expected content, a site timeout page, or a security or CAPTCHA screen, refresh its
+task-owned tab up to twice, with a short pause and a fresh inspection after each
+refresh. Try the refresh before clicking a button that opens a CAPTCHA; do not solve
+the challenge automatically. Stop when the intended content appears or the attempts
+are exhausted; report the remaining failure. Refresh only when repeating the current
+page load is safe: never replay a submission, purchase, message, or other action that
+could change state. A `429` or access-denied response is a stop signal. For Avito,
+use its specific traffic discipline above instead of this general recovery rule.
 
 ## Browser and profile continuity
 

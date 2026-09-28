@@ -10,6 +10,30 @@
 
 ### Breaking changes
 
+## 3.8.0 - 2026-09-29
+
+### Highlights
+
+- Add `x9-appsec` for risk-based review of public sites and their backends, APIs, jobs, data stores, and deployment, with explicit scope required before active testing of a running target.
+- Copy-ready prompts are now delivered in one code block across OpenCode, Codex, and Claude Code.
+- Browser sessions now retry safe page loads after temporary errors or CAPTCHA screens; Avito refreshes the warning or challenge twice before reporting degraded access.
+
+### Install / update
+
+- Update the skill package to use `x9-appsec` for public sites and web applications.
+- Update the global instruction files for each runtime to receive the shared rule.
+- Update `x9-browser-session` to receive the bounded page recovery guidance.
+
+### Compatibility
+
+- `x9-appsec` uses portable Agent Skills structure and adds no required runtime dependency.
+- The rule is shared by all three runtimes; no new dependency is required.
+- Browser recovery uses the existing selected tab, controller, and profile in all three runtimes.
+
+### Breaking changes
+
+None.
+
 ## 3.7.0 - 2026-09-23
 
 ### Highlights

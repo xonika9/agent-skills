@@ -16,6 +16,7 @@ Practical [Agent Skills](https://agentskills.io/) for work that rarely fits into
 
 - Verify current claims instead of trusting model memory.
 - Keep authenticated browser work predictable and separate from your own tabs.
+- Review public applications from the browser and API through data stores and deployment.
 - Give long-running agent workflows checkpoints, stop conditions, and evidence.
 
 The `x9-` prefix keeps the skills easy to find and avoids collisions with similarly named packages. In Claude Code or Codex, type `/x9` to see the installed plugin skills.
@@ -76,6 +77,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 
 - The agent answers from memory or skims the topic: start with [`x9-research`](skills/x9-research/SKILL.md).
 - The task depends on your login, region, feed, cart, or private pages: add [`x9-browser-session`](skills/x9-browser-session/SKILL.md).
+- You are building or preparing to release a public site or API: use [`x9-appsec`](skills/x9-appsec/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - A large initiative still has choices that could change its direction or scope: map them before planning with [`x9-decision-map`](skills/x9-decision-map/SKILL.md).
@@ -102,6 +104,14 @@ Installing a skill adds its files, but a usable workflow can still depend on a C
 
 It also compares the current harness's user configuration with sanitized, opinionated x9 profiles for OpenCode, Claude Code, and Codex. The first pass only reports current and recommended values, support evidence, and the practical effect of each difference. After explicit approval it merges only the shown settings, preserves unrelated private values and comments, and keeps a local backup. It never copies credentials, personal paths, SSH data, project state, or local hooks into the public profile. Other runtimes receive `PARTIAL` coverage and `BLOCKED` readiness rather than a guess.
 
+### Application security
+
+#### [`x9-appsec`](skills/x9-appsec/SKILL.md)
+
+A public application includes more than its pages. This skill follows the actual trust boundaries across the browser, API, backend jobs, data stores, integrations, and deployment. During development it checks the changed path and helps put controls at the trusted decision point; before release it maps the relevant surfaces and records what the evidence does not cover.
+
+Findings identify the affected resource, evidence, potential harm, priority, and smallest effective fix. Unverified hypotheses stay separate. Source review does not authorize attack requests to a running site or service; active testing needs explicit permission, a named target, and boundaries.
+
 ### Obsidian notes
 
 #### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
@@ -124,7 +134,7 @@ The [setup guide](skills/x9-browser-session/references/setup.md), which you can 
 
 The verified Edge recipe uses localhost CDP port `9223` and checks that the endpoint belongs to the expected automation profile before private or authenticated work. Existing installations copied from the earlier `9222` recipe must update the launcher, MCP endpoint, and `agent-edge` wrapper together.
 
-Avito browsing uses one sequential lane across the parent task: the agent reuses captured listing data, passively rechecks a transient security interstitial once after five seconds, and stops with `DEGRADED` instead of switching controllers when throttling or access controls persist.
+Transient page errors can be refreshed up to twice when reloading cannot repeat a submission or other state change. Avito browsing uses one sequential lane across the parent task: after a security warning or CAPTCHA, the agent waits five seconds, refreshes the same page at most twice, and stops with `DEGRADED` if access remains blocked. It does not solve the challenge or switch controllers to work around it.
 
 #### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
 

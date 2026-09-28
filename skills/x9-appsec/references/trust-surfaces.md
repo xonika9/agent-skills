@@ -1,0 +1,17 @@
+# Trust surfaces
+
+Select lenses from actual data flows, assets, and deployment. These are prompts to trace controls, not findings by themselves.
+
+| When present | Security property to trace | Useful evidence |
+| --- | --- | --- |
+| Public forms, uploads, search, rendered content | Untrusted input is bounded and interpreted only as intended; output is safely rendered; abuse cannot exhaust a shared resource | Handler to sink, validation and encoding, size/time limits, storage and error behavior |
+| Accounts, roles, tenants, admin actions | Every protected operation checks identity and authority for the specific object and action; sessions and recovery preserve that boundary | Route/middleware to object query and policy, cross-principal dummy fixtures, cookie and CSRF behavior when sessions use cookies |
+| APIs, webhooks, integrations, server fetches | Callers and provider messages are authenticated; object and field permissions hold; replay, mass assignment, outbound requests, and response data stay bounded | Endpoint inventory, signature verification, idempotency, allowlisted fields, egress and CORS policy, versioned routes |
+| Background jobs, queues, scheduled tasks | A job carries only intended authority; untrusted payloads cannot choose another tenant or privileged action; retries do not duplicate effects or grow without bound | Producer-to-consumer trace, job identity and tenant scope, payload validation, retry and dead-letter behavior |
+| Databases, caches, object storage | Reads and writes preserve tenant and role boundaries across every copy; storage permissions and keys match intended exposure | Query and policy trace, cache/object key construction, access rules, migrations, backup access |
+| Personal or sensitive data | Collection, exposure, logs, retention, deletion, export, and backups match the stated purpose and access rules | Field/data-flow inventory, queries and serializers, log sinks, deletion and recovery paths, provider configuration |
+| Payments, subscriptions, quotas, credits | Client claims cannot set price or entitlement; provider events are verified, replay-safe, and reconciled; state transitions and expensive actions have limits | Server-side price lookup, webhook signature, idempotency key, ledger/state machine, refund and cancellation paths |
+| Dependencies, CI, configuration, deployment | Build inputs and credentials cannot cross into untrusted jobs or public artifacts; production settings enforce intended exposure and least privilege | Lockfile and advisory context, workflow trust boundary, secret injection, TLS and headers, manifests, environment and gateway evidence |
+| Service availability | A single request or retry cannot consume unbounded work; timeouts, queues, quotas, health checks, rollback, and recovery support the service objective | Costly code paths, request/body limits, retry behavior, deployment probes, backup/restore evidence |
+
+Apply stack-specific checks only when the corresponding stack exists: database row policies, GraphQL depth, WebSocket origin and authorization, container privileges, serverless shared rate limits, CDN caching, or framework escape hatches. For a static site, focus on form handlers and third-party endpoints actually used; do not invent an application server. For any externally managed control, record its owner and observation status instead of inferring the deployed value from source alone.
