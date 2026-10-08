@@ -34,7 +34,7 @@
       "runtimes": ["opencode", "claude"],
       "kind": "user-action",
       "level": "optional",
-      "needed_for": "Generating complex images on a network that drops connections silent for about 30 seconds: set X9_CODEX_IMAGE_PROXY to an HTTP proxy whose route keeps them open.",
+      "needed_for": "Generating complex images on a network that drops idle connections, through an HTTP proxy whose route keeps them open.",
       "check": {"type": "manual"},
       "guidance_id": "complete-user-action"
     }

@@ -10,6 +10,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+import time
 import zlib
 from pathlib import Path
 
@@ -57,6 +58,22 @@ elif mode == "network":
 elif mode == "policy":
     text = "FAILED=request rejected by the safety system"
     print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": text}}}}))
+elif mode == "stderr_network":
+    text = "Using the imagegen skill."
+    print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": text}}}}))
+    print("ERROR codex_core::tools::router: error=image generation failed: network error: error sending request",
+          file=sys.stderr)
+elif mode == "policy_noise":
+    text = "FAILED=request rejected by the safety system"
+    print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": text}}}}))
+    print("ERROR rmcp::transport::worker: error sending request for url (https://mcp.example/mcp)", file=sys.stderr)
+elif mode == "hang":
+    # Like the npm wrapper: a child keeps running if only this process is killed.
+    import subprocess, time
+    late = "import time, pathlib; time.sleep(4); pathlib.Path(%r).write_bytes(%r)" % (out, png)
+    subprocess.Popen([sys.executable, "-c", late])
+    sys.stdout.flush()
+    time.sleep(60)
 """
 
 
@@ -123,6 +140,18 @@ def main() -> None:
 
         code, result = run(tmp, "policy", tmp / "e.png")
         assert code == 1 and result["status"] == "failed" and "safety" in result["error"], result
+
+        code, result = run(tmp, "stderr_network", tmp / "h.png")
+        assert code == 1 and result["status"] == "network_error", "image tool errors in stderr count"
+        assert "image generation failed" in result["error"], result
+
+        code, result = run(tmp, "policy_noise", tmp / "i.png")
+        assert code == 1 and result["status"] == "failed", "other connections' errors must not mask a refusal"
+
+        code, result = run(tmp, "hang", tmp / "j.png", "--timeout", "2")
+        assert code == 1 and "timed out" in result["error"], result
+        time.sleep(4)
+        assert not (tmp / "j.png").exists(), "a timed-out run must not leave a process that writes the image"
 
         code, result = run(tmp, "copy", tmp / "f.png", "--root", str(tmp / "elsewhere"))
         assert code == 1 and result["status"] == "usage_error", result

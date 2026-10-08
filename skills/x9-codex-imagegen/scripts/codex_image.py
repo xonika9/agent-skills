@@ -18,6 +18,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import socket
 import struct
 import subprocess
@@ -31,8 +32,11 @@ PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 NETWORK_ERROR = re.compile(r"error sending request|network error|stream disconnected", re.I)
 FINAL_PROMPT = re.compile(r"FINAL_PROMPT:\s*(.+)", re.S)
 # A network that drops connections silent for ~30 s makes the image tool fail
-# only after several reconnects; transient faults fail within seconds.
+# only after several reconnects; transient faults usually fail within seconds.
 IDLE_CUT_AFTER = 150.0
+# Only the image tool's own failures count from stderr: other Codex connections
+# (MCP servers, analytics) log "error sending request" during the same outages.
+IMAGE_TOOL_ERROR = re.compile(r"image generation failed:[^\n]*")
 # The image tool cannot use a SOCKS proxy, so only an HTTP proxy is accepted.
 PROXY_ENV = "X9_CODEX_IMAGE_PROXY"
 
@@ -105,6 +109,23 @@ def proxy_problem(url: str) -> str | None:
     except OSError as error:
         return f"not reachable ({error})"
     return None
+
+
+def stop_group(proc: subprocess.Popen) -> None:
+    """Stop Codex with everything it started; the npm `codex` wrapper cannot forward SIGKILL."""
+    if not hasattr(os, "killpg"):
+        proc.kill()
+    else:
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+            proc.wait(timeout=10)
+        except (ProcessLookupError, subprocess.TimeoutExpired):
+            pass
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)  # whatever ignored SIGTERM or outlived the leader
+        except ProcessLookupError:
+            pass
+    proc.wait()
 
 
 def recover(codex_home: Path, thread_id: str | None, started: float, out: Path) -> Path | None:
@@ -181,12 +202,15 @@ def main() -> int:
     timed_out = False
     with (log_dir / "run.jsonl").open("w") as stdout, (log_dir / "run.err").open("w") as stderr:
         try:
-            proc = subprocess.run(command, input=task, text=True,
-                                  stdout=stdout, stderr=stderr, timeout=args.timeout, env=env)
-            exit_code: int | None = proc.returncode
+            proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr, text=True,
+                                    env=env, start_new_session=hasattr(os, "killpg"))
         except FileNotFoundError:
             return finish("failed", error=f"codex executable not found: {args.codex}")
+        try:
+            proc.communicate(task, timeout=args.timeout)
+            exit_code: int | None = proc.returncode
         except subprocess.TimeoutExpired:
+            stop_group(proc)
             exit_code, timed_out = None, True
     elapsed = round(time.time() - started, 1)
 
@@ -211,14 +235,14 @@ def main() -> int:
     if info:
         return finish("ok", source=source, width=info[0], height=info[1], has_alpha=info[2])
 
-    failure_text = "\n".join(errors + messages)
     if timed_out:
         return finish("failed", error=f"timed out after {args.timeout:g}s")
-    stderr_text = (log_dir / "run.err").read_text(errors="replace")
-    status = classify(failure_text or stderr_text)
+    tool_errors = list(dict.fromkeys(IMAGE_TOOL_ERROR.findall((log_dir / "run.err").read_text(errors="replace"))))
+    failure_text = "\n".join(errors + messages + tool_errors).strip()
+    status = classify(failure_text)
     if status == "network_error":
         result["idle_cut_suspected"] = elapsed >= IDLE_CUT_AFTER
-    return finish(status, error=failure_text.strip() or f"no image produced; see {log_dir / 'run.err'}")
+    return finish(status, error=failure_text or f"no image produced; see {log_dir / 'run.err'}")
 
 
 if __name__ == "__main__":

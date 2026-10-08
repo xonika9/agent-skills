@@ -34,7 +34,7 @@ Generate only the images the user asked for. Never substitute an image drawn ano
 The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread_id`, `log_dir`, and `error`.
 
 - `ok` — the PNG signature, dimensions, and `has_alpha` were read from disk; a requested transparent background needs `has_alpha: true`. `source` is `codex-copy`, or `recovered:<path>` when Codex generated the image but did not save it. Compare `width` and `height` with the requested proportions and crop or scale a copy when they differ.
-- `network_error` with `idle_cut_suspected: true` — the run failed only after minutes of reconnects, the sign of a network that drops silent connections. Do not retry: report it and that the image needs a route that keeps silent connections open, such as `X9_CODEX_IMAGE_PROXY`.
+- `network_error` with `idle_cut_suspected: true` — the run failed only after minutes, which a network that drops silent connections causes but a late transient fault can too. Retry once after 60 seconds; if that run is suspected again, stop and report that the image needs a route that keeps silent connections open, such as `X9_CODEX_IMAGE_PROXY`.
 - `network_error` otherwise — retry at most twice, after 60 and then 120 seconds.
 - `proxy_unreachable` — `X9_CODEX_IMAGE_PROXY` is set but does not answer, so nothing was started. Report `error` so the user can restore the proxy.
 - `failed` — read `error`. For a content refusal, revise the brief while keeping the user's intent and say what changed; stop when the intent itself is refused. Report any other error exactly, together with `log_dir`.
