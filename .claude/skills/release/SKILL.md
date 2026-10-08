@@ -56,6 +56,12 @@ Never copy credentials, personal paths, machine-specific state, private project 
 
 Release authority permits reading the installed global files and updating their matching repository files; it does not permit replacing an independently managed file under a harness home directory. If the shared cores disagree or an installed file differs from its matching repository file unexpectedly, mark preparation `BLOCKED` instead of choosing a source.
 
+## Check personal skill links
+
+A public skill without personal links stays invisible to the maintainer's local runtimes. On the Mac and on the Fedora machine reachable through the SSH alias `x9-fedora`, every skill under `skills/` must be linked from `~/.agents/skills`, and from `~/.claude/skills` unless `scripts/check_skill_links.py` excludes it for Claude Code. When a new skill cannot run in Claude Code, add it to that exclusion with its reason instead of tolerating the failure.
+
+Release authority covers running the checker with `--fix`: it only adds missing links in each machine's established style and never replaces an existing entry. A wrong, broken, or stale entry, a skill not yet synced to Fedora, or an unreachable host keeps the gate `BLOCKED` until the maintainer resolves it.
+
 ## Choose and confirm the version
 
 Propose the version from the strongest change in the full candidate and cite the changes that determine the bump:
@@ -84,7 +90,7 @@ Do not include private paths, credentials, tokens, cookies, fabricated evidence,
 
 Run the complete command set in [checks.md](references/checks.md). A failed command blocks preparation and publication until it is fixed or the maintainer explicitly changes scope; never present a partial gate as a successful release.
 
-Preparation is complete when the release diff contains the confirmed version and date, both manifests agree, `Unreleased` is reset, the notes cover the tag-to-candidate diff, every public change is accurately represented in both READMEs or has a justified no-impact determination, the harness-specific global files match the current personal contracts, and every required check passes.
+Preparation is complete when the release diff contains the confirmed version and date, both manifests agree, `Unreleased` is reset, the notes cover the tag-to-candidate diff, every public change is accurately represented in both READMEs or has a justified no-impact determination, the harness-specific global files match the current personal contracts, every public skill is linked on both machines, and every required check passes.
 
 ## Publish
 

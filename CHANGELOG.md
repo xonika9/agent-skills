@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- The maintainer's private release workflow now checks that every published skill is linked into the personal `~/.agents/skills` and `~/.claude/skills` directories on both maintainer machines, adds any missing links itself, and blocks the release on broken or stale ones, so a newly added skill no longer stays invisible locally.
+
 ### Install / update
 
 ### Compatibility

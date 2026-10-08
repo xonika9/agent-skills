@@ -22,6 +22,9 @@ python3 skills/x9-okf-docs/scripts/test_okf.py
 python3 skills/x9-research/scripts/test_validate_html.py
 python3 skills/x9-architecture-scout/scripts/test_validate_report.py
 python3 .claude/skills/release/scripts/check_global_files.py
+python3 .claude/skills/release/scripts/check_skill_links.py --fix
+ssh x9-fedora python3 - --fix --names $(cd skills && ls -d x9-*) \
+  < .claude/skills/release/scripts/check_skill_links.py
 python3 scripts/test_check_package.py
 python3 scripts/check_package.py
 python3 scripts/check_public.py
