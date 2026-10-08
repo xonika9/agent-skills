@@ -4,6 +4,16 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 3.9.1 - 2026-10-08
+
+### Highlights
+
 - `x9-codex-imagegen` no longer leaves Codex generating in the background when the agent stops a run: the whole run is terminated and reported as `interrupted`, so a repeat cannot produce a duplicate image. With `--verbatim`, the result now returns the exact prompt that was sent, and a `codex` command that cannot start is reported instead of crashing the script.
 
 ### Install / update
@@ -12,7 +22,11 @@
 
 ### Compatibility
 
+- No new requirements.
+
 ### Breaking changes
+
+None.
 
 ## 3.9.0 - 2026-10-08
 
