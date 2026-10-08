@@ -18,16 +18,23 @@ import json
 import os
 import re
 import shutil
+import socket
 import struct
 import subprocess
 import sys
 import tempfile
 import time
 from pathlib import Path
+from urllib.parse import urlsplit
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 NETWORK_ERROR = re.compile(r"error sending request|network error|stream disconnected", re.I)
 FINAL_PROMPT = re.compile(r"FINAL_PROMPT:\s*(.+)", re.S)
+# A network that drops connections silent for ~30 s makes the image tool fail
+# only after several reconnects; transient faults fail within seconds.
+IDLE_CUT_AFTER = 150.0
+# The image tool cannot use a SOCKS proxy, so only an HTTP proxy is accepted.
+PROXY_ENV = "X9_CODEX_IMAGE_PROXY"
 
 BRIEF_TASK = """Use your imagegen skill with the built-in image generation tool to create the image described in the brief between the markers.
 Save the final image as a PNG at {out}. {replace}Do not edit any other file.
@@ -89,6 +96,17 @@ def classify(text: str) -> str:
     return "network_error" if NETWORK_ERROR.search(text) else "failed"
 
 
+def proxy_problem(url: str) -> str | None:
+    parts = urlsplit(url)
+    if parts.scheme != "http" or not parts.hostname or not parts.port:
+        return "expected http://host:port"
+    try:
+        socket.create_connection((parts.hostname, parts.port), timeout=5).close()
+    except OSError as error:
+        return f"not reachable ({error})"
+    return None
+
+
 def recover(codex_home: Path, thread_id: str | None, started: float, out: Path) -> Path | None:
     if not thread_id:
         return None
@@ -140,6 +158,15 @@ def main() -> int:
         if not image.is_file():
             return finish("usage_error", error=f"reference image not found: {image}")
 
+    env = None
+    proxy = os.environ.get(PROXY_ENV, "").strip()
+    if proxy:
+        problem = proxy_problem(proxy)
+        if problem:
+            return finish("proxy_unreachable", error=f"{PROXY_ENV}={proxy}: {problem}")
+        env = dict(os.environ, HTTPS_PROXY=proxy, HTTP_PROXY=proxy)
+        result["proxy"] = proxy
+
     out.parent.mkdir(parents=True, exist_ok=True)
     log_dir.mkdir(parents=True, exist_ok=True)
     command = [args.codex, "exec", "--skip-git-repo-check", "-C", str(root), "-s", "workspace-write",
@@ -155,7 +182,7 @@ def main() -> int:
     with (log_dir / "run.jsonl").open("w") as stdout, (log_dir / "run.err").open("w") as stderr:
         try:
             proc = subprocess.run(command, input=task, text=True,
-                                  stdout=stdout, stderr=stderr, timeout=args.timeout)
+                                  stdout=stdout, stderr=stderr, timeout=args.timeout, env=env)
             exit_code: int | None = proc.returncode
         except FileNotFoundError:
             return finish("failed", error=f"codex executable not found: {args.codex}")
@@ -188,8 +215,10 @@ def main() -> int:
     if timed_out:
         return finish("failed", error=f"timed out after {args.timeout:g}s")
     stderr_text = (log_dir / "run.err").read_text(errors="replace")
-    return finish(classify(failure_text or stderr_text),
-                  error=failure_text.strip() or f"no image produced; see {log_dir / 'run.err'}")
+    status = classify(failure_text or stderr_text)
+    if status == "network_error":
+        result["idle_cut_suspected"] = elapsed >= IDLE_CUT_AFTER
+    return finish(status, error=failure_text.strip() or f"no image produced; see {log_dir / 'run.err'}")
 
 
 if __name__ == "__main__":

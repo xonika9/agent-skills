@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import struct
 import subprocess
 import sys
@@ -39,7 +40,8 @@ mode = os.environ["FAKE_MODE"]
 if mode == "copy":
     Path(out).write_bytes(png)
     kind = "verbatim" if "verbatim" in task.splitlines()[0] else "brief"
-    reply = f"Saved ({{kind}}).\\nFINAL_PROMPT: a red square, landscape 3:2"
+    proxy = os.environ.get("HTTPS_PROXY", "")
+    reply = f"Saved ({{kind}}) proxy=[{{proxy}}].\\nFINAL_PROMPT: a red square, landscape 3:2"
     print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": reply}}}}))
 elif mode == "alpha":
     Path(out).write_bytes(alpha_png)
@@ -58,8 +60,9 @@ elif mode == "policy":
 """
 
 
-def run(tmp: Path, mode: str, out: Path, *extra: str) -> tuple[int, dict]:
-    env = dict(os.environ, FAKE_MODE=mode, CODEX_HOME=str(tmp / f"home-{mode}"))
+def run(tmp: Path, mode: str, out: Path, *extra: str, proxy: str = "") -> tuple[int, dict]:
+    env = dict(os.environ, FAKE_MODE=mode, CODEX_HOME=str(tmp / f"home-{mode}"), X9_CODEX_IMAGE_PROXY=proxy)
+    env.pop("HTTPS_PROXY", None)
     brief = tmp / "brief.txt"
     brief.write_text("a red square, landscape 3:2")
     proc = subprocess.run([sys.executable, str(SCRIPT), "--brief-file", str(brief), "--out", str(out),
@@ -101,6 +104,22 @@ def main() -> None:
 
         code, result = run(tmp, "network", tmp / "d.png")
         assert code == 1 and result["status"] == "network_error", result
+        assert result["idle_cut_suspected"] is False, "a fast network failure is transient"
+
+        listener = socket.socket()
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        proxy = f"http://127.0.0.1:{listener.getsockname()[1]}"
+        code, result = run(tmp, "copy", tmp / "p.png", proxy=proxy)
+        assert code == 0 and f"proxy=[{proxy}]" in result["last_message"], result
+        listener.close()
+        code, result = run(tmp, "copy", tmp / "q.png", proxy=proxy)
+        assert code == 1 and result["status"] == "proxy_unreachable", result
+        assert not (tmp / "q.png").exists(), "no run may start behind a dead proxy"
+        code, result = run(tmp, "copy", tmp / "r.png", proxy="socks5h://127.0.0.1:1")
+        assert code == 1 and result["status"] == "proxy_unreachable", result
+        code, result = run(tmp, "copy", tmp / "s.png")
+        assert code == 0 and "proxy=[]" in result["last_message"], "no proxy unless configured"
 
         code, result = run(tmp, "policy", tmp / "e.png")
         assert code == 1 and result["status"] == "failed" and "safety" in result["error"], result

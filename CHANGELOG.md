@@ -15,7 +15,7 @@
 ### Compatibility
 
 - `x9-web-stack` is packaged for Claude Code and Codex. Bootstrapping a project needs `python3`, `bun`, and `git`, plus Docker for the dev database; audits need only read access.
-- `x9-codex-imagegen` needs `python3` and the `codex` command signed in with a ChatGPT account. Inside Codex, use Codex's own image skill instead.
+- `x9-codex-imagegen` needs `python3` and the `codex` command signed in with a ChatGPT account. Inside Codex, use Codex's own image skill instead. On a network that drops silent connections, set `X9_CODEX_IMAGE_PROXY` to an HTTP proxy whose route keeps them open.
 
 ### Breaking changes
 

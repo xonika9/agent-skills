@@ -1,6 +1,6 @@
 ---
 name: x9-codex-imagegen
-description: Use when an agent outside Codex, such as Claude Code or OpenCode on any model, should generate or edit a raster image through the user's Codex subscription — «сгенерируй картинку через Codex», «нарисуй иллюстрацию», "generate an image with Codex". Do not use inside a Codex session, where Codex's own imagegen skill applies, or for editable diagrams, local edits of existing images, or delegating non-image work to Codex.
+description: Use when an agent outside Codex, such as Claude Code or OpenCode on any model, should generate or edit a raster image through the user's Codex subscription — «сгенерируй картинку через Codex», «нарисуй иллюстрацию», "generate an image with Codex". Do not use inside a Codex session, where Codex's own imagegen skill applies, or for editable diagrams, crops, resizes, or other edits made locally without generation, or delegating non-image work to Codex.
 ---
 
 # Generate images through Codex
@@ -25,6 +25,7 @@ python3 <skill-directory>/scripts/codex_image.py --brief-file <brief.txt> --out 
 - `--out` must lie inside `--root`, which defaults to the destination folder; Codex can write only inside that root.
 - The script refuses to replace an existing file. Pass `--overwrite` only when the user asked to replace it.
 - Up to 3 runs may proceed in parallel, each with its own `--out`.
+- When `X9_CODEX_IMAGE_PROXY` is set, the script sends the Codex run through that HTTP proxy. The user sets it on a machine whose network drops connections that stay silent while an image renders; do not set or change it yourself.
 
 Generate only the images the user asked for. Never substitute an image drawn another way (SVG, code, a local library) for a failed generation.
 
@@ -33,7 +34,9 @@ Generate only the images the user asked for. Never substitute an image drawn ano
 The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread_id`, `log_dir`, and `error`.
 
 - `ok` — the PNG signature, dimensions, and `has_alpha` were read from disk; a requested transparent background needs `has_alpha: true`. `source` is `codex-copy`, or `recovered:<path>` when Codex generated the image but did not save it. Compare `width` and `height` with the requested proportions and crop or scale a copy when they differ.
-- `network_error` — retry at most twice, after 60 and then 120 seconds.
+- `network_error` with `idle_cut_suspected: true` — the run failed only after minutes of reconnects, the sign of a network that drops silent connections. Do not retry: report it and that the image needs a route that keeps silent connections open, such as `X9_CODEX_IMAGE_PROXY`.
+- `network_error` otherwise — retry at most twice, after 60 and then 120 seconds.
+- `proxy_unreachable` — `X9_CODEX_IMAGE_PROXY` is set but does not answer, so nothing was started. Report `error` so the user can restore the proxy.
 - `failed` — read `error`. For a content refusal, revise the brief while keeping the user's intent and say what changed; stop when the intent itself is refused. Report any other error exactly, together with `log_dir`.
 - `usage_error` — fix the arguments; nothing was generated.
 
