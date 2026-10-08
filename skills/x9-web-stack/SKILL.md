@@ -1,6 +1,6 @@
 ---
 name: x9-web-stack
-description: Use when starting a TypeScript web application on the x9 stack (Bun, React, Hono, PostgreSQL), auditing an existing web project's stack, structure, and development rules — on this stack or another — or writing durable development rules into a project's AGENTS.md — «создай проект на нашем стеке», «проверь стек проекта», «добавь правила разработки в AGENTS.md», "bootstrap a web app", "audit this project's stack". Not for a dedicated security review (x9-appsec), comparing architecture directions (x9-architecture-scout), or general AGENTS.md and README upkeep (x9-context-files-generator).
+description: Use when starting a TypeScript web application on the x9 stack (Bun, React, Hono, PostgreSQL), auditing an existing web project's stack, structure, and development rules — on this stack or another — or writing durable development rules into a project's AGENTS.md — «создай проект на нашем стеке», «проверь стек проекта», «добавь правила разработки в AGENTS.md», "bootstrap a web app", "audit this project's stack". Not for a dedicated security review (x9-appsec), reviewing the test suite or test setup (x9-test-quality), comparing architecture directions (x9-architecture-scout), or general AGENTS.md and README upkeep (x9-context-files-generator).
 compatibility: Bootstrap requires python3, bun, and git; Docker for the dev database. Audit and the rules block need only read access to the project.
 ---
 

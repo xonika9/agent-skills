@@ -2,6 +2,12 @@
 
 The template has two parts. **Core** is in every project from day one. **On demand** is added when its named trigger appears, not before. Library specifics are in the [library notes](library-notes.md).
 
+## Contents
+
+- [Core](#core)
+- [On demand](#on-demand)
+- [Project structure](#project-structure)
+
 ## Core
 
 | Layer | Choice | Why |
@@ -16,7 +22,7 @@ The template has two parts. **Core** is in every project from day one. **On dema
 | API contract | Zod + `@hono/zod-openapi`; client is Hono `hc` over `fetch`, no axios | Types and OpenAPI from one definition |
 | Database | PostgreSQL + Drizzle (latest stable line; move to v1 after its stable release), SQL migrations, `postgres` driver | Typed SQL close to the database |
 | Quality | Biome (format, lint, module boundaries) + a `typecheck` script (`tsc`; `bun check` once it ships in stable Bun) | Boundaries enforced by the linter, not by prose |
-| Tests | Vitest on Node + Testing Library; Playwright for end-to-end | Server tests against real PostgreSQL |
+| Tests | Vitest on Node + Testing Library | Server tests against real PostgreSQL |
 | Packaging | Docker + Compose; Caddy is the only public service and terminates TLS | One origin for client and API |
 
 ### Sign-in, when the product needs it
@@ -34,7 +40,7 @@ Pick one per project. In every variant the sign-in service only establishes iden
 | Database backups and a restore test | before the first real data | scheduled `pg_dump`; pgBackRest when point-in-time recovery is required |
 | Outgoing email | first email (confirmation, password reset) | `nodemailer` over an external SMTP provider; Mailpit locally |
 | File storage | first upload | Docker volume behind a `storage` module (put, get, delete, signed link); in variant A, Supabase Storage with file backend |
-| S3-compatible storage | several servers, direct browser uploads, large volume, or an off-server copy | managed S3 (Hetzner, Backblaze B2, Cloudflare R2); self-hosted Garage; RustFS once mature. Not MinIO: the project is archived |
+| S3-compatible storage | several servers, direct browser uploads, large volume, or an off-server copy | managed S3 (Hetzner, Backblaze B2, Cloudflare R2); self-hosted Garage; RustFS for larger deployments. Not MinIO: the project is archived |
 | Uptime monitoring | first live users | external free service or Uptime Kuma polling `/health` |
 | Error tracking | first deployment with live users | Sentry SaaS or self-hosted GlitchTip |
 | External service (payments, LLM) | first such service | small module: type, real implementation, and a fake for tests, injected through `createApp` |
@@ -51,6 +57,7 @@ Pick one per project. In every variant the sign-in service only establishes iden
 | Upload progress | a progress indicator is needed | `XMLHttpRequest` inside `src/api/` |
 | One image for several environments | staging and production differ in client settings | the client fetches its settings from the server at startup |
 | API versions | an external consumer or mobile app appears | `/api/v1`, deprecation marks, OpenAPI compatibility check in CI |
+| End-to-end tests | a user flow whose breakage unit and server tests would miss | Playwright in `tests/` |
 | Decision records | the project departs from this template or a choice was costly | `docs/decisions/NNNN-title.md`, one page; a module README when it has rules not visible in code |
 | Zero-downtime deploys | the app cannot stop during a migration | rule B5 in [rules](rules.md) |
 
@@ -89,7 +96,7 @@ apps/
       api/              # hc client, fetch wrapper, error code → message
       components/ui/    # shadcn only
       main.tsx
-tests/                  # Playwright end-to-end
+tests/                  # end-to-end tests, when added
 AGENTS.md
 compose.yaml            # production-shaped; compose.dev.yaml publishes the dev database on loopback
 ```

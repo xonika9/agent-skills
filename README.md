@@ -79,6 +79,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - The task depends on your login, region, feed, cart, or private pages: add [`x9-browser-session`](skills/x9-browser-session/SKILL.md).
 - You are starting a TypeScript web app, or want an existing project's stack and development rules checked: use [`x9-web-stack`](skills/x9-web-stack/SKILL.md).
 - You are building or preparing to release a public site or API: use [`x9-appsec`](skills/x9-appsec/SKILL.md).
+- The agent writes tests that prove nothing, the suite is full of duplicates and flaky tests, or you want to know how testing should be organized in your project: use [`x9-test-quality`](skills/x9-test-quality/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - A large initiative still has choices that could change its direction or scope: map them before planning with [`x9-decision-map`](skills/x9-decision-map/SKILL.md).
@@ -121,6 +122,18 @@ For an existing project the skill maps each layer against the template. Where th
 A public application includes more than its pages. This skill follows the actual trust boundaries across the browser, API, backend jobs, data stores, integrations, and deployment. During development it checks the changed path and helps put controls at the trusted decision point; before release it maps the relevant surfaces and records what the evidence does not cover.
 
 Findings identify the affected resource, evidence, potential harm, priority, and smallest effective fix. Unverified hypotheses stay separate. Source review does not authorize attack requests to a running site or service; active testing needs explicit permission, a named target, and boundaries.
+
+### Tests
+
+#### [`x9-test-quality`](skills/x9-test-quality/SKILL.md)
+
+Agents readily add tests that raise the count but catch nothing: a test without assertions, a copy of a list from the source, a mock that implements the very behavior being checked, or the same scenario replayed at every layer. During ordinary work the skill stays quiet and speaks up in one line only when a test would prove nothing. It stops such a test before it lands: the agent must name the behavior it protects, the regression that would make it fail, and why existing coverage does not already catch it.
+
+On an existing suite it finds candidates for deletion or consolidation and gathers the evidence for each: what the test can actually catch, which stronger test remains, and what production code exists only for tests. An audit request only produces this report; tests are deleted after you ask for cleanup or approve specific candidates. Tests guarding public interfaces, protocols, configuration, migrations, or security stay, and a kept test that fails is treated as a possible product bug. For a whole subsystem there is a staged campaign with a per-test ledger, an independent preservation review, and deliberate mutations proving that the remaining tests still go red.
+
+It can also audit how testing is organized in the project as a whole, scaled to its size: a solo project is not told to build a merge queue or contract tests, and the report keeps to the five findings that matter most. Where the project's size calls for it, the audit recommends: test size classes with hard timeouts; checks split by cost, with fast ones on every change, the heavy end-to-end suite on a schedule, and a small smoke set blocking releases; running only tests affected by a change; contracts between services instead of full end-to-end runs; a flaky-test quarantine with an owner and an expiry, while checks guarding security, money, and data never leave the gate; a green main branch through a merge queue and revert-first policy; reproducible runs from pinned dependencies; the real database in persistence tests; and migrations applied in CI. Coverage is used to find gaps, not as a target. The result is a prioritized report with evidence and a step-by-step plan; changes to tests, configuration, or CI are made only after your approval. On request, the adopted rules are recorded in the project's `TESTING.md` with working commands, so people and agents follow the same policy.
+
+It works with any language and test runner, takes commands from the project itself, and maps its recommendations onto Vitest, Jest, pytest, Go, and Playwright.
 
 ### Obsidian notes
 
