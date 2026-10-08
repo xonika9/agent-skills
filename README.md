@@ -77,6 +77,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 
 - The agent answers from memory or skims the topic: start with [`x9-research`](skills/x9-research/SKILL.md).
 - The task depends on your login, region, feed, cart, or private pages: add [`x9-browser-session`](skills/x9-browser-session/SKILL.md).
+- You are starting a TypeScript web app, or want an existing project's stack and development rules checked: use [`x9-web-stack`](skills/x9-web-stack/SKILL.md).
 - You are building or preparing to release a public site or API: use [`x9-appsec`](skills/x9-appsec/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
@@ -103,6 +104,14 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 Installing a skill adds its files, but a usable workflow can still depend on a CLI, a user-controlled account, or a runtime component. This skill checks trusted local setup declarations after installation or an update, reports check coverage separately from readiness, and gives a manual checklist for what remains.
 
 It also compares the current harness's user configuration with sanitized, opinionated x9 profiles for OpenCode, Claude Code, and Codex. The first pass only reports current and recommended values, support evidence, and the practical effect of each difference. After explicit approval it merges only the shown settings, preserves unrelated private values and comments, and keeps a local backup. It never copies credentials, personal paths, SSH data, project state, or local hooks into the public profile. Other runtimes receive `PARTIAL` coverage and `BLOCKED` readiness rather than a guess.
+
+### Web application development
+
+#### [`x9-web-stack`](skills/x9-web-stack/SKILL.md)
+
+A template for TypeScript web applications that has been run end to end: Bun, React with TanStack Router, Query, and Form, Hono with an OpenAPI contract, PostgreSQL with Drizzle, Biome, Vitest, and Docker Compose behind Caddy. A new project starts from a verified scaffold with current package versions, a reference module, module boundaries enforced by the linter, and one `verify` command.
+
+For an existing project the skill maps each layer against the template. Where the tools match, it checks the template's rules and known library pitfalls; where they differ, it applies only the underlying principles and suggests replacing a tool only for a concrete defect. It can also keep a marked rules block in the project's `AGENTS.md`, so agents follow the rules without invoking the skill.
 
 ### Application security
 

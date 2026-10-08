@@ -1,0 +1,10 @@
+# Copy to .env. Never commit real secrets.
+POSTGRES_USER=app
+POSTGRES_PASSWORD=change-me
+POSTGRES_DB=app
+SITE_ADDRESS=localhost
+PUBLIC_ORIGIN=https://localhost
+
+# Local dev server and tests (see compose.dev.yaml)
+DATABASE_URL=postgres://app:change-me@localhost:5432/app
+TEST_DATABASE_URL=postgres://app:change-me@localhost:5432/app_test

@@ -1,6 +1,6 @@
 ---
 name: x9-context-files-generator
-description: Use when creating, auditing, or updating repository-level AGENTS.md, CLAUDE.md, or README.md — «создай AGENTS.md», «обнови README», «настрой контекст репозитория», "generate repository context files". Do not use for global personal instructions, skills, or ordinary documentation unrelated to onboarding agents or humans.
+description: Use when creating, auditing, or updating repository-level AGENTS.md, CLAUDE.md, or README.md — «создай AGENTS.md», «обнови README», «настрой контекст репозитория», "generate repository context files". Do not use for global personal instructions, skills, the development-rules block owned by x9-web-stack, or ordinary documentation unrelated to onboarding agents or humans.
 compatibility: Full creation, audit, or update of agent-facing repository instructions requires x9-agent-instructions. README-only work does not.
 ---
 

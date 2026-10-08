@@ -1,0 +1,14 @@
+{
+  "name": "web",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#web/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run",
+    "build": "vite build"
+  }
+}

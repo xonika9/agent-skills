@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "supported_runtimes": ["claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running the project bootstrap script.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "bun-runtime",
+      "runtimes": ["claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Bootstrapping and verifying projects on the stack.",
+      "check": {"type": "command-present", "command": "bun"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "docker-runtime",
+      "runtimes": ["claude", "codex"],
+      "kind": "command",
+      "level": "optional",
+      "needed_for": "Running the dev database and building containers.",
+      "check": {"type": "command-present", "command": "docker"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "context-files-skill",
+      "runtimes": ["claude", "codex"],
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Creating AGENTS.md, CLAUDE.md, and README around the rules block.",
+      "check": {"type": "skill-present", "target_skill": "x9-context-files-generator"},
+      "guidance_id": "install-skill"
+    },
+    {
+      "id": "agent-instructions-rubric",
+      "runtimes": ["claude", "codex"],
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Writing the AGENTS.md rules block.",
+      "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}

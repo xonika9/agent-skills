@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        # Same major version as production.
+        image: postgres:18
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://app:app@localhost:5432/app_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun ci
+      - run: bun run verify
+
+  # Upgrade path: build the database from main's migrations, then apply the
+  # branch's. Catches migrations that only work on an empty database.
+  migrations:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://app:app@localhost:5432/app
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+      - uses: actions/checkout@v7
+        with:
+          path: head
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: head/package.json
+      - name: Apply main's migrations
+        working-directory: base
+        run: bun ci && cd apps/api && bun src/db/migrate.ts
+      - name: Apply the branch's migrations
+        working-directory: head
+        run: bun ci && cd apps/api && bun src/db/migrate.ts

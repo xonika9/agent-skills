@@ -1,0 +1,19 @@
+{
+  "name": "api",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#api/*": "./src/*"
+  },
+  "exports": {
+    "./contract": "./src/contract.ts"
+  },
+  "scripts": {
+    "dev": "bun --env-file=../../.env --watch src/index.ts",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun --env-file=../../.env src/db/migrate.ts",
+    "db:check": "drizzle-kit check"
+  }
+}

@@ -4,11 +4,19 @@
 
 ### Highlights
 
+- Add `x9-web-stack` for TypeScript web applications: start a new project from a verified Bun, React, Hono, and PostgreSQL scaffold, audit an existing project on this or another stack, and keep a marked development-rules block in the project's `AGENTS.md`. `x9-context-files-generator` now leaves that block to `x9-web-stack`.
+
 ### Install / update
+
+- Update the skill package to use `x9-web-stack`.
 
 ### Compatibility
 
+- `x9-web-stack` is packaged for Claude Code and Codex. Bootstrapping a project needs `python3`, `bun`, and `git`, plus Docker for the dev database; audits need only read access.
+
 ### Breaking changes
+
+None.
 
 ## 3.8.0 - 2026-09-29
 

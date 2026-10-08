@@ -1,0 +1,389 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!**/routeTree.gen.ts", "!**/openapi.json", "!**/migrations/meta"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 120
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noImportCycles": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "warn"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/api/src/**", "apps/api/test/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#api/modules/*/*", "!#api/modules/*/index.ts"],
+                    "message": "Use another module only through #api/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["hono", "hono/**"],
+                    "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
+                  },
+                  {
+                    "group": ["**/db/client.ts"],
+                    "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
+                  },
+                  {
+                    "group": ["**/testing.ts"],
+                    "message": "Test factories are for tests only."
+                  }
+                ]
+              }
+            },
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "Bun": "Tests run on Node. Use Bun.* only in src/index.ts or behind src/platform/."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/src/modules/*/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#api/modules/*/*", "!#api/modules/*/index.ts"],
+                    "message": "Use another module only through #api/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["hono", "hono/**"],
+                    "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
+                  },
+                  {
+                    "group": ["**/db/client.ts"],
+                    "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
+                  },
+                  {
+                    "group": ["**/testing.ts"],
+                    "message": "Test factories are for tests only."
+                  },
+                  {
+                    "group": ["../**"],
+                    "message": "Stay inside the module; reach other modules through their index.ts."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/src/modules/*/routes.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#api/modules/*/*", "!#api/modules/*/index.ts"],
+                    "message": "Use another module only through #api/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["**/db/client.ts"],
+                    "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
+                  },
+                  {
+                    "group": ["**/testing.ts"],
+                    "message": "Test factories are for tests only."
+                  },
+                  {
+                    "group": ["../**"],
+                    "message": "Stay inside the module; reach other modules through their index.ts."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/src/shared/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["hono", "hono/**"],
+                    "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
+                  },
+                  {
+                    "group": ["**/db/client.ts"],
+                    "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
+                  },
+                  {
+                    "group": ["**/testing.ts"],
+                    "message": "Test factories are for tests only."
+                  },
+                  {
+                    "group": ["#api/modules/**", "../modules/**"],
+                    "message": "shared/ must not depend on modules."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/src/db/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#api/modules/*/*", "!#api/modules/*/index.ts", "!#api/modules/*/schema.ts"],
+                    "message": "db/schema.ts collects module tables; everything else goes through index.ts."
+                  },
+                  {
+                    "group": ["hono", "hono/**"],
+                    "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
+                  },
+                  {
+                    "group": ["**/testing.ts"],
+                    "message": "Test factories are for tests only."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/src/app.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#api/modules/*/*", "!#api/modules/*/index.ts", "!#api/modules/*/routes.ts"],
+                    "message": "app.ts mounts routes.ts; everything else goes through index.ts."
+                  },
+                  {
+                    "group": ["**/db/client.ts"],
+                    "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
+                  },
+                  {
+                    "group": ["**/testing.ts"],
+                    "message": "Test factories are for tests only."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/src/index.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#api/modules/*/*", "!#api/modules/*/index.ts"],
+                    "message": "Use another module only through #api/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["hono", "hono/**"],
+                    "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
+                  },
+                  {
+                    "group": ["**/testing.ts"],
+                    "message": "Test factories are for tests only."
+                  }
+                ]
+              }
+            },
+            "noRestrictedGlobals": {
+              "level": "off"
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/api/**/*.test.ts", "apps/api/test/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "off"
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#web/modules/*/*", "!#web/modules/*/index.ts"],
+                    "message": "Use another module only through #web/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["api", "api/**", "hono", "hono/**"],
+                    "message": "Network calls go through src/api/."
+                  }
+                ]
+              }
+            },
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "fetch": "Requests go through src/api/ so shared headers and 401 handling apply."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/src/modules/*/*.ts", "apps/web/src/modules/*/*.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#web/modules/*/*", "!#web/modules/*/index.ts"],
+                    "message": "Use another module only through #web/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["api", "api/**", "hono", "hono/**"],
+                    "message": "Network calls go through src/api/."
+                  },
+                  {
+                    "group": ["../**"],
+                    "message": "Stay inside the module; reach other modules through their index.ts."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/src/modules/*/*/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#web/modules/*/*", "!#web/modules/*/index.ts"],
+                    "message": "Use another module only through #web/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["api", "api/**", "hono", "hono/**"],
+                    "message": "Network calls go through src/api/."
+                  },
+                  {
+                    "group": ["../../**"],
+                    "message": "Stay inside the module; reach other modules through their index.ts."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/src/api/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["#web/modules/*/*", "!#web/modules/*/index.ts"],
+                    "message": "Use another module only through #web/modules/<name>/index.ts."
+                  },
+                  {
+                    "group": ["api", "api/**", "!api/contract"],
+                    "message": "The client imports only types from api/contract."
+                  }
+                ]
+              }
+            },
+            "noRestrictedGlobals": {
+              "level": "off"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

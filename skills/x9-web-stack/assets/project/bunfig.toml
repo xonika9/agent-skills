@@ -1,0 +1,4 @@
+[install]
+linker = "isolated"
+# Refuse versions published less than seven days ago (seconds).
+minimumReleaseAge = 604800

@@ -1,0 +1,21 @@
+{
+  "name": "__APP_NAME__",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@__BUN_VERSION__",
+  "workspaces": {
+    "packages": [
+      "apps/*"
+    ],
+    "catalog": {}
+  },
+  "scripts": {
+    "db:up": "docker compose -f compose.yaml -f compose.dev.yaml up -d --wait db",
+    "dev": "bun run --filter '*' dev",
+    "lint": "biome check .",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter '*' test",
+    "build": "bun run --filter '*' build",
+    "verify": "biome ci . && bun run typecheck && bun run test && bun run --filter api db:check && bun run build"
+  }
+}
