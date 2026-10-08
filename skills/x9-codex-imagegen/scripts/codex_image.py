@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Generate one image with Codex's built-in image tool and verify the PNG.
 
-Runs one `codex exec` turn that calls the image tool once and copies the result
-to --out. Success is decided by the file, not by Codex's reply: the PNG
-signature and IHDR dimensions are read from disk. When Codex generated an image
-but did not copy it, the newest PNG from that thread's generated_images folder
-is recovered instead of generating again.
+Runs one `codex exec` turn. By default Codex receives a brief and shapes the
+prompt with its own imagegen skill; with --verbatim it passes the given prompt
+to the image tool unchanged. Success is decided by the file, not by Codex's
+reply: the PNG signature and IHDR header are read from disk. When Codex
+generated an image but did not save it, the newest PNG from that thread's
+generated_images folder is recovered instead of generating again.
 
 Prints one JSON object. Exit code 0 only for status "ok".
 """
@@ -26,15 +27,22 @@ from pathlib import Path
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 NETWORK_ERROR = re.compile(r"error sending request|network error|stream disconnected", re.I)
-# A VPN that drops idle connections after ~30 s makes the image tool fail
-# after several reconnects, which lands in this window of total run time.
-IDLE_CUT_WINDOW = (150.0, 210.0)
+FINAL_PROMPT = re.compile(r"FINAL_PROMPT:\s*(.+)", re.S)
 
-TASK = """Call your built-in image generation tool exactly once with the prompt between the markers, verbatim.
-Then copy the generated PNG to {out}. Do not edit any other file.
+BRIEF_TASK = """Use your imagegen skill with the built-in image generation tool to create the image described in the brief between the markers.
+Save the final image as a PNG at {out}. {replace}Do not edit any other file.
+Do not use the CLI or API fallback and never draw the image another way. If the built-in tool fails, reply FAILED=<exact error>.
+End your reply with a line FINAL_PROMPT: followed by the prompt of the saved image.
+<<<BRIEF
+{text}
+BRIEF>>>
+"""
+
+VERBATIM_TASK = """Call your built-in image generation tool exactly once with the prompt between the markers, verbatim.
+Save the final image as a PNG at {out}. {replace}Do not edit any other file.
 If the tool fails, reply FAILED=<exact error> and do nothing else; never draw the image another way.
 <<<PROMPT
-{prompt}
+{text}
 PROMPT>>>
 """
 
@@ -76,12 +84,9 @@ def parse_events(jsonl: str) -> tuple[str | None, list[str], list[str]]:
     return thread_id, messages, errors
 
 
-def classify(text: str, elapsed: float) -> tuple[str, bool]:
-    """Return (status, idle_cut_suspected) for a run that produced no image."""
-    if NETWORK_ERROR.search(text):
-        low, high = IDLE_CUT_WINDOW
-        return "network_error", low <= elapsed <= high
-    return "failed", False
+def classify(text: str) -> str:
+    """Return the status for a run that produced no image."""
+    return "network_error" if NETWORK_ERROR.search(text) else "failed"
 
 
 def recover(codex_home: Path, thread_id: str | None, started: float, out: Path) -> Path | None:
@@ -98,12 +103,14 @@ def recover(codex_home: Path, thread_id: str | None, started: float, out: Path) 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--prompt-file", required=True, type=Path)
+    parser.add_argument("--brief-file", required=True, type=Path,
+                        help="what to create; Codex shapes the prompt unless --verbatim")
+    parser.add_argument("--verbatim", action="store_true", help="pass the file to the image tool unchanged")
     parser.add_argument("--out", required=True, type=Path, help="destination .png path")
     parser.add_argument("--root", type=Path, help="Codex working root; must contain --out (default: its folder)")
     parser.add_argument("--image", action="append", default=[], type=Path, help="reference image (repeatable)")
-    parser.add_argument("--effort", default="low", help="model_reasoning_effort for the Codex turn")
-    parser.add_argument("--timeout", type=float, default=600.0, help="seconds before the run is stopped")
+    parser.add_argument("--effort", default="medium", help="model_reasoning_effort for the Codex turn")
+    parser.add_argument("--timeout", type=float, default=900.0, help="seconds before the run is stopped")
     parser.add_argument("--log-dir", type=Path, help="where run.jsonl and run.err go (default: new temp dir)")
     parser.add_argument("--overwrite", action="store_true", help="allow replacing an existing --out file")
     parser.add_argument("--codex", default="codex", help="codex executable")
@@ -125,9 +132,10 @@ def main() -> int:
         return finish("usage_error", error="--out must be inside --root, or workspace-write cannot copy it")
     if out.exists() and not args.overwrite:
         return finish("usage_error", error="--out already exists; pass --overwrite only if replacing it was requested")
-    prompt = args.prompt_file.read_text(encoding="utf-8").strip()
-    if not prompt or "PROMPT>>>" in prompt:
-        return finish("usage_error", error="prompt is empty or contains the PROMPT>>> marker")
+    text = args.brief_file.read_text(encoding="utf-8").strip()
+    marker = "PROMPT>>>" if args.verbatim else "BRIEF>>>"
+    if not text or marker in text:
+        return finish("usage_error", error=f"brief is empty or contains the {marker} marker")
     for image in args.image:
         if not image.is_file():
             return finish("usage_error", error=f"reference image not found: {image}")
@@ -140,11 +148,13 @@ def main() -> int:
         command += ["-i", str(image.expanduser().resolve())]
     command.append("-")
 
+    replace = "Replacing the existing file there is explicitly requested. " if out.exists() else ""
+    task = (VERBATIM_TASK if args.verbatim else BRIEF_TASK).format(out=out, replace=replace, text=text)
     started = time.time()
     timed_out = False
     with (log_dir / "run.jsonl").open("w") as stdout, (log_dir / "run.err").open("w") as stderr:
         try:
-            proc = subprocess.run(command, input=TASK.format(out=out, prompt=prompt), text=True,
+            proc = subprocess.run(command, input=task, text=True,
                                   stdout=stdout, stderr=stderr, timeout=args.timeout)
             exit_code: int | None = proc.returncode
         except FileNotFoundError:
@@ -154,8 +164,10 @@ def main() -> int:
     elapsed = round(time.time() - started, 1)
 
     thread_id, messages, errors = parse_events((log_dir / "run.jsonl").read_text(errors="replace"))
-    result.update(elapsed_seconds=elapsed, thread_id=thread_id, codex_exit=exit_code,
-                  last_message=messages[-1] if messages else None)
+    last = messages[-1] if messages else None
+    final_prompt = FINAL_PROMPT.search(last or "")
+    result.update(elapsed_seconds=elapsed, thread_id=thread_id, codex_exit=exit_code, last_message=last,
+                  final_prompt=final_prompt.group(1).strip() if final_prompt else None)
 
     def fresh_png() -> tuple[int, int, bool] | None:
         info = png_info(out)
@@ -176,8 +188,7 @@ def main() -> int:
     if timed_out:
         return finish("failed", error=f"timed out after {args.timeout:g}s")
     stderr_text = (log_dir / "run.err").read_text(errors="replace")
-    status, idle_cut = classify(failure_text or stderr_text, elapsed)
-    return finish(status, idle_cut_suspected=idle_cut,
+    return finish(classify(failure_text or stderr_text),
                   error=failure_text.strip() or f"no image produced; see {log_dir / 'run.err'}")
 
 

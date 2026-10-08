@@ -1,64 +1,43 @@
 ---
 name: x9-codex-imagegen
-description: Use when a raster image should be generated or edited from a reference with Codex's built-in image tool, including from Claude Code or OpenCode through `codex exec` — «сгенерируй картинку через Codex», «нарисуй иллюстрацию», "generate an image with Codex". Do not use for editable diagrams, local edits of existing images, or delegating non-image work to Codex.
+description: Use when an agent outside Codex, such as Claude Code or OpenCode on any model, should generate or edit a raster image through the user's Codex subscription — «сгенерируй картинку через Codex», «нарисуй иллюстрацию», "generate an image with Codex". Do not use inside a Codex session, where Codex's own imagegen skill applies, or for editable diagrams, local edits of existing images, or delegating non-image work to Codex.
 ---
 
 # Generate images through Codex
 
-Codex can generate images with its built-in tool under the user's ChatGPT login; no `OPENAI_API_KEY` is needed. One image is one `codex exec` turn, and success is a verified PNG on disk, never Codex's reply.
+Codex generates images with its built-in tool under the user's ChatGPT login; no `OPENAI_API_KEY` is needed. This skill lets an agent on any model use that route: it hands Codex a brief, Codex shapes the prompt with its own `imagegen` skill, and success is a verified PNG on disk, never Codex's reply.
 
 The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.
 
-This lets an agent on any model use a Codex subscription for images: in Claude Code, OpenCode, or another runtime with a shell, run `scripts/codex_image.py`. Inside a Codex session, Codex's own `imagegen` skill owns the workflow; the network gate and failure handling below still apply there, and success is still the PNG on disk.
+## Brief
 
-## Network gate
+Codex sees nothing of the conversation, so the brief carries everything the image depends on: what to depict and what it is for, exact text to render (quoted), aspect ratio, the role of each attached image by its order (`Image 1: edit target`, `Image 2: style reference`), what must stay unchanged in an edit, a transparent background when needed, and any style or constraints the user set. Leave prompt wording to Codex.
 
-The image tool waits 1–3 minutes for a result while no data flows. Some VPN clients drop such silent connections after about 30 seconds; then complex images never arrive and retries cannot help. Before the first generation in a session, run:
-
-```bash
-python3 <skill-directory>/scripts/check_idle_connection.py
-```
-
-It takes about 90 seconds and prints one JSON object:
-
-- `OK` — generate.
-- `CUT` — do not generate. Tell the user that the current VPN or proxy drops idle connections after `after_seconds` and that they need a route that keeps them open (another VPN client or mode, or no VPN), then rerun the check.
-- `ERROR` — the probe host is unreachable, so the gate is not proven. Retry with `--host` set to another SMTP submission server; if none is reachable, generate, treating a later suspected idle cut as `CUT`.
+When the user supplies a finished prompt, pass it with `--verbatim` so Codex sends it to the image tool unchanged.
 
 ## Generate
 
-Write the prompt to a file following [references/prompting.md](references/prompting.md), then run:
-
 ```bash
-python3 <skill-directory>/scripts/codex_image.py --prompt-file <prompt.txt> --out <absolute/path.png> [--image <reference.png>] [--root <dir>]
+python3 <skill-directory>/scripts/codex_image.py --brief-file <brief.txt> --out <absolute/path.png> [--image <reference.png>] [--root <dir>] [--verbatim]
 ```
 
-- The tool has no size parameter: the prompt states the aspect ratio; compare the reported `width` and `height` with the requested proportions and crop or scale a copy when they differ.
+- A run takes from under a minute to several minutes, and Codex may refine the image over more than one generation. Give the command a timeout of at least 15 minutes or run it in the background and wait for it; a run stopped early looks like a failure and invites a second, duplicate generation.
 - `--out` must lie inside `--root`, which defaults to the destination folder; Codex can write only inside that root.
 - The script refuses to replace an existing file. Pass `--overwrite` only when the user asked to replace it.
-- Up to 3 runs may proceed in parallel, each with its own `--out`. After network failures in more than one parallel run, continue sequentially.
+- Up to 3 runs may proceed in parallel, each with its own `--out`.
 
-Each run spends the user's Codex usage, so generate only the images and variants that were requested. Never substitute an image drawn another way (SVG, code, a local library) for a failed generation.
+Generate only the images the user asked for. Never substitute an image drawn another way (SVG, code, a local library) for a failed generation.
 
 ## Handle the result
 
-The script prints JSON with `status`, `elapsed_seconds`, `thread_id`, `log_dir`, and `error`.
+The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread_id`, `log_dir`, and `error`.
 
-- `ok` — the PNG signature, dimensions, and `has_alpha` were read from disk; a requested transparent background needs `has_alpha: true`. `source` is `codex-copy`, or `recovered:<path>` when Codex generated the image but did not copy it.
-- `network_error` with `idle_cut_suspected: true` — the failure landed 2.5–3.5 minutes in, the signature of a VPN idle cut. Do not retry; run the network gate.
-- `network_error` otherwise — a transient fault. Retry up to 4 attempts in total, waiting 60, 120, then 240 seconds. Before each retry, check that the server answers:
-
-  ```bash
-  curl -s -o /dev/null -w '%{http_code}' --max-time 15 https://chatgpt.com/backend-api/codex/responses
-  ```
-
-  `405` means reachable; `000` or a timeout means the network is down, so keep waiting. A `405` does not prove that silent connections survive; only the network gate does.
-- `failed` — read `error`. A content-policy refusal is not retried with the same prompt: rewrite it while keeping the user's intent, say what changed, and stop when the intent itself is refused. Report any other error exactly, together with `log_dir`.
+- `ok` — the PNG signature, dimensions, and `has_alpha` were read from disk; a requested transparent background needs `has_alpha: true`. `source` is `codex-copy`, or `recovered:<path>` when Codex generated the image but did not save it. Compare `width` and `height` with the requested proportions and crop or scale a copy when they differ.
+- `network_error` — retry at most twice, after 60 and then 120 seconds.
+- `failed` — read `error`. For a content refusal, revise the brief while keeping the user's intent and say what changed; stop when the intent itself is refused. Report any other error exactly, together with `log_dir`.
 - `usage_error` — fix the arguments; nothing was generated.
-
-Stop and report when the same cause repeats or the retry budget is spent.
 
 ## Done
 
-- Each requested image exists at its destination with status `ok`, and its dimensions match the requested proportions or the adjustment is reported.
+- Each requested image exists at its destination with status `ok`, its dimensions match the requested proportions or the adjustment is reported, and its `final_prompt` is available to the user.
 - Every image that was not produced is reported with its status, exact error, and `log_dir`.

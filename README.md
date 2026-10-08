@@ -92,7 +92,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
 - You need a read-only view of a repository's architecture, trade-offs, and change hotspots: use [`x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md).
 - You need an editable diagram in Excalidraw, Mermaid, or draw.io: use [`x9-diagrams`](skills/x9-diagrams/SKILL.md).
-- You need a generated picture or illustration without an image API key: use [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md).
+- You work outside Codex but want a generated picture through your Codex subscription: use [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
 - Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md).
 
@@ -207,9 +207,9 @@ Each route produces native editable source: `.excalidraw` JSON with checked bind
 
 #### [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md)
 
-Codex can generate images with its built-in tool under a ChatGPT login, so no image API key is needed. This skill makes that route dependable from Claude Code, OpenCode, or Codex itself: one image per Codex run, and the result counts only when a real PNG with readable dimensions exists at the requested path. If Codex generated the image but did not copy it, the skill recovers it instead of paying for a second generation.
+Codex generates images with its built-in tool under a ChatGPT login, so no image API key is needed. This skill opens that route to agents outside Codex: Claude Code, OpenCode, or another harness on any model hands Codex a brief, and Codex shapes the prompt with its own image skill. Prompt quality therefore no longer depends on the model you happen to be using.
 
-Image generation keeps a connection silent for one to three minutes, and some VPN clients cut silent connections after about 30 seconds. A 90-second network check runs before the first generation in a session, so a network that cannot deliver the image is reported up front instead of being retried. Transient network errors, VPN cuts, and content refusals are handled differently, and the skill never substitutes a picture drawn another way.
+The result counts only when a real PNG with readable dimensions exists at the requested path, and the final prompt comes back with it. If Codex generated the image but did not save it, the skill recovers the file instead of paying for a second generation. A finished prompt from the user can still be passed through unchanged.
 
 ### Planning and architecture
 

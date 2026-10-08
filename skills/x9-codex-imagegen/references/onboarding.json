@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "supported_runtimes": ["opencode", "claude", "codex"],
+  "supported_runtimes": ["opencode", "claude"],
   "requirements": [
     {
       "id": "codex-command",
@@ -13,16 +13,16 @@
     },
     {
       "id": "python-runtime",
-      "runtimes": ["opencode", "claude", "codex"],
+      "runtimes": ["opencode", "claude"],
       "kind": "command",
       "level": "required",
-      "needed_for": "Running the network gate and the generation script.",
+      "needed_for": "Running the generation script.",
       "check": {"type": "command-present", "command": "python3"},
       "guidance_id": "install-command"
     },
     {
       "id": "chatgpt-login",
-      "runtimes": ["opencode", "claude", "codex"],
+      "runtimes": ["opencode", "claude"],
       "kind": "user-action",
       "level": "required",
       "needed_for": "Using the built-in image tool, which requires Codex signed in with a ChatGPT account.",

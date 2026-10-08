@@ -5,7 +5,7 @@
 ### Highlights
 
 - Add `x9-web-stack` for TypeScript web applications: start a new project from a verified Bun, React, Hono, and PostgreSQL scaffold, audit an existing project on this or another stack, and keep a marked development-rules block in the project's `AGENTS.md`. `x9-context-files-generator` now leaves that block to `x9-web-stack`.
-- Add `x9-codex-imagegen` for generating images with Codex's built-in tool from Claude Code, OpenCode, or Codex without an image API key. It checks up front whether the network keeps silent connections open long enough, accepts only a verified PNG, recovers an image Codex generated but did not copy, and tells transient network errors from VPN cuts and content refusals. Prompt rules for exact text, reference images, edits, and transparency are adapted from Codex's own image skill.
+- Add `x9-codex-imagegen`: Claude Code, OpenCode, and other harnesses on any model can generate images through the user's Codex subscription without an image API key. The agent hands Codex a brief, Codex shapes the prompt with its own image skill, and the result counts only as a verified PNG returned with its final prompt; an image Codex generated but did not save is recovered instead of generated again.
 
 ### Install / update
 
@@ -15,7 +15,7 @@
 ### Compatibility
 
 - `x9-web-stack` is packaged for Claude Code and Codex. Bootstrapping a project needs `python3`, `bun`, and `git`, plus Docker for the dev database; audits need only read access.
-- `x9-codex-imagegen` needs `python3` and, outside Codex, the `codex` command signed in with a ChatGPT account.
+- `x9-codex-imagegen` needs `python3` and the `codex` command signed in with a ChatGPT account. Inside Codex, use Codex's own image skill instead.
 
 ### Breaking changes
 

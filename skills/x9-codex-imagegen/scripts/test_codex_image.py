@@ -31,13 +31,16 @@ FAKE = f"""#!{sys.executable}
 import json, os, re, sys
 from pathlib import Path
 task = sys.stdin.read()
-out = re.search(r"copy the generated PNG to (.+?)\\. Do not", task).group(1)
+out = re.search(r"Save the final image as a PNG at (.+?)\\. ", task).group(1)
 png = bytes.fromhex({png_bytes(30, 20).hex()!r})
 alpha_png = bytes.fromhex({png_bytes(30, 20, 6).hex()!r})
 print(json.dumps({{"type": "thread.started", "thread_id": {THREAD!r}}}))
 mode = os.environ["FAKE_MODE"]
 if mode == "copy":
     Path(out).write_bytes(png)
+    kind = "verbatim" if "verbatim" in task.splitlines()[0] else "brief"
+    reply = f"Saved ({{kind}}).\\nFINAL_PROMPT: a red square, landscape 3:2"
+    print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": reply}}}}))
 elif mode == "alpha":
     Path(out).write_bytes(alpha_png)
 elif mode == "recover":
@@ -57,18 +60,17 @@ elif mode == "policy":
 
 def run(tmp: Path, mode: str, out: Path, *extra: str) -> tuple[int, dict]:
     env = dict(os.environ, FAKE_MODE=mode, CODEX_HOME=str(tmp / f"home-{mode}"))
-    prompt = tmp / "prompt.txt"
-    prompt.write_text("a red square, landscape 3:2")
-    proc = subprocess.run([sys.executable, str(SCRIPT), "--prompt-file", str(prompt), "--out", str(out),
+    brief = tmp / "brief.txt"
+    brief.write_text("a red square, landscape 3:2")
+    proc = subprocess.run([sys.executable, str(SCRIPT), "--brief-file", str(brief), "--out", str(out),
                            "--codex", str(tmp / "codex"), "--log-dir", str(tmp / f"logs-{mode}"), *extra],
                           capture_output=True, text=True, env=env)
     return proc.returncode, json.loads(proc.stdout)
 
 
 def main() -> None:
-    assert classify("FAILED=network error: error sending request", 180.0) == ("network_error", True)
-    assert classify("FAILED=network error: error sending request", 40.0) == ("network_error", False)
-    assert classify("FAILED=content policy", 180.0) == ("failed", False)
+    assert classify("FAILED=network error: error sending request") == "network_error"
+    assert classify("FAILED=content policy") == "failed"
 
     with tempfile.TemporaryDirectory() as name:
         tmp = Path(name)
@@ -79,6 +81,11 @@ def main() -> None:
         assert code == 0 and result["status"] == "ok", result
         assert (result["width"], result["height"]) == (30, 20) and result["source"] == "codex-copy", result
         assert result["thread_id"] == THREAD and result["has_alpha"] is False, result
+        assert result["final_prompt"] == "a red square, landscape 3:2", result
+        assert "(brief)" in result["last_message"], result
+
+        code, result = run(tmp, "copy", tmp / "v.png", "--verbatim")
+        assert code == 0 and "(verbatim)" in result["last_message"], result
 
         code, result = run(tmp, "alpha", tmp / "alpha.png")
         assert code == 0 and result["has_alpha"] is True, result
@@ -94,7 +101,6 @@ def main() -> None:
 
         code, result = run(tmp, "network", tmp / "d.png")
         assert code == 1 and result["status"] == "network_error", result
-        assert result["idle_cut_suspected"] is False, result
 
         code, result = run(tmp, "policy", tmp / "e.png")
         assert code == 1 and result["status"] == "failed" and "safety" in result["error"], result
