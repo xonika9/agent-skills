@@ -1,6 +1,6 @@
 ---
 name: x9-codex-delegation
-description: Claude Code only; never use in a Codex session. Use when substantial, well-scoped work should actually be delegated to Codex — «отдай в Codex», «делегируй Codex», «передай эту часть работы в Codex, чтобы распределить лимиты», "use Codex", implementation, migration, codebase analysis, logged-in browser work, UI verification, or a second-opinion review. Do not use for checking or planning subscription quotas without a concrete task, trivial work, choosing between Claude models, or merely drafting a prompt/brief that is not explicitly being sent to Codex.
+description: Claude Code only; never use in a Codex session. Use when substantial, well-scoped work should actually be delegated to Codex — «отдай в Codex», «делегируй Codex», «передай эту часть работы в Codex, чтобы распределить лимиты», "use Codex", implementation, migration, codebase analysis, logged-in browser work, UI verification, or a second-opinion review. Do not use for checking or planning subscription quotas without a concrete task, trivial work, choosing between Claude models, merely drafting a prompt/brief that is not explicitly being sent to Codex, or generating images (x9-codex-imagegen).
 ---
 
 # Delegate from Claude Code to Codex

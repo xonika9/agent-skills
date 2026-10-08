@@ -92,6 +92,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
 - You need a read-only view of a repository's architecture, trade-offs, and change hotspots: use [`x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md).
 - You need an editable diagram in Excalidraw, Mermaid, or draw.io: use [`x9-diagrams`](skills/x9-diagrams/SKILL.md).
+- You need a generated picture or illustration without an image API key: use [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
 - Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md).
 
@@ -203,6 +204,12 @@ It only applies when the earlier answer is available in the same thread. If the 
 Choosing the diagram type and choosing its file format are different decisions. When the medium is open, this skill first checks whether a short paragraph or table would answer more directly. If a diagram is warranted, it identifies the relationship the visual must explain, then selects Excalidraw, Mermaid, or draw.io from the delivery constraints. The shared method controls the question, audience, reading direction, hierarchy, density, boundaries, labels, routing, and the point where one overloaded diagram should split.
 
 Each route produces native editable source: `.excalidraw` JSON with checked bindings and current fonts, Mermaid text validated by the target renderer, or `.drawio` XML with pages, layers, containers, geometry, and resolvable connections. Structural validity and visual quality are separate gates, so completion requires a compatible render or editor inspection; unavailable native proof is reported as `DEGRADED`.
+
+#### [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md)
+
+Codex can generate images with its built-in tool under a ChatGPT login, so no image API key is needed. This skill makes that route dependable from Claude Code, OpenCode, or Codex itself: one image per Codex run, and the result counts only when a real PNG with readable dimensions exists at the requested path. If Codex generated the image but did not copy it, the skill recovers it instead of paying for a second generation.
+
+Image generation keeps a connection silent for one to three minutes, and some VPN clients cut silent connections after about 30 seconds. A 90-second network check runs before the first generation in a session, so a network that cannot deliver the image is reported up front instead of being retried. Transient network errors, VPN cuts, and content refusals are handled differently, and the skill never substitutes a picture drawn another way.
 
 ### Planning and architecture
 
