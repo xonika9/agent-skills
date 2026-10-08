@@ -4,17 +4,26 @@
 
 ### Highlights
 
-- Add `x9-test-quality`: during ordinary work agents quietly check every new test against the behavior it protects and the regression it would catch before adding it, and can audit an existing suite for tests that prove nothing, duplicate stronger tests, or keep production code alive only for themselves. It can also audit how a project organizes testing, scaled to the project's size and reported as at most five main findings: size classes with timeouts, which checks run on every change, after merge, nightly, and before release, affected-only runs, contract tests between services, a flaky-test quarantine with an owner and an expiry, coverage used to find gaps rather than as a target, a green main branch through merge queues and revert-first, suite health metrics, reproducible environments, real databases in integration tests, and migrations applied in CI. Audits report evidence and a prioritized plan first; tests, configuration, and CI change only after you approve, and on request the adopted rules are recorded in the project's `TESTING.md`.
-
-- `x9-web-stack` no longer treats Playwright as a required layer: end-to-end tests are added on demand when a user flow needs them, so an audit does not report a project without them as missing a core layer. Its schema rule now says why UUID keys keep `gen_random_uuid()`: self-hosted Supabase defaults to PostgreSQL 17, which has no `uuidv7()`. It now suggests RustFS for larger self-hosted deployments rather than waiting for it to mature.
-
 ### Install / update
-
-- Update the skill package to use `x9-test-quality`. `x9-web-stack` audits now point to it when the evidence calls for a review of the tests themselves.
 
 ### Compatibility
 
-- `x9-test-quality` uses portable Agent Skills structure, is not tied to a language or test runner, and adds no required dependency.
+### Breaking changes
+
+## 3.10.0 - 2026-10-08
+
+### Highlights
+
+- Add `x9-test-quality`. During ordinary work, agents quietly check every new test against the behavior it protects and the regression it would catch, write a test the user asks for after at most one sentence of advice, and handle red tests without silencing them. On request it audits an existing suite for tests that prove nothing, duplicate stronger tests, or keep production code alive only for themselves, and audits how a project organizes testing: size classes and timeouts, which checks run on every change, after merge, on a schedule, and before release, affected-only runs, contracts between services, flaky-test quarantine, a green main branch, reproducible environments, real databases in persistence tests, migrations in CI, and coverage as a gap finder. The project audit is scaled to the project's size and reports at most five main findings with a step-by-step plan; changes are made only after approval, and on request the adopted rules are recorded in the project's `TESTING.md`.
+- `x9-web-stack` treats end-to-end tests as an on-demand layer, added when a user flow needs them, so an audit no longer reports a project without Playwright as missing a core layer. Its audits point to `x9-test-quality` when the tests themselves need a review. Its schema rule explains why UUID keys keep `gen_random_uuid()` (self-hosted Supabase defaults to PostgreSQL 17, which has no `uuidv7()`), and it suggests RustFS for larger self-hosted deployments.
+
+### Install / update
+
+- Update the skill package to use `x9-test-quality` and to receive the `x9-web-stack` changes.
+
+### Compatibility
+
+- `x9-test-quality` uses portable Agent Skills structure, is packaged for Claude Code and Codex, is not tied to a language or test runner, and adds no required dependency.
 
 ### Breaking changes
 
