@@ -21,6 +21,15 @@
       "guidance_id": "install-command"
     },
     {
+      "id": "git-command",
+      "runtimes": ["claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Checking the bootstrapped project's working tree before the first commit.",
+      "check": {"type": "command-present", "command": "git"},
+      "guidance_id": "install-command"
+    },
+    {
       "id": "docker-runtime",
       "runtimes": ["claude", "codex"],
       "kind": "command",

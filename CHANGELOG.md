@@ -4,16 +4,31 @@
 
 ### Highlights
 
-- Add `x9-web-stack` for TypeScript web applications: start a new project from a verified Bun, React, Hono, and PostgreSQL scaffold, audit an existing project on this or another stack, and keep a marked development-rules block in the project's `AGENTS.md`. `x9-context-files-generator` now leaves that block to `x9-web-stack`.
-- Add `x9-codex-imagegen`: Claude Code, OpenCode, and other harnesses on any model can generate images through the user's Codex subscription without an image API key. The agent hands Codex a brief, Codex shapes the prompt with its own image skill, and the result counts only as a verified PNG returned with its final prompt; an image Codex generated but did not save is recovered instead of generated again.
-
 ### Install / update
-
-- Update the skill package to use `x9-web-stack`.
-- Update the skill package to use `x9-codex-imagegen`.
 
 ### Compatibility
 
+### Breaking changes
+
+## 3.9.0 - 2026-10-08
+
+### Highlights
+
+- Questions at the end of an agent response now follow one format: numbered questions, lettered answer options, and a localized heading, so a whole set can be answered as `1а, 2б`.
+- Add `x9-web-stack` for TypeScript web applications: start a new project from a verified Bun, React, Hono, and PostgreSQL scaffold, audit an existing project on this or another stack, and keep a marked development-rules block in the project's `AGENTS.md`. `x9-context-files-generator` now leaves that block to `x9-web-stack`.
+- Add `x9-codex-imagegen`: Claude Code, OpenCode, and other harnesses on any model can generate images through the user's Codex subscription without an image API key. The agent hands Codex a brief, Codex shapes the prompt with its own image skill, and the result counts only as a verified PNG returned with its final prompt; an image Codex generated but did not save is recovered instead of generated again.
+- `x9-idea-critic` now runs its GPT critic on `gpt-6.1-sol`.
+
+### Install / update
+
+- Update the global instruction files for each runtime to receive the question format.
+- Update the skill package to use `x9-web-stack`.
+- Update the skill package to use `x9-codex-imagegen`.
+- Update `x9-idea-critic` to receive the new GPT model.
+
+### Compatibility
+
+- The question format is shared by OpenCode, Codex, and Claude Code; no new dependency is required.
 - `x9-web-stack` is packaged for Claude Code and Codex. Bootstrapping a project needs `python3`, `bun`, and `git`, plus Docker for the dev database; audits need only read access.
 - `x9-codex-imagegen` needs `python3` and the `codex` command signed in with a ChatGPT account. Inside Codex, use Codex's own image skill instead. On a network that drops silent connections, set `X9_CODEX_IMAGE_PROXY` to an HTTP proxy whose route keeps them open.
 

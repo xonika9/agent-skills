@@ -9,7 +9,17 @@
 - When delivering a one-off prompt for the user to copy into another chat or agent, put the complete prompt in a single fenced code block with no language tag. Keep any explanation outside the block; do not format the prompt as a blockquote or split it across blocks. If the prompt contains fenced code, use a longer outer fence so the entire prompt remains in one copyable block.
 
 **Questions that need a user response.**
-- Put every such question in a final `## Questions` section; omit it when no answer is needed. For decisions, offer 2–4 mutually exclusive options, mark and briefly explain the recommended one; for a needed fact, value, file, or other non-choice input, ask directly rather than inventing options.
+- Put every such question in a final section headed `## Вопросы` in Russian responses and `## Questions` otherwise; omit it when no answer is needed.
+- Number questions `1.`, `2.`, `3.`. For a decision, list 2–4 mutually exclusive options as nested list items lettered in the response alphabet (`а)`, `б)`, `в)`, `г)` in Russian; `a)`–`d)` otherwise) so the user can reply `1а, 2б`; mark the recommended option inline with a one-clause reason. For a needed fact, value, file, or other non-choice input, ask the numbered question without options.
+
+  ```markdown
+  ## Вопросы
+
+  1. Где хранить настройку?
+     - а) В файле проекта — рекомендую: переживёт переустановку.
+     - б) В глобальном конфиге.
+  2. Какой токен использовать для теста?
+  ```
 
 ## Authority and preservation
 
