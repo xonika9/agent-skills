@@ -4,7 +4,11 @@
 
 ### Highlights
 
+- `x9-codex-imagegen` no longer leaves Codex generating in the background when the agent stops a run: the whole run is terminated and reported as `interrupted`, so a repeat cannot produce a duplicate image. With `--verbatim`, the result now returns the exact prompt that was sent, and a `codex` command that cannot start is reported instead of crashing the script.
+
 ### Install / update
+
+- Update the skill package to receive the `x9-codex-imagegen` fixes.
 
 ### Compatibility
 

@@ -38,6 +38,7 @@ The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread
 - `network_error` otherwise — retry at most twice, after 60 and then 120 seconds.
 - `proxy_unreachable` — `X9_CODEX_IMAGE_PROXY` is set but does not answer, so nothing was started. Report `error` so the user can restore the proxy.
 - `failed` — read `error`. For a content refusal, revise the brief while keeping the user's intent and say what changed; stop when the intent itself is refused. Report any other error exactly, together with `log_dir`.
+- `interrupted` — the script was stopped from outside and terminated the whole Codex run, so nothing keeps generating in the background; a repeat cannot produce a duplicate.
 - `usage_error` — fix the arguments; nothing was generated.
 
 ## Done

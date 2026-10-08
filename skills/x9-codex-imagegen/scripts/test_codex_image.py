@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import socket
 import struct
 import subprocess
@@ -42,7 +43,9 @@ if mode == "copy":
     Path(out).write_bytes(png)
     kind = "verbatim" if "verbatim" in task.splitlines()[0] else "brief"
     proxy = os.environ.get("HTTPS_PROXY", "")
-    reply = f"Saved ({{kind}}) proxy=[{{proxy}}].\\nFINAL_PROMPT: a red square, landscape 3:2"
+    reply = f"Saved ({{kind}}) proxy=[{{proxy}}]."
+    if kind == "brief":  # like Codex: only the brief task asks for a FINAL_PROMPT line
+        reply += "\\nFINAL_PROMPT: a red square, landscape 3:2"
     print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": reply}}}}))
 elif mode == "alpha":
     Path(out).write_bytes(alpha_png)
@@ -106,6 +109,7 @@ def main() -> None:
 
         code, result = run(tmp, "copy", tmp / "v.png", "--verbatim")
         assert code == 0 and "(verbatim)" in result["last_message"], result
+        assert result["final_prompt"] == "a red square, landscape 3:2", "verbatim reports the prompt it sent"
 
         code, result = run(tmp, "alpha", tmp / "alpha.png")
         assert code == 0 and result["has_alpha"] is True, result
@@ -152,6 +156,28 @@ def main() -> None:
         assert code == 1 and "timed out" in result["error"], result
         time.sleep(4)
         assert not (tmp / "j.png").exists(), "a timed-out run must not leave a process that writes the image"
+
+        # A stop signal to the script must take the whole Codex run down with it.
+        env = dict(os.environ, FAKE_MODE="hang", CODEX_HOME=str(tmp / "home-int"), X9_CODEX_IMAGE_PROXY="")
+        (tmp / "brief.txt").write_text("a red square, landscape 3:2")
+        proc = subprocess.Popen([sys.executable, str(SCRIPT), "--brief-file", str(tmp / "brief.txt"),
+                                 "--out", str(tmp / "k.png"), "--codex", str(tmp / "codex"),
+                                 "--log-dir", str(tmp / "logs-int")], stdout=subprocess.PIPE, text=True, env=env)
+        time.sleep(1.5)
+        proc.send_signal(signal.SIGTERM)
+        result = json.loads(proc.communicate(timeout=30)[0])
+        assert proc.returncode == 1 and result["status"] == "interrupted", result
+        time.sleep(4)
+        assert not (tmp / "k.png").exists(), "an interrupted run must not leave a process that writes the image"
+
+        (tmp / "broken").write_text("not a program")
+        (tmp / "broken").chmod(0o755)
+        brief = tmp / "brief.txt"
+        proc = subprocess.run([sys.executable, str(SCRIPT), "--brief-file", str(brief), "--out", str(tmp / "l.png"),
+                               "--codex", str(tmp / "broken"), "--log-dir", str(tmp / "logs-broken")],
+                              capture_output=True, text=True)
+        result = json.loads(proc.stdout)
+        assert result["status"] == "failed" and "cannot start" in result["error"], result
 
         code, result = run(tmp, "copy", tmp / "f.png", "--root", str(tmp / "elsewhere"))
         assert code == 1 and result["status"] == "usage_error", result

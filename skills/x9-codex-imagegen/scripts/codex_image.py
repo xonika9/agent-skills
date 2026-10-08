@@ -111,6 +111,22 @@ def proxy_problem(url: str) -> str | None:
     return None
 
 
+STOP_SIGNALS = [getattr(signal, name) for name in ("SIGTERM", "SIGINT", "SIGHUP") if hasattr(signal, name)]
+
+
+class Interrupted(Exception):
+    pass
+
+
+def raise_interrupted(signum: int, _frame: object) -> None:
+    raise Interrupted(signal.Signals(signum).name)
+
+
+def ignore_stop_signals() -> None:
+    for sig in STOP_SIGNALS:
+        signal.signal(sig, signal.SIG_IGN)
+
+
 def stop_group(proc: subprocess.Popen) -> None:
     """Stop Codex with everything it started; the npm `codex` wrapper cannot forward SIGKILL."""
     if not hasattr(os, "killpg"):
@@ -206,19 +222,36 @@ def main() -> int:
                                     env=env, start_new_session=hasattr(os, "killpg"))
         except FileNotFoundError:
             return finish("failed", error=f"codex executable not found: {args.codex}")
+        except OSError as error:
+            return finish("failed", error=f"cannot start codex executable {args.codex}: {error}")
+        # Codex runs in its own process group, so a caller's stop signal must be passed on here.
+        previous = {sig: signal.signal(sig, raise_interrupted) for sig in STOP_SIGNALS}
         try:
             proc.communicate(task, timeout=args.timeout)
             exit_code: int | None = proc.returncode
         except subprocess.TimeoutExpired:
+            ignore_stop_signals()
             stop_group(proc)
             exit_code, timed_out = None, True
+        except Interrupted as stop:
+            ignore_stop_signals()
+            stop_group(proc)
+            return finish("interrupted", elapsed_seconds=round(time.time() - started, 1),
+                          error=f"stopped by {stop}; the whole Codex run was terminated")
+        finally:
+            for sig, handler in previous.items():
+                signal.signal(sig, handler)
     elapsed = round(time.time() - started, 1)
 
     thread_id, messages, errors = parse_events((log_dir / "run.jsonl").read_text(errors="replace"))
     last = messages[-1] if messages else None
     final_prompt = FINAL_PROMPT.search(last or "")
+    if args.verbatim:
+        final_prompt_text: str | None = text  # exactly what the image tool received
+    else:
+        final_prompt_text = final_prompt.group(1).strip() if final_prompt else None
     result.update(elapsed_seconds=elapsed, thread_id=thread_id, codex_exit=exit_code, last_message=last,
-                  final_prompt=final_prompt.group(1).strip() if final_prompt else None)
+                  final_prompt=final_prompt_text)
 
     def fresh_png() -> tuple[int, int, bool] | None:
         info = png_info(out)
