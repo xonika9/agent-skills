@@ -424,6 +424,14 @@ def main():
             listed,
         )
 
+        files_out = temp / "files-out"
+        write(files_out / "docs" / "a" / "PLAN.md", "# Plan\n")
+        write(files_out / "docs" / "spec.md", "# Spec\n")
+        write(files_out / "docs" / "keep.md", "# Keep\n")
+        (files_out / ".x9-okf.json").write_text('{"exclude": ["plan.md", "docs/spec.md"]}', encoding="utf-8")
+        listed = run(VALIDATE, files_out, "--missing").stdout.split()
+        expect("exclude also removes files by name or by path", listed == ["docs/keep.md"], listed)
+
         anchored = temp / "anchored"
         write(anchored / "Архив" / "top.md", "# Top\n")
         write(anchored / "a" / "Архив" / "nested.md", "# Nested\n")

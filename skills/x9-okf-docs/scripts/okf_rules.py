@@ -69,6 +69,10 @@ class Scope:
             return True
         return False
 
+    def excluded_file(self, rel_parts):
+        key = "/".join(name_key(part) for part in rel_parts)
+        return name_key(rel_parts[-1]) in self.names or key in self.paths
+
     def included_file(self, rel_parts):
         if not self.includes:
             return True
@@ -128,6 +132,7 @@ def markdown_files(scope: Scope):
                 or name.casefold() in INSTRUCTION_KEYS
                 or (name.casefold() == "readme.md" and not scope.include_readme)
                 or not scope.included_file(rel_base + [nfc(name)])
+                or scope.excluded_file(rel_base + [nfc(name)])
             ):
                 continue
             found["/".join(rel_base + [nfc(name)])] = path

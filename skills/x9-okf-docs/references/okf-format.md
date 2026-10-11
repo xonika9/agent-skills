@@ -26,6 +26,10 @@ Write string values in double quotes: an unquoted value containing `:` breaks so
 
 Write no other OKF field. `generated`, `verified`, `status`, `stale_after`, `sources`, `usage_window`, `resource`, `timestamp`, and the computation fields are not part of this contract. A document's existing fields, including a repository's own such as `state`, stay untouched unless the user asks to remove them.
 
+## Repository rules
+
+The Local part of a repository's block outranks this contract. It may keep a retired OKF field with its OKF meaning, such as `status` for `draft`, `stable`, and `deprecated` documents, and it may name the repository's own header fields, which this skill never touches. A repository's own field never reuses an OKF field name. Files whose header another tool owns under OKF names, such as Compound Engineering plans with `type: feat`, are excluded from scope in `.x9-okf.json` and named in Local.
+
 ## Files that are not documents
 
 - `index.md` and `log.md` are reserved by OKF and have no header; only a bundle-root `index.md` may carry `okf_version`. A `log.md` uses `## YYYY-MM-DD` headings, newest first.
@@ -41,7 +45,7 @@ Hidden folders, links, and the folders `raw`, `transcripts`, `summaries`, `artif
 ```
 
 - `include` limits documents to these folders, as paths from the root, including a listed hidden folder; without it the whole root is in scope.
-- `exclude` removes folders: an entry without `/` excludes every folder of that name, an entry with `/` is a path from the root.
+- `exclude` removes folders and files: an entry without `/` excludes every folder or file of that name, such as `PLAN.md`; an entry with `/` is a path from the root.
 - `include_readme` makes `README.md` files documents; they are excluded by default.
 
 Case and Unicode form are ignored when names are compared.
