@@ -36,9 +36,21 @@ A topic lasts as long as its matter: health never closes, a tax deduction closes
 
 A stream is a series of same-shaped items moving through stages, such as videos. It is a folder inside its topic with one folder `<Name>/README.md` per item, created from the stream's template in `<System>/<Templates>/` as soon as the item exists, even as a bare idea; the template carries `stage` and the stage list in a comment, for example `идея → сценарий → съёмка → монтаж → опубликовано`. A stream exists only after the user agrees to it.
 
+## Repeats
+
+- **The same kind of matter again,** such as another renovation or another tax deduction, even in another room or year, belongs in the existing topic, which becomes a collection of episodes. Each episode is a subfolder named by what sets it apart, `Темы/Ремонт/Кухня/` and `Темы/Ремонт/Ванная/`, with its own `README.md` carrying the topic properties, so views show it as a separate matter. The topic's README lists the episodes.
+- Turning a topic into a collection moves the first episode's files from the topic root into their own subfolder, and may rename the topic to the general matter, such as `Ремонт кухни` to `Ремонт`. The agent proposes this and waits for agreement, then moves through `x9-obsidian` so links survive. Once the collection exists, a new episode is just a new subfolder.
+- **A different matter with a similar name** gets a more precise name, such as `Ремонт квартиры` and `Ремонт машины`.
+
+## Inside a topic
+
+- One question has one note. A later pass on the same question, by any agent at any time, updates that note; when it is rewritten wholesale, the previous version moves to the topic's `archive/`. Parallel copies such as `<note>-codex.md` and backup files beside a note are not kept: `archive/` and Git hold history.
+- The topic's `README.md` says how the topic is laid out and links to its current notes; raw material goes into `raw/`.
+- When a topic's root gets crowded, the agent proposes grouping its notes into subfolders by subject and waits, because it is a move.
+
 ## Names and dates
 
-- A topic or stream item is named as the user would say it, in their language: `Темы/Здоровье/`, `Темы/Налоги ИП/`. No date and no transliterated slug. When the name is taken by a different matter, add the year or a distinguishing word: `Ремонт 2028`.
+- A topic or stream item is named as the user would say it, in their language: `Темы/Здоровье/`, `Темы/Налоги ИП/`. No date and no transliterated slug. A name never repeats an existing topic's name; see [repeats](#repeats). A year appears in a name only when it is what sets episodes apart, as with an annual tax return.
 - Names avoid `/ \ : * ? " < > | # ^ [ ]`, which break Obsidian links or some file systems.
 - A file name starts with a date only when the note records one day, such as a doctor's visit or a meeting: `YYYY-MM-DD <name>.md`. Other notes are named by content. A research note states in its text the date its data is current to.
 - Dates are `YYYY-MM-DD`. A date is never invented: when the real date is unknown, the note uses the date the material was captured (for an inbox note, its file date) and says so.
@@ -51,13 +63,13 @@ The inbox belongs to the user: they drop notes and files there, in one tap on an
 
 Every note outside the OKF exclusions is an OKF document, so an agent can choose a note from its header without reading it. `x9-okf-docs` owns the header (`type`, `title`, `description`, `tags`, all required) and its own block in `AGENTS.md`; the vault block does not restate it. The block's Local part lists the vault's `type` values. Bodies of notes the user brought in stay byte-identical when they receive a header.
 
-OKF exclusions: `<Inbox>/` (one-tap capture without frontmatter), `raw/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`. The vault's `.x9-okf.json` lists them and includes `README.md`, so every check uses the same scope.
+OKF exclusions: `<Inbox>/` (the user's drop zone, without frontmatter), `raw/`, `archive/` inside topics, `<Archive>/`, `memory/`, and `<System>/<Templates>/`. The vault's `.x9-okf.json` lists them and includes `README.md`, so every check uses the same scope.
 
 The vault adds its own keys to entry notes:
 
 | Note | Vault keys |
 | --- | --- |
-| Topic `README.md` | `state`: `active` (now), `waiting` (blocked on something), `later`, `done`, `reference` (nothing pending, kept for reference); `step`: the next action for `active` or what we wait for in `waiting`, required for both; `area`: one value from the block's list |
+| Topic or episode `README.md` | `state`: `active` (now), `waiting` (blocked on something), `later`, `done`, `reference` (nothing pending, kept for reference); `step`: the next action for `active` or what we wait for in `waiting`, required for both; `area`: one value from the block's list |
 | Stream item `README.md` | `stage`: one value from the stream template's list |
 
 Each topic keeps `log.md` in the OKF log format: `## YYYY-MM-DD` headings, newest first, one line per notable change, no frontmatter. History is not reconstructed retroactively.

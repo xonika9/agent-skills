@@ -20,7 +20,8 @@ Read-only. Report, with the path and the fix for each:
 - streams that exist as folders but are missing from the block, or named in the block but missing;
 - topics with an `area` outside the block's list, an unknown `state`, or `active`/`waiting` without `step`;
 - stream items whose `stage` is not in their template's list;
-- topic or stream item folders named with a date, a transliterated slug, or a character the [model](model.md#names-and-dates) avoids;
+- topic or stream item folders named with a date, a transliterated slug, or a character the [model](model.md#names-and-dates) avoids, and topics that repeat one matter instead of being episodes of one topic;
+- parallel copies of one note, such as `<note>-codex.md` or backup files, and crowded topic roots;
 - folders or notes in the vault root outside the model, and inbox notes older than about a month;
 - `log.md` files with properties, and notes that fail `x9-okf-docs` validation outside the exclusions;
 - a block that differs from [the template](agents-block.md#template) in more than its filled slots, or a parent folder that starts the agent without the pointer;

@@ -17,6 +17,7 @@ Fill the angle-bracket slots from the agreed plan, write folder names as they ex
 Every matter lives in one topic folder, `<Topics>/<Name>/`, whether it never ends, like health, or takes a month, like a tax deduction. For anything new, decide only this:
 
 - **Part of an existing topic:** put it inside that topic, following the layout its `README.md` describes; a large part becomes a subfolder. Find the topic by folder name, `area`, and README description, and prefer it over a new topic.
+- **The same kind of matter again,** such as another renovation or another tax deduction, even in another room or year: an episode inside the existing topic, `<Topics>/<topic>/<Episode>/README.md`, named by what sets it apart and carrying the topic's properties; list it in the topic's README. If the topic is not yet a collection of episodes, propose making it one and create nothing until the user answers.
 - **A new matter the user is working on:** create `<Topics>/<Name>/README.md` from `<System>/<Templates>/<topic>.md` right away, then ask what is needed.
 - **No topic fits and the matter is unclear:** ask where it goes, offering two or three concrete options, such as the closest existing topics or a new topic with `state: later`.
 
@@ -26,25 +27,27 @@ Streams are series of same-shaped items moving through stages. Each item, from a
 
 `<Inbox>/` is the user's drop zone for notes and files they want sorted; never create anything in it. Sort it only when the user asks: move each note's content to its place by these rules, merging it into an existing note when it continues one, then remove the inbox note. For a note whose place is unclear, offer options as above; until the user chooses, it stays.
 
+Inside a topic, one question has one note. A later pass on that question, by any agent, updates the note; when rewriting it wholesale, move the previous version to the topic's `archive/`. Never leave parallel copies such as `<note>-codex.md` or backup files beside it. When a topic's root gets crowded, propose grouping its notes into subfolders by subject.
+
 A finished topic stays in place with `state: done`. `<Archive>/` holds old periods; add to it or change it only when the user asks.
 
 ### Names and dates
 
-- Name a topic or stream item as the user would say it: `<Topics>/<example name>/`, with no date and no transliteration. When the name is taken by a different matter, add the year or a distinguishing word. Avoid `/ \ : * ? " < > | # ^ [ ]`.
+- Name a topic or stream item as the user would say it: `<Topics>/<example name>/`, with no date and no transliteration. A name that matches an existing topic means the same matter again, or a different matter that needs a more precise name, such as `Ремонт квартиры` and `Ремонт машины`; never add a year just to tell them apart. Avoid `/ \ : * ? " < > | # ^ [ ]`.
 - Start a file name with a date only when the note records one day, such as a visit or a meeting: `YYYY-MM-DD <name>.md`. Name other notes by content; a research note states in its text the date its data is current to.
 - Never invent a date: when the real one is unknown, use the date the material was captured (for an inbox note, its file date) and say so in the note.
 
 ### Properties
 
-- Topic `README.md`, from its template: `state` (`active` now, `waiting` blocked on something, `later`, `done`, `reference` nothing pending); `step`, the next action for `active` or what we wait for in `waiting`, required for both; `area`, one of <`value`, `value`, …>.
+- Topic or episode `README.md`, from its template: `state` (`active` now, `waiting` blocked on something, `later`, `done`, `reference` nothing pending); `step`, the next action for `active` or what we wait for in `waiting`, required for both; `area`, one of <`value`, `value`, …>.
 - Stream item `README.md`, from its template: `stage`, one value from the list in the stream's template; moving on is an edit of `stage`.
-- Every note outside `<Inbox>/`, `raw/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`, including these READMEs, also carries the OKF header described in the `x9-okf-docs` block of this file. `log.md` files have no properties.
+- Every note outside `<Inbox>/`, `raw/`, `archive/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`, including these READMEs, also carries the OKF header described in the `x9-okf-docs` block of this file. `log.md` files have no properties.
 
 Record each notable change as one line in the topic's `log.md` under `## YYYY-MM-DD`, newest first.
 
 ### Structure changes
 
-A new `area` value or stream, renaming, merging, or removing a topic or stream, and any change to these rules change the structure: describe the change and wait for the user's agreement; a request that already names the change exactly, including a new stream's stages, is that agreement. Rename and move through `x9-obsidian` when the vault is used in Obsidian, so links update. Apply the change with `x9-personal-vault`, or, if that skill is unavailable, update this block, the templates, and `<System>/<how-to>.md` together.
+A new `area` value or stream, turning a topic into a collection of episodes, regrouping a topic's notes, renaming, merging, or removing a topic or stream, and any change to these rules change the structure: describe the change and wait for the user's agreement; a request that already names the change exactly, including a new stream's stages, is that agreement. Rename and move through `x9-obsidian` when the vault is used in Obsidian, so links update. Apply the change with `x9-personal-vault`, or, if that skill is unavailable, update this block, the templates, and `<System>/<how-to>.md` together.
 
 ### Boundaries
 
