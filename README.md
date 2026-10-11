@@ -143,7 +143,7 @@ It works with any language and test runner, takes commands from the project itse
 
 Gathers one person's scattered notes and documents into a single vault: an inbox for quick captures, long-lived areas such as health or a video blog, streams of same-shaped work that move through stages, short topics kept for reference, and an archive. The agent first looks through the folder and any other folders you name, asks only what it could not tell, and shows one plan listing every move. Nothing changes until you approve it. Copies are verified by checksum, editing projects and media can stay on an external disk behind a link, originals are removed only after a separate confirmation, and everything except that confirmed removal can be undone from the run's journal.
 
-The daily rules go into the vault's `AGENTS.md`, so ordinary Claude Code and Codex sessions file a video idea, a doctor's visit, or a new topic in the right place without invoking the skill. The skill is needed again for structural changes, checks, and upgrades. Obsidian and Git are optional.
+The daily rules go into the vault's `AGENTS.md`, so ordinary Claude Code and Codex sessions file a video idea, a doctor's visit, or a new topic in the right place without invoking the skill. Every note outside the inbox, raw material, archive, memory, and templates carries OKF metadata through [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md), including notes brought in from old folders, whose text stays unchanged, so an agent can tell what a file holds without opening it. The skill is needed again for structural changes, checks, and upgrades. Obsidian and Git are optional.
 
 #### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
 
@@ -294,9 +294,7 @@ The skill is Claude Code only. It does not manage quotas by itself and does not 
 
 #### [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md)
 
-Large Markdown documentation collections become easier for people and agents to navigate when every document describes itself consistently. This skill maintains a knowledge base under [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md), keeps repository instructions version-independent, and upgrades only the documents being substantively edited. On the first OKF write in an older repository, it also replaces copied version rules or the former `x9-okf-adapt` name in `AGENTS.md`.
-
-The main skill file is a short route selector, so routine edits load only the maintenance contract. Adoption, repair, and bulk migration live in separate references. Legacy v0.1 collections keep working without a forced repository-wide migration, and deterministic scripts verify that document bodies, line endings, and BOMs did not change.
+Agents find their way around a large Markdown collection faster when each document says in its header what it is. This skill keeps a short [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format) header on every document: a `type` and a one-line `description`, usually a `title` and a few English `tags`. That is enough for an agent to choose a file without opening it, so the skill no longer writes authorship, verification, or expiry fields, and an ordinary edit needs no script. A new document gets its header as it is written. A whole folder is adopted in one step from a reviewed list, and the scripts confirm that no document text, line ending, or BOM changed; they run on the Python and Ruby that come with macOS. A folder's exclusions live in one small file the scripts read, and old fields such as `generated` and `timestamp` are removed on request. When a repository's instructions copy field rules, the skill replaces that section with a pointer to itself on its first write.
 
 ## Global instruction files
 

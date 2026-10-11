@@ -45,20 +45,22 @@ Notes in the inbox carry no properties, so a thought can be captured in one tap 
 
 ## Properties
 
-| Note | Properties |
+Every note outside the OKF exclusions is an OKF document, so an agent can choose a note from its header without reading it. `x9-okf-docs` owns the header: `type` and `description` required, `title` and `tags` recommended. Bodies of notes the user brought in stay byte-identical when they receive a header.
+
+OKF exclusions: `<Inbox>/` (one-tap capture without frontmatter), `raw/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`. The vault's `.x9-okf.json` lists them and includes `README.md`, so every check uses the same scope.
+
+The vault adds its own keys to entry notes:
+
+| Note | Vault keys |
 | --- | --- |
-| Topic `README.md` | `state`: `active` (now), `waiting` (blocked on something), `later`, `done`, `reference`; `step`: the next action for `active` or what we wait for in `waiting`, required for both; `area`: a link to the related area's README, omitted when none; `aliases`: one short name in the user's language; plus `type`, `title`, `description`, `tags` |
-| Stream unit `README.md` | `stage`: one value from the stream template's list; plus `type`, `title`, `description`, `tags` |
-| Any other note an agent writes | `type` (from the area README or template), `title`, `description` (one sentence), `tags` |
-| `log.md` | none |
-| Notes the user brought in | left as they are; the agent adds properties only when it substantively rewrites the note |
+| Topic `README.md` | `state`: `active` (now), `waiting` (blocked on something), `later`, `done`, `reference`; `step`: the next action for `active` or what we wait for in `waiting`, required for both; `area`: a link to the related area's README, omitted when none; `aliases`: one short name in the user's language |
+| Stream unit `README.md` | `stage`: one value from the stream template's list |
 
+- `type` takes a value listed in the area's README or the template.
 - `area` is a wiki link, for example `"[[Области/Медицина/README|Медицина]]"`, so a rename in Obsidian updates it.
-- Dates are `YYYY-MM-DD`. A date is never invented: when the real date is unknown, the note uses the date the material was captured (for an inbox note, its file date) and says so.
+- Dates in names and text are `YYYY-MM-DD`. A date is never invented: when the real date is unknown, the note uses the date the material was captured (for an inbox note, its file date) and says so.
 - A slug is a few lowercase words in the user's language joined by hyphens.
-- Each topic and area keeps `log.md`: `## YYYY-MM-DD` headings, newest first, one line per notable change. History is not reconstructed retroactively.
-
-The `type`, `title`, `description`, `tags` set is compatible with OKF, but the vault does not claim OKF conformance: inbox notes deliberately carry no frontmatter. Fields such as `generated`, `verified`, or `stale_after` are added only when the user opts into OKF, through `x9-okf-docs`.
+- Each topic and area keeps `log.md` in the OKF log format: `## YYYY-MM-DD` headings, newest first, one line per notable change, no frontmatter. History is not reconstructed retroactively.
 
 ## External folders
 

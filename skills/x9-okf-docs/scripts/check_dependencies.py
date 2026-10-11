@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preflight required and optional OKF migration dependencies."""
+"""Check the Python and Ruby that the OKF scripts need."""
 
 from __future__ import annotations
 
@@ -7,32 +7,44 @@ import shutil
 import subprocess
 import sys
 
+SAMPLE = "generated: { by: human:sample, at: 2026-01-01T00:00:00Z }\n"
+
 
 def main() -> int:
+    if sys.version_info < (3, 9):
+        print(f"BLOCKED: Python 3.9 or newer is required; this is {sys.version.split()[0]}")
+        return 1
+    print(f"PASS: Python {sys.version.split()[0]}")
+
     ruby = shutil.which("ruby")
     if ruby is None:
-        print("BLOCKED: Ruby with Psych is required for strict YAML inspection")
+        print("BLOCKED: Ruby with Psych is required to read YAML frontmatter")
         return 1
-
-    psych = subprocess.run(
-        [ruby, "-e", 'require "psych"; print Psych::VERSION'],
+    probe = subprocess.run(
+        [ruby, "-e", 'require "psych"; print Psych::VERSION, " ", Psych::LIBYAML_VERSION'],
         capture_output=True,
         text=True,
         check=False,
     )
-    if psych.returncode != 0:
-        detail = psych.stderr.strip() or "Psych could not be loaded"
-        print(f"BLOCKED: Ruby Psych is unavailable: {detail}")
+    if probe.returncode != 0:
+        detail = probe.stderr.strip().splitlines()[-1:] or ["Psych could not be loaded"]
+        print(f"BLOCKED: Ruby Psych is unavailable: {detail[0]}")
         return 1
+    psych, _, libyaml = probe.stdout.partition(" ")
+    print(f"PASS: Ruby Psych {psych}, libyaml {libyaml}")
 
-    print(f"PASS: Python {sys.version_info.major}.{sys.version_info.minor}")
-    print(f"PASS: Ruby Psych {psych.stdout.strip()}")
-
-    git = shutil.which("git")
-    if git is None:
-        print("DEGRADED: Git is unavailable; generated.at inventory suggestions will use filesystem modification time")
-    else:
-        print(f"PASS: Git available at {git}")
+    sample = subprocess.run(
+        [ruby, "-ryaml", "-e", "YAML.safe_load(STDIN.read, permitted_classes: [Time])"],
+        input=SAMPLE,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if sample.returncode != 0:
+        print(
+            "NOTE: this libyaml cannot read an unquoted value containing ':' inside { } or [ ]; "
+            "such existing headers are reported as invalid YAML until the value is quoted"
+        )
     return 0
 
 

@@ -47,7 +47,7 @@ An approval of part of the plan applies only that part.
 
 The script does not rewrite links. Split the manifest by that:
 
-- Notes that link to each other inside an Obsidian vault move through `x9-obsidian`, which updates the links; its evidence is the link targets compared before and after.
+- Notes that link to each other inside an Obsidian vault move through `x9-obsidian`, which updates the links, including when the app cannot address this exact folder, such as a copy; its evidence is the link targets compared before and after.
 - Linked notes outside Obsidian move together so their relative layout survives, or the plan lists the links that will need fixing.
 - Everything else goes through the script.
 
@@ -78,6 +78,7 @@ Relative paths resolve inside the vault. `remove` is accepted only in a manifest
 
 After the files are in place, write:
 
+- OKF headers for every note that came in, through the adoption route of `x9-okf-docs`, outside the exclusions in [the model](model.md#properties), and the vault's `.x9-okf.json` with those exclusions;
 - each area's `README.md` and `log.md`, each stream's template, and the topic template in `<System>/<Templates>/`;
 - the first topics' `README.md` and `log.md`;
 - `memory/USER.md` with what the user said about themselves, and an empty `memory/MEMORY.md`;
@@ -89,4 +90,4 @@ After the files are in place, write:
 
 - The script's report shows every scripted operation applied and verified, with no failures, and its journal path is given to the user; moves made through `x9-obsidian` have their link check.
 - Every source in the manifest is accounted for: moved, copied, linked, or listed as left in place.
-- The tree matches the approved plan, and the [block's Done](agents-block.md#done) holds.
+- The tree matches the approved plan, `x9-okf-docs` validation passes outside the exclusions with the pre-edit body inventory, and the [block's Done](agents-block.md#done) holds.

@@ -21,7 +21,7 @@ Read-only. Report, with the path and the fix for each:
 - topics with an unknown `state`, or `active`/`waiting` without `step`;
 - stream units whose `stage` is not in their template's list;
 - folders or notes in the vault root outside the model, and inbox notes older than about a month;
-- `log.md` files with properties;
+- `log.md` files with properties, and notes that fail `x9-okf-docs` validation outside the exclusions;
 - external links that are unreachable, reported as disconnected rather than broken;
 - a block whose schema version is older than [the model](model.md#schema-version).
 

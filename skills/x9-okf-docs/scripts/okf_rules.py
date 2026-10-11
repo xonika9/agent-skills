@@ -1,82 +1,155 @@
 #!/usr/bin/env python3
-"""Shared OKF v0.1/v0.2 document selection and metadata rules."""
+"""Shared scope, parsing, and field rules for the x9 OKF contract."""
 
 from __future__ import annotations
 
+import json
+import os
 import re
-from datetime import date, datetime
+import unicodedata
+from datetime import date
 from pathlib import Path
 
-from okf_yaml import inspect_yaml
+from okf_yaml import inspect_many, inspect_yaml
 
 BOM = b"\xef\xbb\xbf"
 RESERVED_FILES = {"index.md", "log.md"}
-ONBOARDING_FILES = {"AGENTS.md", "CLAUDE.md", "GEMINI.md", "README.md"}
+INSTRUCTION_KEYS = {"agents.md", "claude.md", "gemini.md"}
 DEFAULT_EXCLUDES = {
     "raw", "transcripts", "summaries", "artifacts", "archive", "node_modules",
-    ".git", ".obsidian", "dist", "build", "vendor",
+    "dist", "build", "vendor",
 }
-CURATED_REQUIRED = {"type", "title", "description", "tags"}
+POLICY_FILE = ".x9-okf.json"
+FIELDS = ("type", "title", "description", "tags")
+REQUIRED = ("type", "description")
+MAX_TAGS = 5
 TAG_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
-ACTOR_RE = re.compile(r"(?:human:[^\s]+|process:[^\s]+|[^\s/]+/[^\s/]+)\Z")
+DATE_HEADING_RE = re.compile(r"(?m)^##[ \t]+(.+?)[ \t]*\r?$")
 
 
-def markdown_files(
-    root: Path,
-    excludes: set[str],
-    include_readme: bool = False,
-    whole_bundle: bool = False,
-):
-    excluded_files = set(ONBOARDING_FILES)
-    if include_readme:
-        excluded_files.discard("README.md")
-    return sorted(
-        path for path in root.rglob("*.md")
-        if path.name not in excluded_files
-        and (whole_bundle or not path.name.startswith("."))
-        and (
-            not any(
-                part == ".git" or part in excludes
-                for part in path.relative_to(root).parts[:-1]
-            )
-            if whole_bundle
-            else not any(
-                part.startswith(".") or part in DEFAULT_EXCLUDES or part in excludes
-                for part in path.relative_to(root).parts[:-1]
-            )
+def nfc(text: str):
+    return unicodedata.normalize("NFC", text)
+
+
+def name_key(text: str):
+    """Comparison key that ignores case and Unicode composition."""
+    return nfc(text).casefold()
+
+
+def rel_key(rel: str):
+    parts = [part for part in nfc(rel).replace("\\", "/").split("/") if part not in ("", ".")]
+    return "/".join(name_key(part) for part in parts)
+
+
+class Scope:
+    def __init__(self, root: Path, excludes, include_readme: bool, policy_path):
+        self.root = root
+        self.include_readme = include_readme
+        self.policy_path = policy_path
+        self.names = {name_key(item) for item in DEFAULT_EXCLUDES}
+        self.paths = set()
+        for item in excludes:
+            key = rel_key(item)
+            if not key:
+                continue
+            (self.paths if "/" in item.replace("\\", "/") else self.names).add(key)
+
+    def excluded_dir(self, rel_parts):
+        if rel_parts[-1].startswith(".") or name_key(rel_parts[-1]) in self.names:
+            return True
+        key = "/".join(name_key(part) for part in rel_parts)
+        return any(key == path or key.startswith(path + "/") for path in self.paths)
+
+    def describe(self):
+        source = self.policy_path.name if self.policy_path else "defaults"
+        readme = "README.md included" if self.include_readme else "README.md excluded"
+        return f"scope: {source}; {readme}"
+
+
+def load_scope(root: Path, extra_excludes=(), include_readme: bool = False):
+    policy_path = root / POLICY_FILE
+    excludes = list(extra_excludes)
+    if policy_path.is_symlink():
+        raise SystemExit(f"{POLICY_FILE} must be a regular file, not a link")
+    if policy_path.is_file():
+        try:
+            policy = json.loads(policy_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise SystemExit(f"cannot read {POLICY_FILE}: {exc}") from None
+        if not isinstance(policy, dict) or set(policy) - {"exclude", "include_readme"}:
+            raise SystemExit(f"{POLICY_FILE} may contain only 'exclude' and 'include_readme'")
+        listed = policy.get("exclude", [])
+        if not isinstance(listed, list) or any(not isinstance(item, str) for item in listed):
+            raise SystemExit(f"{POLICY_FILE}: 'exclude' must be a list of folder names or paths")
+        if not isinstance(policy.get("include_readme", False), bool):
+            raise SystemExit(f"{POLICY_FILE}: 'include_readme' must be true or false")
+        excludes.extend(listed)
+        include_readme = include_readme or policy.get("include_readme", False)
+    else:
+        policy_path = None
+    return Scope(root, excludes, include_readme, policy_path)
+
+
+def markdown_files(scope: Scope):
+    """Return {nfc relative path: Path} for Markdown files in scope; links are never followed."""
+    found = {}
+    for current, dirs, files in os.walk(scope.root, followlinks=False):
+        base = Path(current)
+        rel_base = [nfc(part) for part in base.relative_to(scope.root).parts]
+        dirs[:] = sorted(
+            name for name in dirs
+            if not (base / name).is_symlink() and not scope.excluded_dir(rel_base + [nfc(name)])
         )
-    )
+        for name in sorted(files):
+            path = base / name
+            if (
+                not name.lower().endswith(".md")
+                or name.startswith(".")
+                or path.is_symlink()
+                or name.casefold() in INSTRUCTION_KEYS
+                or (name.casefold() == "readme.md" and not scope.include_readme)
+            ):
+                continue
+            found["/".join(rel_base + [nfc(name)])] = path
+    return dict(sorted(found.items()))
 
 
-def concept_files(
-    root: Path,
-    excludes: set[str],
-    include_readme: bool = False,
-    whole_bundle: bool = False,
-):
-    return [
-        path for path in markdown_files(root, excludes, include_readme, whole_bundle)
-        if path.name not in RESERVED_FILES
-    ]
-
-
-def reserved_files(root: Path, excludes: set[str], whole_bundle: bool = False):
-    return [
-        path for path in markdown_files(root, excludes, whole_bundle=whole_bundle)
-        if path.name in RESERVED_FILES
-    ]
-
-
-def partition_markdown_files(
-    root: Path,
-    excludes: set[str],
-    include_readme: bool = False,
-    whole_bundle: bool = False,
-):
-    selected = markdown_files(root, excludes, include_readme, whole_bundle)
-    concepts = [path for path in selected if path.name not in RESERVED_FILES]
-    reserved = [path for path in selected if path.name in RESERVED_FILES]
+def partition(files: dict):
+    concepts = {rel: path for rel, path in files.items() if path.name.casefold() not in RESERVED_FILES}
+    reserved = {rel: path for rel, path in files.items() if path.name.casefold() in RESERVED_FILES}
     return concepts, reserved
+
+
+def root_relative(root: Path, raw: str):
+    """Accept a path relative to the root, relative to the current folder, or absolute."""
+    candidate = Path(raw).expanduser()
+    if not candidate.is_absolute():
+        if (root / candidate).exists() or not (Path.cwd() / candidate).exists():
+            return raw
+        candidate = Path.cwd() / candidate
+    for base in (Path(os.path.abspath(candidate)), candidate.parent.resolve() / candidate.name):
+        try:
+            return base.relative_to(root).as_posix()
+        except ValueError:
+            continue
+    return raw
+
+
+def resolve_named(files: dict, names, root: Path):
+    """Map user-supplied paths to scoped files, ignoring case and Unicode form."""
+    index = {}
+    for rel in files:
+        index.setdefault(rel_key(rel), []).append(rel)
+    resolved = []
+    for raw in names:
+        matches = index.get(rel_key(root_relative(root, raw)), [])
+        if not matches:
+            raise SystemExit(f"not an OKF document in scope (paths are relative to {root}): {raw}")
+        if len(matches) > 1:
+            raise SystemExit(f"ambiguous path, several files differ only by case: {raw}")
+        if matches[0] not in resolved:
+            resolved.append(matches[0])
+    return resolved
 
 
 def split_document(data: bytes):
@@ -90,15 +163,22 @@ def split_document(data: bytes):
         None,
     )
     if end is None:
-        return None, raw, bom, "unclosed"
+        return None, raw, bom, "unclosed frontmatter"
     header = b"".join(lines[1:end]).decode("utf-8", errors="strict")
     body = b"".join(lines[end + 1:])
     return header, body, bom, None
 
 
-def strict_yaml(header: str):
+def parse_header(header: str):
     result, error = inspect_yaml(header)
-    return (None, None, error) if error else (result["value"], result["top_scalars"], None)
+    if error:
+        return None, None, error
+    return result["value"], result["top_keys"], None
+
+
+def parse_headers(headers):
+    """Read many headers with one YAML process; each item is (result, error)."""
+    return inspect_many(headers)
 
 
 def line_endings(data: bytes):
@@ -106,221 +186,69 @@ def line_endings(data: bytes):
     return {"crlf": crlf, "lf": data.count(b"\n") - crlf, "cr": data.count(b"\r") - crlf}
 
 
-def valid_datetime(value, raw_value=None):
-    candidate = raw_value if isinstance(raw_value, str) else value
-    if not isinstance(candidate, str) or not candidate.strip():
-        return False
-    try:
-        return datetime.fromisoformat(candidate.replace("Z", "+00:00")).tzinfo is not None
-    except ValueError:
-        return False
+def field_issue(key: str, value):
+    """Return the problem with one contract field value, or None."""
+    if key in ("type", "title", "description"):
+        if not isinstance(value, str) or not value.strip():
+            return f"{key} must be a non-empty string"
+        if key == "description" and ("\n" in value or "\r" in value):
+            return "description must be one line"
+        return None
+    if key == "tags":
+        if not isinstance(value, list) or not value:
+            return "tags must be a non-empty list"
+        if len(value) > MAX_TAGS:
+            return f"tags must contain at most {MAX_TAGS} values"
+        if any(isinstance(tag, bool) for tag in value):
+            return "tags: a bare yes, no, on, or off is read as true or false; quote it or choose another word"
+        if any(not isinstance(tag, str) or not TAG_RE.fullmatch(tag) for tag in value):
+            return "tags must be English kebab-case words, such as health or video-ideas"
+        if len(set(value)) != len(value):
+            return "tags must be unique"
+        return None
+    raise ValueError(f"not a contract field: {key}")
 
 
-def valid_date(value, raw_value=None):
-    candidate = raw_value if isinstance(raw_value, str) else value
-    if not isinstance(candidate, str):
-        if isinstance(candidate, (date, datetime)):
-            return True
-        return False
-    try:
-        date.fromisoformat(candidate)
-        return True
-    except ValueError:
-        return False
-
-
-def valid_actor(value):
-    return isinstance(value, str) and bool(ACTOR_RE.fullmatch(value))
-
-
-def validate_event(event, name: str):
-    issues = []
-    if not isinstance(event, dict):
-        return [f"{name} must be a mapping"]
-    if not valid_actor(event.get("by")):
-        issues.append(f"{name}.by must follow the OKF actor convention")
-    if "at" not in event or not valid_datetime(event.get("at")):
-        issues.append(f"{name}.at must be ISO 8601 with timezone")
+def validate_fields(fields: dict):
+    issues = [f"missing {key}" for key in REQUIRED if key not in fields]
+    for key in FIELDS:
+        if key in fields:
+            issue = field_issue(key, fields[key])
+            if issue:
+                issues.append(issue)
     return issues
 
 
-def validate_sources(fields: dict):
-    issues = []
-    sources = fields.get("sources")
-    if sources is None:
-        return issues
-    if not isinstance(sources, list):
-        return ["sources must be a list"]
-    ids = []
-    for index, source in enumerate(sources):
-        name = f"sources[{index}]"
-        if not isinstance(source, dict):
-            issues.append(f"{name} must be a mapping")
-            continue
-        if not isinstance(source.get("resource"), str) or not source["resource"].strip():
-            issues.append(f"{name}.resource must be a non-empty string")
-        if "id" in source:
-            if not isinstance(source["id"], str) or not source["id"].strip():
-                issues.append(f"{name}.id must be a non-empty string")
-            else:
-                ids.append(source["id"])
-        if "usage_count" in source and (
-            not isinstance(source["usage_count"], int) or isinstance(source["usage_count"], bool)
-            or source["usage_count"] < 0
-        ):
-            issues.append(f"{name}.usage_count must be a non-negative integer")
-        if "last_modified" in source and not valid_datetime(source["last_modified"]):
-            issues.append(f"{name}.last_modified must be ISO 8601 with timezone")
-    if len(ids) != len(set(ids)):
-        issues.append("sources ids must be unique")
-    return issues
-
-
-def validate_fields(
-    fields: dict,
-    raw_scalars: dict,
-    target_version: str = "0.2",
-    profile: str = "okf",
-    catalog: set[str] | None = None,
-):
-    issues = []
-    concept_type = fields.get("type")
-    if not isinstance(concept_type, str) or not concept_type.strip():
-        issues.append("type must be a non-empty string")
-    if catalog and isinstance(concept_type, str) and concept_type not in catalog:
-        issues.append(f"type outside local profile catalog: {concept_type}")
-
-    for key in ("title", "description", "resource"):
-        if key in fields and (not isinstance(fields[key], str) or not fields[key].strip()):
-            issues.append(f"{key} must be a non-empty string when present")
-    if isinstance(fields.get("description"), str) and ("\n" in fields["description"] or "\r" in fields["description"]):
-        issues.append("description must be one line")
-
-    tags = fields.get("tags")
-    if tags is not None and (
-        not isinstance(tags, list)
-        or any(not isinstance(tag, str) or not tag.strip() for tag in tags)
-    ):
-        issues.append("tags must be a list of non-empty strings")
-
-    if "timestamp" in fields and not valid_datetime(fields["timestamp"], raw_scalars.get("timestamp")):
-        issues.append("timestamp must be ISO 8601 with timezone")
-
-    if target_version == "0.2":
-        generated = fields.get("generated")
-        if generated is not None:
-            if not isinstance(generated, dict):
-                issues.append("generated must be a mapping")
-            else:
-                if not valid_actor(generated.get("by")):
-                    issues.append("generated.by must follow the OKF actor convention")
-                if "at" in generated and not valid_datetime(generated["at"]):
-                    issues.append("generated.at must be ISO 8601 with timezone")
-
-        verified = fields.get("verified")
-        if verified is not None:
-            events = verified if isinstance(verified, list) else [verified]
-            if not events:
-                issues.append("verified must not be empty")
-            for index, event in enumerate(events):
-                issues.extend(validate_event(event, f"verified[{index}]"))
-
-        if "status" in fields and fields["status"] not in {"draft", "stable", "deprecated"}:
-            issues.append("status must be draft, stable, or deprecated")
-        if "stale_after" in fields and not valid_datetime(
-            fields["stale_after"], raw_scalars.get("stale_after")
-        ):
-            issues.append("stale_after must be ISO 8601 with timezone")
-        issues.extend(validate_sources(fields))
-
-        if concept_type == "Attested Computation":
-            if not isinstance(fields.get("runtime"), str) or not fields["runtime"].strip():
-                issues.append("runtime is required for Attested Computation")
-
-    if profile == "curated":
-        version_field = "generated" if target_version == "0.2" else "timestamp"
-        missing = sorted((CURATED_REQUIRED | {version_field}) - set(fields))
-        if missing:
-            issues.append(f"missing curated fields: {', '.join(missing)}")
-        if isinstance(tags, list):
-            if not 2 <= len(tags) <= 5:
-                issues.append("curated tags must contain 2-5 values")
-            elif len(tags) != len(set(tags)) or any(not TAG_RE.fullmatch(tag) for tag in tags):
-                issues.append("curated tags must be unique English kebab-case strings")
-        generated = fields.get("generated")
-        if target_version == "0.2" and isinstance(generated, dict) and "at" not in generated:
-            issues.append("curated generated.at is required")
-
-    return issues
-
-
-def validate_index(
-    path: Path,
-    root: Path,
-    header: str | None,
-    body: bytes,
-    split_error: str | None,
-    target_version: str,
-    ignore_version_declaration: bool = False,
-):
-    issues = []
-    is_root = path.parent.resolve() == root.resolve()
-    if split_error is None and not is_root:
-        issues.append("nested index.md must not contain frontmatter")
-    elif split_error is None:
-        fields, _, yaml_error = strict_yaml(header)
-        if yaml_error:
-            issues.append(yaml_error)
-        elif set(fields) != {"okf_version"}:
-            issues.append("root index.md frontmatter may contain only okf_version")
-        elif not ignore_version_declaration and fields["okf_version"] != target_version:
-            issues.append(f"root index.md declares OKF {fields['okf_version']!r}, expected {target_version}")
-    elif split_error != "missing":
-        issues.append(split_error)
-    text = body.decode("utf-8", errors="replace")
-    if not re.search(r"(?m)^#\s+\S", text):
-        issues.append("index.md must contain a section heading")
-    if not re.search(r"(?m)^\*\s+\[[^\]]+\]\([^)]+\)\s+-\s+\S", text):
-        issues.append("index.md must contain '* [Title](path) - description' entries")
-    return issues
-
-
-def validate_log(body: bytes, split_error: str | None):
-    issues = []
-    if split_error is None:
-        issues.append("log.md must not contain frontmatter")
-    elif split_error != "missing":
-        issues.append(split_error)
-    text = body.decode("utf-8", errors="replace")
-    dates = re.findall(r"(?m)^##\s+(\d{4}-\d{2}-\d{2})\s*$", text)
-    if not dates:
-        issues.append("log.md must contain ISO date headings")
-    elif any(not valid_date(value) for value in dates):
-        issues.append("log.md contains an invalid date heading")
-    elif dates != sorted(dates, reverse=True):
-        issues.append("log.md date headings must be newest first")
-    return issues
-
-
-def validate_reserved(
-    path: Path,
-    root: Path,
-    data: bytes,
-    target_version: str,
-    ignore_version_declaration: bool = False,
-):
+def validate_reserved(rel: str, data: bytes):
     try:
         header, body, _, split_error = split_document(data)
     except UnicodeDecodeError as exc:
         return [f"frontmatter is not UTF-8: {exc}"]
-    if path.name == "index.md":
-        return validate_index(
-            path,
-            root,
-            header,
-            body,
-            split_error,
-            target_version,
-            ignore_version_declaration,
-        )
-    return validate_log(body, split_error)
+    issues = []
+    if rel.rsplit("/", 1)[-1].casefold() == "index.md":
+        if split_error is None:
+            fields, _, error = parse_header(header)
+            if "/" in rel:
+                issues.append("a nested index.md must not have frontmatter")
+            elif error:
+                issues.append(error)
+            elif set(fields) != {"okf_version"} or not isinstance(fields["okf_version"], str):
+                issues.append('root index.md frontmatter may hold only okf_version as a quoted string, such as "0.2"')
+        elif split_error != "missing":
+            issues.append(split_error)
+        return issues
+    if split_error != "missing":
+        issues.append("log.md must not have frontmatter")
+    text = body.decode("utf-8", errors="replace")
+    headings = DATE_HEADING_RE.findall(text)
+    for heading in headings:
+        try:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", heading):
+                raise ValueError(heading)
+            date.fromisoformat(heading)
+        except ValueError:
+            issues.append(f"log.md heading is not a YYYY-MM-DD date: {heading}")
+            return issues
+    if headings != sorted(headings, reverse=True):
+        issues.append("log.md dates must go newest first")
+    return issues

@@ -1,67 +1,43 @@
-# OKF v0.2 metadata contracts
+# x9 OKF metadata contract
 
-## Official conformance
+The contract follows OKF v0.2, whose canonical specification is `SPEC.md` in [GoogleCloudPlatform/open-knowledge-format](https://github.com/GoogleCloudPlatform/open-knowledge-format). OKF requires only `type`; every other field is optional. Before changing this contract or the scripts, compare them with the current specification.
 
-A concept document is a UTF-8 Markdown file with YAML frontmatter. The only always-required field is:
+## Fields
 
-```yaml
----
-type: Research Note
----
-```
+A document is a UTF-8 Markdown file whose YAML header holds:
 
-`title`, `description`, `resource`, `tags`, and the provenance, trust, lifecycle, and computation families are optional. Unknown types and extension fields are valid and must survive round-tripping.
-
-`index.md` and `log.md` are reserved files, not concepts. Nested index files and log files have no frontmatter. A bundle-root `index.md` may contain only:
-
-```yaml
----
-okf_version: "0.2"
----
-```
-
-## x9 curated profile
-
-Newly adapted curated documents use a richer profile:
+| Field | Rule |
+|---|---|
+| `type` | Required. The kind of document in a few words, such as `Тема`, `Research Note`, or `Playbook`; use the values the repository or its area lists. |
+| `description` | Required. One line on what the document holds and what it is for, so an agent can decide whether to open it. Keep it distinct from neighbouring documents. |
+| `title` | Recommended. The human name; include it whenever the file name does not say what the document is, as with every `README.md`. |
+| `tags` | Recommended. One to five unique English kebab-case tags for subjects that cross folders, such as `health` or `video-ideas`. |
 
 ```yaml
 ---
-type: Research Note
-title: Display title
-description: One line describing the document's current purpose
-tags: [stable-topic, second-topic]
-generated: {by: x9-okf-docs/<version>, at: "2026-07-15T12:00:00+03:00"}
+type: "Тема"
+title: "Обследование 2026"
+description: "План и результаты осеннего обследования: анализы, врачи, выводы"
+tags: ["health", "checkup"]
 ---
 ```
 
-- `title` and `description` are non-empty; `description` is one line and unique within the selected curated scope.
-- `tags` contains 2–5 unique English kebab-case strings.
-- `generated.by` truthfully identifies the producer, person, or process. Never infer it from Git authorship.
-- `generated.at` is an ISO 8601 datetime with timezone marking the last meaningful change.
-- A local type catalog is an optional profile rule, never an OKF conformance rule.
+Write string values in double quotes: an unquoted value containing `:` breaks some YAML readers.
 
-## Optional v0.2 families
+Write no other OKF field. `generated`, `verified`, `status`, `stale_after`, `sources`, `usage_window`, `resource`, `timestamp`, and the computation fields are not part of this contract. A document's existing fields, including a repository's own such as `state`, stay untouched unless the user asks to remove them.
 
-- `sources`: every entry has `resource`; optional `id` values are unique.
-- `verified`: one event or a list of events, each with truthful `by` and timezone-aware `at`.
-- `status`: `draft`, `stable`, or `deprecated`; absence means `stable`.
-- `stale_after`: an absolute ISO 8601 datetime with an explicit UTC offset. Date-only legacy values are invalid under OKF v0.2 and require an explicitly chosen migration instant.
-- `sources[].last_modified`: an ISO 8601 datetime with an explicit UTC offset when present.
-- `Attested Computation`: requires `runtime`; its other computation fields follow the official specification.
+## Files that are not documents
 
-Absence is preferable to invented provenance, verification, freshness, or lifecycle data.
+- `index.md` and `log.md` are reserved by OKF and have no header; only a bundle-root `index.md` may carry `okf_version`. A `log.md` uses `## YYYY-MM-DD` headings, newest first.
+- `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` are repository instructions and never get a header.
+- `README.md` is a document only where the repository's scope includes it.
 
-## v0.1 compatibility
+## Scope
 
-- A legacy `timestamp` remains readable when `generated` is absent.
-- Metadata migration may copy `timestamp` to `generated.at` only when a truthful `generated.by` is supplied.
-- Keep `timestamp` during a compatibility window unless its removal is explicitly requested.
-- Legacy `# Citations` may remain in the body. Moving checked resources into `sources` can preserve body bytes, but converting claims to keyed footnotes changes the body and is outside the default workflow.
+Hidden folders, links, and the folders `raw`, `transcripts`, `summaries`, `artifacts`, `archive`, `node_modules`, `dist`, `build`, and `vendor` are outside scope. A repository extends this in `.x9-okf.json` at its root, which every script reads:
 
-For normal substantive edits, `--touch` updates only explicitly named documents. It sets `generated` to the supplied actor and operation time and synchronizes an existing `timestamp` for legacy consumers. Reading a file, editing another file, or updating repository instructions never triggers a document migration.
+```json
+{"exclude": ["Входящее", "Архив", "memory", "Система/Шаблоны"], "include_readme": true}
+```
 
-## Selection and preservation
-
-Default exclusions cover generated or bulk material such as `raw/`, `transcripts/`, `summaries/`, `artifacts/`, `archive/`, dependencies, build outputs, hidden directories, and vendored content. These are x9 scope rules, not OKF rules.
-
-For frontmatter insertion and migration, the pre-existing body bytes are immutable. Preserve UTF-8 BOM presence and original line endings; validate them against the pre-edit inventory.
+An entry without `/` excludes every folder of that name; an entry with `/` is a path from the root and excludes that folder only. Case and Unicode form are ignored when names are compared.

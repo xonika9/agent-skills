@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inventory, write, and safely migrate OKF frontmatter without changing bodies."""
+"""Inventory Markdown, write x9 OKF metadata, or remove retired fields without changing bodies."""
 
 from __future__ import annotations
 
@@ -8,41 +8,28 @@ import hashlib
 import json
 import os
 import stat
-import subprocess
 import sys
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
 from okf_rules import (
     BOM,
-    ONBOARDING_FILES,
-    RESERVED_FILES,
-    concept_files,
+    FIELDS,
+    REQUIRED,
+    field_issue,
     line_endings,
+    load_scope,
+    markdown_files,
+    nfc,
+    parse_headers,
+    partition,
+    resolve_named,
     split_document,
-    strict_yaml,
-    valid_actor,
-    valid_datetime,
     validate_fields,
 )
-from okf_yaml import inspect_yaml
 
-SEMANTIC_FIELDS = ("type", "title", "description", "resource", "tags")
-CANONICAL_ORDER = (
-    "type", "title", "description", "resource", "tags", "generated", "verified",
-    "status", "stale_after", "sources", "usage_window", "runtime", "parameters",
-    "computation", "executor", "attester", "timestamp",
-)
-
-
-def split_for_write(data: bytes):
-    header, body, bom, error = split_document(data)
-    if error == "missing":
-        return b"", body, bom, False
-    if error:
-        raise ValueError(f"{error} existing frontmatter")
-    return header.encode("utf-8"), body, bom, True
+INVENTORY_VERSION = 5
+PROPOSER_KEYS = {"path", "confidence", "basis"}
 
 
 def preferred_eol(data: bytes, fallback: bytes = b""):
@@ -53,256 +40,100 @@ def preferred_eol(data: bytes, fallback: bytes = b""):
     return {"crlf": b"\r\n", "lf": b"\n", "cr": b"\r"}[dominant]
 
 
-def parsed_header(header: bytes):
-    if not header:
-        return {}
-    try:
-        text = header.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"existing frontmatter is not UTF-8: {exc}") from None
-    parsed, _, error = strict_yaml(text)
-    if error:
-        raise ValueError(error)
-    return parsed
-
-
-def valid_semantic_value(key: str, value, catalog: set[str] | None):
-    if key in {"title", "description", "resource"}:
-        return (
-            isinstance(value, str)
-            and bool(value.strip())
-            and (key != "description" or "\n" not in value and "\r" not in value)
-        )
-    if key == "type":
-        return isinstance(value, str) and bool(value.strip()) and (catalog is None or value in catalog)
-    if key == "tags":
-        return isinstance(value, list) and all(isinstance(tag, str) and tag.strip() for tag in value)
-    return False
-
-
-def valid_generated(value):
-    return (
-        isinstance(value, dict)
-        and valid_actor(value.get("by"))
-        and ("at" not in value or valid_datetime(value.get("at")))
-    )
-
-
-def merge_existing_meta(
-    meta: dict,
-    header: bytes,
-    catalog: set[str] | None,
-    replace_existing: bool,
-    operation_timestamp: str,
-    actor: str | None,
-):
-    merged = dict(meta)
-    preserved = []
-    raw_preserved = set()
-    if not header:
-        return merged, preserved, raw_preserved
-    existing = parsed_header(header)
-    for key in SEMANTIC_FIELDS:
-        value = existing.get(key)
-        if (
-            key in merged
-            and not replace_existing
-            and valid_semantic_value(key, value, catalog)
-            and merged[key] != value
-        ):
-            merged[key] = value
-            preserved.append(key)
-    meaning_changed = any(
-        key in merged and existing.get(key) != merged[key]
-        for key in SEMANTIC_FIELDS
-    )
-    existing_generated = existing.get("generated")
-    if meaning_changed:
-        if not actor:
-            raise ValueError("meaning-changing metadata repair requires --actor")
-        merged["generated"] = {"by": actor, "at": operation_timestamp}
-    elif valid_generated(existing_generated):
-        if merged.get("generated") != existing_generated:
-            merged["generated"] = existing_generated
-            preserved.append("generated")
-        raw_preserved.add("generated")
-    return merged, preserved, raw_preserved
-
-
-def raw_preserved_fields(header: bytes, replaced_keys: set[str], removed_keys: set[str]):
-    if not header:
-        return b""
-    try:
-        parsed, error = inspect_yaml(header.decode("utf-8"))
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"existing frontmatter is not UTF-8: {exc}") from None
-    if error:
-        raise ValueError(error)
-    lines = header.splitlines(keepends=True)
-    starts = [(item["line"], item["key"]) for item in parsed["top_keys"]]
-    kept = lines[: starts[0][0]] if starts else lines
-    for position, (start, key) in enumerate(starts):
-        end = starts[position + 1][0] if position + 1 < len(starts) else len(lines)
-        if key not in replaced_keys and key not in removed_keys:
-            kept.extend(lines[start:end])
-    return b"".join(kept)
-
-
-def normalize_eol(data: bytes, eol: bytes):
-    if not data:
-        return data
-    terminated = data.endswith((b"\n", b"\r"))
-    output = eol.join(data.splitlines())
-    return output + eol if terminated else output
-
-
 def yaml_value(value):
     if isinstance(value, str):
         return json.dumps(value, ensure_ascii=False)
-    if value is True:
-        return "true"
-    if value is False:
-        return "false"
-    if value is None:
-        return "null"
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
-        return str(value)
-    if isinstance(value, (list, dict)):
-        return json.dumps(value, ensure_ascii=False, separators=(",", ": "))
+    if isinstance(value, list) and all(isinstance(item, str) for item in value):
+        return json.dumps(value, ensure_ascii=False, separators=(", ", ": "))
     raise ValueError(f"unsupported metadata value: {value!r}")
 
 
-def header_bytes(
-    meta: dict,
-    eol: bytes,
-    existing_header: bytes = b"",
-    removed_keys: set[str] | None = None,
-    raw_preserved_keys: set[str] | None = None,
-):
-    removed = removed_keys or set()
-    raw_preserved = raw_preserved_keys or set()
-    serialized_keys = set(meta) - raw_preserved
-    ordered = [key for key in CANONICAL_ORDER if key in serialized_keys]
-    ordered.extend(sorted(serialized_keys - set(ordered)))
-    lines = ["---", *[f"{key}: {yaml_value(meta[key])}" for key in ordered]]
-    output = eol.join(line.encode("utf-8") for line in lines) + eol
-    preserved = normalize_eol(
-        raw_preserved_fields(existing_header, serialized_keys, removed),
-        eol,
-    )
+def kept_lines(header: bytes, top_keys, dropped: set):
+    """Return the header bytes without the top-level keys in `dropped`.
+
+    Comments and blank lines that follow a dropped key belong to what comes next and stay.
+    """
+    lines = header.splitlines(keepends=True)
+    starts = [(item["line"], item["key"]) for item in top_keys]
+    kept = lines[: starts[0][0]] if starts else list(lines)
+    for position, (start, key) in enumerate(starts):
+        end = starts[position + 1][0] if position + 1 < len(starts) else len(lines)
+        span = lines[start:end]
+        if key not in dropped:
+            kept.extend(span)
+            continue
+        tail = len(span)
+        while tail > 1 and (not span[tail - 1].strip() or span[tail - 1].startswith(b"#")):
+            tail -= 1
+        kept.extend(span[tail:])
+    return b"".join(kept)
+
+
+def rewrite_problem(header: bytes, result):
+    """Explain why a header cannot be cut by lines safely, or return None."""
+    if not result["top_keys"]:
+        return None
+    if not result["block"]:
+        return "the header is written in { } style; rewrite it one field per line by hand first"
+    lines = [item["line"] for item in result["top_keys"]]
+    if lines != sorted(set(lines)) or lines[-1] >= len(header.splitlines()):
+        return "several fields share a line or the line breaks are unusual; edit the header by hand"
+    return None
+
+
+def build_document(bom: bool, body: bytes, eol: bytes, serialized, preserved: bytes):
+    if not serialized and not preserved.strip():
+        return (BOM if bom else b"") + body
+    output = b"---" + eol
+    for key, value in serialized:
+        output += f"{key}: {yaml_value(value)}".encode("utf-8") + eol
     if preserved:
         output += preserved
         if not preserved.endswith((b"\n", b"\r")):
             output += eol
-    return output + b"---" + eol
+    return (BOM if bom else b"") + output + b"---" + eol + body
 
 
-def source_timestamp(root: Path, path: Path, header: bytes):
-    if header:
-        text = header.decode("utf-8")
-        existing, raw_scalars, error = strict_yaml(text)
-        if error:
-            raise ValueError(error)
-        generated = existing.get("generated")
-        if isinstance(generated, dict) and valid_datetime(generated.get("at")):
-            return generated["at"], "generated.at", False
-        timestamp = existing.get("timestamp")
-        raw_timestamp = raw_scalars.get("timestamp")
-        if valid_datetime(timestamp, raw_timestamp):
-            return raw_timestamp if isinstance(raw_timestamp, str) else timestamp, "timestamp", False
+def read_document(path: Path):
+    """Return (data, header text or '' when missing, body, bom, error)."""
+    data = path.read_bytes()
     try:
-        repo = subprocess.run(
-            ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        repo_root = Path(repo.stdout.strip()).resolve() if repo.returncode == 0 else None
-        rel = path.resolve().relative_to(repo_root).as_posix() if repo_root else None
-        proc = subprocess.run(
-            ["git", "-C", str(repo_root), "log", "-1", "--format=%cI", "--", rel],
-            capture_output=True,
-            text=True,
-            check=False,
-        ) if repo_root and rel else None
-        candidate = proc.stdout.strip() if proc else ""
-        if proc and proc.returncode == 0 and valid_datetime(candidate):
-            return candidate, "git", False
-    except (FileNotFoundError, ValueError):
-        pass
-    return (
-        datetime.fromtimestamp(path.stat().st_mtime).astimezone().isoformat(timespec="seconds"),
-        "filesystem_mtime",
-        True,
-    )
+        header, body, bom, split_error = split_document(data)
+    except UnicodeDecodeError as exc:
+        return data, None, None, None, f"frontmatter is not UTF-8: {exc}"
+    if split_error == "missing":
+        return data, "", body, bom, None
+    if split_error:
+        return data, None, None, None, split_error
+    return data, header, body, bom, None
 
 
-def inventory(
-    root: Path,
-    excludes: set[str],
-    include_readme: bool = False,
-    whole_bundle: bool = False,
-):
-    files = {}
-    for path in concept_files(root, excludes, include_readme, whole_bundle):
-        data = path.read_bytes()
-        header, body, bom, had_header = split_for_write(data)
-        suggested, freshness_source, freshness_degraded = source_timestamp(root, path, header)
-        files[path.relative_to(root).as_posix()] = {
-            "file_sha256": hashlib.sha256(data).hexdigest(),
-            "body_sha256": hashlib.sha256(body).hexdigest(),
-            "bom": bom,
-            "line_endings": line_endings(body),
-            "had_frontmatter": had_header,
-            "suggested_generated_at": suggested,
-            "suggested_timestamp": suggested,
-            "freshness_source": freshness_source,
-            "freshness_degraded": freshness_degraded,
-        }
-    return {"version": 4, "root": str(root), "files": files}
-
-
-def load_inventory(path: Path):
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise SystemExit(f"cannot read inventory: {exc}") from None
-    if not isinstance(raw, dict) or raw.get("version") != 4 or not isinstance(raw.get("files"), dict):
-        version = raw.get("version") if isinstance(raw, dict) else None
-        raise SystemExit(f"unsupported inventory format {version!r}; recreate inventory with format v4")
-    return raw["files"]
-
-
-def mutation_path(root: Path, rel: str):
-    relative = Path(rel)
-    if relative.is_absolute() or ".." in relative.parts:
-        raise SystemExit(f"mutation path escapes root: {rel}")
-    lexical = root / relative
-    current = root
-    for part in relative.parts:
-        current = current / part
-        if current.is_symlink():
-            raise SystemExit(f"mutation path uses a symlink: {rel}")
-    try:
-        resolved = lexical.resolve(strict=True)
-        resolved.relative_to(root)
-    except (FileNotFoundError, ValueError):
-        raise SystemExit(f"mutation path is missing or outside root: {rel}") from None
-    if not resolved.is_file():
-        raise SystemExit(f"mutation path is not a regular file: {rel}")
-    return lexical
+def verify_outputs(planned):
+    """Re-read every new header and require exactly the expected fields and values."""
+    texts = []
+    for item in planned:
+        header, new_body, _, split_error = split_document(item["output"])
+        if new_body != item["body"]:
+            raise SystemExit(f"internal check failed, nothing written: body would change in {item['rel']}")
+        texts.append("" if split_error == "missing" else header)
+    errors = []
+    for item, (result, error) in zip(planned, parse_headers(texts)):
+        if error or result["value"] != item["expected"]:
+            errors.append(f"{item['rel']}: the rewritten header would not match; edit it by hand")
+    if errors:
+        raise SystemExit("nothing written:\n" + "\n".join(errors))
 
 
 def atomic_replace_many(pending):
-    """Prepare same-directory durable temp files, then replace as one best-effort transaction."""
+    """Write same-directory durable temp files, then replace them as one best-effort transaction."""
     prepared = []
     originals = []
     try:
         for rel, path, expected, output in pending:
             current = path.read_bytes()
             if current != expected:
-                raise SystemExit(f"stale content immediately before write: {rel}")
-            mode = stat.S_IMODE(path.stat(follow_symlinks=False).st_mode)
+                raise SystemExit(f"file changed during the run, nothing written: {rel}")
+            mode = stat.S_IMODE(os.lstat(path).st_mode)
             descriptor, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
             temp_path = Path(temp_name)
             try:
@@ -319,7 +150,7 @@ def atomic_replace_many(pending):
 
         for rel, path, expected, _ in pending:
             if path.read_bytes() != expected:
-                raise SystemExit(f"stale content immediately before replacement: {rel}")
+                raise SystemExit(f"file changed during the run, nothing written: {rel}")
 
         replaced = 0
         try:
@@ -350,458 +181,239 @@ def atomic_replace_many(pending):
             temp_path.unlink(missing_ok=True)
 
 
-def load_manifest(path: Path):
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    if isinstance(raw, list):
-        return {
-            item["path"]: {
-                key: value for key, value in item.items()
-                if key not in {"path", "confidence", "basis", "preserve"}
-            }
-            for item in raw
+def inventory(concepts: dict):
+    files = {}
+    for rel, path in concepts.items():
+        data = path.read_bytes()
+        try:
+            _, body, bom, split_error = split_document(data)
+        except UnicodeDecodeError:
+            body, bom, split_error = data, data.startswith(BOM), "not UTF-8"
+        files[rel] = {
+            "file_sha256": hashlib.sha256(data).hexdigest(),
+            "body_sha256": hashlib.sha256(body).hexdigest(),
+            "bom": bom,
+            "line_endings": line_endings(body),
+            "had_frontmatter": split_error is None,
         }
-    if isinstance(raw, dict) and "files" in raw:
-        return raw["files"]
-    if isinstance(raw, dict):
-        return raw
-    raise ValueError("manifest must be an object, a files object, or a list with path fields")
+    return files
 
 
-def validate_manifest_meta(
-    meta: dict,
-    target_version: str,
-    profile: str,
-    catalog: set[str] | None,
-):
-    if not isinstance(meta, dict):
-        raise ValueError("manifest metadata must be an object")
-    issues = validate_fields(meta, {}, target_version, profile, catalog)
-    if issues:
-        raise ValueError("; ".join(issues))
+def load_inventory(path: Path):
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"cannot read inventory: {exc}") from None
+    files = raw.get("files") if isinstance(raw, dict) else None
+    valid = (
+        isinstance(files, dict)
+        and raw.get("version") == INVENTORY_VERSION
+        and all(isinstance(record, dict) and isinstance(record.get("file_sha256"), str) for record in files.values())
+    )
+    if not valid:
+        raise SystemExit(f"unsupported inventory; recreate it with --inventory-out (format {INVENTORY_VERSION})")
+    return {nfc(rel): record for rel, record in files.items()}
 
 
-def preflight_inventory(
-    data: bytes,
-    before: dict,
-    existing_header: bytes | None = None,
-    body: bytes | None = None,
-    bom: bool | None = None,
-):
-    if existing_header is None or body is None or bom is None:
-        existing_header, body, bom, _ = split_for_write(data)
-    if bom != before["bom"]:
-        raise ValueError("BOM changed since inventory")
-    if hashlib.sha256(body).hexdigest() != before["body_sha256"]:
-        raise ValueError("body changed since inventory")
-    if hashlib.sha256(data).hexdigest() != before["file_sha256"]:
-        raise ValueError("frontmatter changed since inventory")
-    return existing_header, body, bom
+def load_manifest(path: Path):
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"cannot read manifest: {exc}") from None
+    if isinstance(raw, list):
+        entries = {}
+        for item in raw:
+            if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+                raise SystemExit("each manifest list item needs a 'path'")
+            if item["path"] in entries:
+                raise SystemExit(f"manifest names the same document twice: {item['path']}")
+            entries[item["path"]] = item
+    elif isinstance(raw, dict):
+        entries = raw.get("files", raw)
+        if not isinstance(entries, dict):
+            raise SystemExit("manifest 'files' must be an object keyed by path")
+    else:
+        raise SystemExit("manifest must be an object keyed by path or a list of objects with 'path'")
+    manifest = {}
+    for rel, meta in entries.items():
+        if not isinstance(meta, dict):
+            raise SystemExit(f"manifest entry must be an object: {rel}")
+        proposed = {key: value for key, value in meta.items() if key not in PROPOSER_KEYS}
+        extra = sorted(set(proposed) - set(FIELDS))
+        if extra:
+            raise SystemExit(f"manifest may set only {', '.join(FIELDS)}; {rel} also sets {', '.join(extra)}")
+        for key, value in proposed.items():
+            issue = field_issue(key, value)
+            if issue:
+                raise SystemExit(f"manifest {rel}: {issue}")
+        manifest[rel] = proposed
+    return manifest
 
 
-def apply_manifest(args, root: Path):
+def show(value):
+    return json.dumps(value, ensure_ascii=False)
+
+
+def read_targets(targets, concepts: dict, errors):
+    """Read and parse every target with one YAML process; skip unreadable ones into errors."""
+    loaded = []
+    for rel in targets:
+        data, header, body, bom, error = read_document(concepts[rel])
+        if error:
+            errors.append(f"{rel}: {error}")
+        else:
+            loaded.append({"rel": rel, "path": concepts[rel], "data": data, "header": header, "body": body, "bom": bom})
+    for item, (result, error) in zip(loaded, parse_headers([item["header"] for item in loaded])):
+        item["result"], item["error"] = result, error
+    return loaded
+
+
+def apply_manifest(args, concepts: dict, root: Path):
     if not args.inventory:
-        raise SystemExit("--inventory is required when applying a manifest")
+        raise SystemExit("--inventory is required with --manifest")
     before = load_inventory(args.inventory)
     manifest = load_manifest(args.manifest)
-    if args.target_version == "0.2" and args.profile == "curated" and not args.actor:
-        raise SystemExit("--actor is required for curated OKF v0.2 manifest application")
-    allowed = {
-        path.relative_to(root).as_posix()
-        for path in concept_files(
-            root,
-            set(args.exclude),
-            args.include_readme,
-            args.whole_bundle,
-        )
-    }
-    operation_timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
-    catalog = set(args.types.split(",")) if args.types else None
-    pending = []
-    preserved_by_file = {}
-    for rel, proposed in manifest.items():
-        if rel not in allowed:
-            raise SystemExit(f"manifest path is outside concept scope: {rel}")
-        if rel not in before:
-            raise SystemExit(f"manifest path absent from inventory: {rel}")
-        if "file_sha256" not in before[rel]:
-            raise SystemExit(f"inventory lacks full-file hash; recreate it before applying: {rel}")
-        path = mutation_path(root, rel)
-        data = path.read_bytes()
-        try:
-            existing_header, body, bom = preflight_inventory(data, before[rel])
-            meta = dict(proposed)
-            if args.actor and args.target_version == "0.2":
-                meta["generated"] = {
-                    "by": args.actor,
-                    "at": before[rel]["suggested_generated_at"],
-                }
-            effective_meta, preserved, raw_preserved = merge_existing_meta(
-                meta,
-                existing_header,
-                catalog,
-                args.replace_existing_metadata,
-                operation_timestamp,
-                args.actor,
-            )
-            validate_manifest_meta(
-                effective_meta,
-                args.target_version,
-                args.profile,
-                catalog,
-            )
-        except ValueError as exc:
-            raise SystemExit(f"cannot prepare metadata for {rel}: {exc}") from None
-        if preserved:
-            preserved_by_file[rel] = preserved
-        output = (
-            (BOM if bom else b"")
-            + header_bytes(
-                effective_meta,
-                preferred_eol(body, existing_header),
-                existing_header,
-                raw_preserved_keys=raw_preserved,
-            )
-            + body
-        )
-        if output != data:
-            pending.append((rel, path, data, output))
-
-    if not args.dry_run:
-        atomic_replace_many(pending)
-    for rel, _, _, _ in pending:
-        print(("would update" if args.dry_run else "updated") + f": {rel}")
-    for rel, keys in preserved_by_file.items():
-        print(f"preserved existing metadata: {rel} ({', '.join(keys)})")
-    print(f"files changed: {len(pending)}")
-
-
-def migrate_v01(args, root: Path, excludes: set[str]):
-    if args.apply and not args.actor:
-        raise SystemExit("--actor is required with --apply for v0.1 migration")
-    before = {}
-    if args.apply:
-        if not args.inventory:
-            raise SystemExit("--inventory is required with --apply")
-        before = load_inventory(args.inventory)
-
-    pending = []
-    counts = {"legacy": 0, "native": 0, "minimal": 0, "skipped": 0, "invalid": 0}
-    for path in concept_files(root, excludes, args.include_readme, args.whole_bundle):
-        rel = path.relative_to(root).as_posix()
-        data = path.read_bytes()
-        try:
-            header, body, bom, split_error = split_document(data)
-        except UnicodeDecodeError as exc:
-            print(f"INVALID {rel}: {exc}")
-            counts["invalid"] += 1
+    errors, notes, planned = [], [], []
+    proposals = {}
+    for raw_rel, proposed in manifest.items():
+        rel = resolve_named(concepts, [raw_rel], root)[0]
+        if rel in proposals:
+            raise SystemExit(f"manifest names the same document twice: {rel}")
+        proposals[rel] = proposed
+    for item in read_targets(list(proposals), concepts, errors):
+        rel = item["rel"]
+        record = before.get(rel)
+        if record is None:
+            errors.append(f"{rel}: not in the inventory; recreate it")
             continue
-        if split_error == "missing":
-            print(f"SKIP {rel}: no frontmatter")
-            counts["skipped"] += 1
+        if hashlib.sha256(item["data"]).hexdigest() != record["file_sha256"]:
+            errors.append(f"{rel}: changed since the inventory; recreate it")
             continue
-        if split_error:
-            print(f"INVALID {rel}: {split_error}")
-            counts["invalid"] += 1
+        if item["error"]:
+            errors.append(f"{rel}: existing frontmatter cannot be read ({item['error']}); fix it by hand first")
             continue
-        fields, raw_scalars, yaml_error = strict_yaml(header)
-        if yaml_error:
-            print(f"INVALID {rel}: {yaml_error}")
-            counts["invalid"] += 1
+        header = item["header"].encode("utf-8")
+        problem = rewrite_problem(header, item["result"])
+        if problem:
+            errors.append(f"{rel}: {problem}")
             continue
-        v01_issues = validate_fields(fields, raw_scalars, "0.1", "okf")
-        v02_issues = validate_fields(fields, raw_scalars, "0.2", "okf")
-        curated_issues = []
-        if args.profile == "curated":
-            curated_issues = validate_fields(
-                fields,
-                raw_scalars,
-                "0.1",
-                "curated",
-            )
-        issues = list(dict.fromkeys(v01_issues + v02_issues + curated_issues))
-        if issues:
-            print(f"INVALID {rel}: {'; '.join(issues)}")
-            counts["invalid"] += 1
-            continue
-        if "generated" in fields:
-            label = "dual-write" if "timestamp" in fields else "native-v0.2"
-            print(f"KEEP {rel}: {label}")
-            counts["native"] += 1
-            continue
-        timestamp = fields.get("timestamp")
-        raw_timestamp = raw_scalars.get("timestamp")
-        if "timestamp" not in fields:
-            print(f"KEEP {rel}: compatible-minimal; no legacy timestamp to migrate")
-            counts["minimal"] += 1
-            continue
-        if not valid_datetime(timestamp, raw_timestamp):
-            print(f"INVALID {rel}: invalid legacy timestamp")
-            counts["invalid"] += 1
-            continue
-        timestamp = raw_timestamp if isinstance(raw_timestamp, str) else timestamp
-
-        counts["legacy"] += 1
-        print(f"{'MIGRATE' if args.apply else 'WOULD MIGRATE'} {rel}: timestamp -> generated.at")
-        if not args.apply:
-            continue
-        path = mutation_path(root, rel)
-        if rel not in before:
-            raise SystemExit(f"migration path absent from inventory: {rel}")
-        try:
-            existing_header, current_body, current_bom = preflight_inventory(
-                data,
-                before[rel],
-                header.encode("utf-8"),
-                body,
-                bom,
-            )
-        except ValueError as exc:
-            raise SystemExit(f"cannot migrate {rel}: {exc}") from None
-        generated = {"by": args.actor, "at": timestamp}
-        removed = {"timestamp"} if args.drop_legacy_timestamp else set()
-        output = (
-            (BOM if current_bom else b"")
-            + header_bytes(
-                {"generated": generated},
-                preferred_eol(current_body, existing_header),
-                existing_header,
-                removed_keys=removed,
-            )
-            + current_body
-        )
-        if output != data:
-            pending.append((rel, path, data, output))
-
-    if counts["invalid"]:
-        raise SystemExit(
-            f"migration blocked: {counts['invalid']} invalid concept(s); no files changed"
-        )
-    if args.apply and counts["skipped"]:
-        raise SystemExit(
-            f"migration incomplete: {counts['skipped']} concept(s) have no frontmatter; "
-            "no files changed"
-        )
-    if args.apply and not args.dry_run:
-        atomic_replace_many(pending)
-    for rel, _, _, _ in pending:
-        print(f"{'would update' if args.dry_run else 'updated'}: {rel}")
-    print(
-        "migration summary: "
-        f"legacy={counts['legacy']} native={counts['native']} "
-        f"minimal={counts['minimal']} skipped={counts['skipped']} changed={len(pending)}"
-    )
-
-
-def touch_files(args, root: Path):
-    if not args.actor:
-        raise SystemExit("--actor is required with --touch")
-    if args.target_version != "0.2":
-        raise SystemExit("--touch always updates files to OKF v0.2")
-
-    operation_timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
-    catalog = set(args.types.split(",")) if args.types else None
-    pending = []
-    results = []
-    seen = set()
-
-    for raw_rel in args.touch:
-        rel = Path(raw_rel).as_posix()
-        if rel in seen:
-            continue
-        seen.add(rel)
-        name = Path(rel).name
-        if name in RESERVED_FILES:
-            raise SystemExit(f"--touch does not mutate reserved OKF files: {rel}")
-        if name in ONBOARDING_FILES and name != "README.md":
-            raise SystemExit(f"--touch does not mutate repository instruction files: {rel}")
-
-        path = mutation_path(root, rel)
-        data = path.read_bytes()
-        try:
-            header, body, bom, split_error = split_document(data)
-        except UnicodeDecodeError as exc:
-            raise SystemExit(f"cannot touch {rel}: {exc}") from None
-        if split_error:
-            raise SystemExit(
-                f"cannot touch {rel}: {split_error} frontmatter; use --manifest for new documents"
-            )
-        fields, raw_scalars, yaml_error = strict_yaml(header)
-        if yaml_error:
-            raise SystemExit(f"cannot touch {rel}: {yaml_error}")
-
-        source_profile = "0.2" if "generated" in fields else "0.1"
-        issues = validate_fields(fields, raw_scalars, source_profile, args.profile, catalog)
-        if issues:
-            raise SystemExit(f"cannot touch {rel}: {'; '.join(issues)}")
-
-        updates = {
-            "generated": {
-                "by": args.actor,
-                "at": operation_timestamp,
-            }
-        }
-        removed = set()
-        if "timestamp" in fields:
-            if args.drop_legacy_timestamp:
-                removed.add("timestamp")
+        existing = item["result"]["value"]
+        final = {key: existing[key] for key in FIELDS if key in existing}
+        for key, value in proposals[rel].items():
+            old = existing.get(key)
+            if key not in existing or old == value:
+                final[key] = value
+            elif field_issue(key, old) is not None or args.replace_existing:
+                final[key] = value
+                notes.append(f"replaced: {rel} {key}: {show(old)} -> {show(value)}")
             else:
-                updates["timestamp"] = operation_timestamp
+                notes.append(f"kept existing: {rel} {key}: {show(old)}")
+        issues = validate_fields(final)
+        if issues:
+            errors.append(f"{rel}: {'; '.join(issues)}")
+            continue
+        if header and all(existing.get(key) == final.get(key) for key in FIELDS):
+            continue
+        eol = preferred_eol(header, item["body"])
+        serialized = [(key, final[key]) for key in FIELDS if key in final]
+        preserved = kept_lines(header, item["result"]["top_keys"], set(FIELDS))
+        expected = {key: value for key, value in existing.items() if key not in FIELDS}
+        expected.update(final)
+        output = build_document(item["bom"], item["body"], eol, serialized, preserved)
+        planned.append({**item, "output": output, "expected": expected})
+    if errors:
+        raise SystemExit("nothing written:\n" + "\n".join(errors))
+    verify_outputs(planned)
+    finish(args, [(p["rel"], p["path"], p["data"], p["output"]) for p in planned if p["output"] != p["data"]], notes)
 
-        existing_header = header.encode("utf-8")
-        output = (
-            (BOM if bom else b"")
-            + header_bytes(
-                updates,
-                preferred_eol(body, existing_header),
-                existing_header,
-                removed_keys=removed,
-            )
-            + body
-        )
-        output_header, _, _, output_error = split_document(output)
-        if output_error:
-            raise SystemExit(f"cannot touch {rel}: generated invalid frontmatter")
-        output_fields, output_scalars, output_yaml_error = strict_yaml(output_header)
-        if output_yaml_error:
-            raise SystemExit(f"cannot touch {rel}: {output_yaml_error}")
-        output_issues = validate_fields(
-            output_fields,
-            output_scalars,
-            "0.2",
-            args.profile,
-            catalog,
-        )
-        if output_issues:
-            raise SystemExit(f"cannot touch {rel}: {'; '.join(output_issues)}")
 
-        result = (
-            ("migrate", "migrated")
-            if "generated" not in fields
-            else ("refresh", "refreshed")
-        )
-        results.append((rel, result))
-        if output != data:
-            pending.append((rel, path, data, output))
+def remove_fields(args, concepts: dict, root: Path):
+    dropped = set(args.remove_fields)
+    protected = dropped & set(REQUIRED)
+    if protected:
+        raise SystemExit(f"required fields cannot be removed: {', '.join(sorted(protected))}")
+    targets = resolve_named(concepts, args.paths, root) if args.paths else list(concepts)
+    errors, notes, planned = [], [], []
+    for item in read_targets(targets, concepts, errors):
+        rel = item["rel"]
+        if item["error"]:
+            errors.append(f"{rel}: {item['error']}")
+            continue
+        existing = item["result"]["value"]
+        present = [key for key in existing if key in dropped]
+        if not present:
+            continue
+        header = item["header"].encode("utf-8")
+        problem = rewrite_problem(header, item["result"])
+        if problem:
+            errors.append(f"{rel}: {problem}")
+            continue
+        preserved = kept_lines(header, item["result"]["top_keys"], dropped)
+        output = build_document(item["bom"], item["body"], preferred_eol(header, item["body"]), [], preserved)
+        expected = {key: value for key, value in existing.items() if key not in dropped}
+        planned.append({**item, "output": output, "expected": expected})
+        notes.append(f"removed: {rel} ({', '.join(present)})")
+    if errors:
+        raise SystemExit("nothing written:\n" + "\n".join(errors))
+    verify_outputs(planned)
+    finish(args, [(p["rel"], p["path"], p["data"], p["output"]) for p in planned if p["output"] != p["data"]], notes)
 
+
+def finish(args, pending, notes):
     if not args.dry_run:
-        atomic_replace_many(pending)
-    changed = {rel for rel, _, _, _ in pending}
-    for rel, (verb, completed) in results:
-        action = f"would {verb}" if args.dry_run and rel in changed else completed
-        print(f"{action}: {rel}")
-    print(f"files changed: {len(pending)}")
-
-
-def declare_version(args, root: Path):
-    if not args.apply:
-        raise SystemExit("--declare-version is read-only unless --apply is provided")
-    if not args.whole_bundle:
-        raise SystemExit("--declare-version requires --whole-bundle")
-    if args.exclude:
-        raise SystemExit("--declare-version rejects --exclude because it must validate the full bundle")
-    validator = Path(__file__).with_name("validate_okf.py")
-    command = [
-        sys.executable,
-        str(validator),
-        str(root),
-        "--profile",
-        "okf",
-        "--target-version",
-        args.declare_version,
-        "--whole-bundle",
-        "--ignore-version-declaration",
-    ]
-    checked = subprocess.run(command, capture_output=True, text=True, check=False)
-    if checked.returncode != 0:
-        detail = checked.stdout.strip() or checked.stderr.strip()
-        raise SystemExit(f"version declaration blocked by whole-bundle validation:\n{detail}")
-
-    index = mutation_path(root, "index.md")
-    data = index.read_bytes()
-    header, body, bom, error = split_document(data)
-    if error not in {None, "missing"}:
-        raise SystemExit(f"cannot update root index.md: {error}")
-    existing_header = b"" if error == "missing" else header.encode("utf-8")
-    if existing_header:
-        fields = parsed_header(existing_header)
-        if set(fields) - {"okf_version"}:
-            raise SystemExit("root index.md frontmatter contains fields other than okf_version")
-    output = (
-        (BOM if bom else b"")
-        + header_bytes(
-            {"okf_version": args.declare_version},
-            preferred_eol(body, existing_header),
-            existing_header,
-        )
-        + body
-    )
-    if output != data:
-        if not args.dry_run:
-            atomic_replace_many([("index.md", index, data, output)])
-        print(
-            f"{'would update' if args.dry_run else 'updated'}: "
-            f"index.md (okf_version {args.declare_version})"
-        )
-    else:
-        print(f"unchanged: index.md already declares OKF {args.declare_version}")
+        try:
+            atomic_replace_many(pending)
+        except OSError as exc:
+            raise SystemExit(f"write failed, every file was left or restored as it was: {exc}") from None
+    for note in notes:
+        print(note)
+    for rel, _, _, _ in pending:
+        print(("would change" if args.dry_run else "changed") + f": {rel}")
+    print(f"files {'to change' if args.dry_run else 'changed'}: {len(pending)}")
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("root", type=Path)
     action = parser.add_mutually_exclusive_group(required=True)
-    action.add_argument("--inventory-out", type=Path)
-    action.add_argument("--manifest", type=Path)
-    action.add_argument("--migrate-v01", action="store_true")
-    action.add_argument("--touch", nargs="+", metavar="PATH")
-    action.add_argument("--declare-version", choices=("0.1", "0.2"))
+    action.add_argument("--inventory-out", type=Path, help="write body hashes of documents in scope")
+    action.add_argument("--manifest", type=Path, help="write type, title, description, tags from a JSON manifest")
+    action.add_argument("--remove-fields", nargs="+", metavar="FIELD", help="remove these top-level fields")
     parser.add_argument("--inventory", type=Path)
-    parser.add_argument("--target-version", choices=("0.1", "0.2"), default="0.2")
-    parser.add_argument("--profile", choices=("okf", "curated"), default="curated")
-    parser.add_argument("--actor")
-    parser.add_argument("--apply", action="store_true")
-    parser.add_argument("--drop-legacy-timestamp", action="store_true")
+    parser.add_argument("--paths", nargs="+", metavar="PATH", help="limit --remove-fields to these documents")
+    parser.add_argument("--replace-existing", action="store_true", help="replace valid existing values")
     parser.add_argument("--exclude", nargs="*", default=[])
     parser.add_argument("--include-readme", action="store_true")
-    parser.add_argument("--whole-bundle", action="store_true")
-    parser.add_argument("--types")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--replace-existing-metadata", action="store_true")
     args = parser.parse_args()
 
     root = args.root.resolve()
     if not root.is_dir():
         raise SystemExit(f"not a directory: {root}")
-    if args.actor and not valid_actor(args.actor):
-        raise SystemExit("--actor must use producer/version, human:<id>, or process:<id>")
-    if args.drop_legacy_timestamp and not (args.migrate_v01 or args.touch):
-        raise SystemExit("--drop-legacy-timestamp is only valid with --migrate-v01 or --touch")
-    if args.apply and not (args.migrate_v01 or args.declare_version):
-        raise SystemExit("--apply is only valid with --migrate-v01 or --declare-version")
-    excludes = set(args.exclude)
+    if args.paths and not args.remove_fields:
+        raise SystemExit("--paths is only valid with --remove-fields")
+    scope = load_scope(root, args.exclude, args.include_readme)
+    concepts, _ = partition(markdown_files(scope))
+    print(scope.describe())
 
     if args.inventory_out:
-        args.inventory_out.write_text(
-            json.dumps(
-                inventory(root, excludes, args.include_readme, args.whole_bundle),
-                indent=2,
-                ensure_ascii=False,
-            ) + "\n",
-            encoding="utf-8",
-        )
-        print(f"inventory: {args.inventory_out}")
-        return
-    if args.migrate_v01:
-        migrate_v01(args, root, excludes)
-        return
-    if args.touch:
-        touch_files(args, root)
-        return
-    if args.declare_version:
-        declare_version(args, root)
-        return
-    apply_manifest(args, root)
+        try:
+            args.inventory_out.write_text(
+                json.dumps(
+                    {"version": INVENTORY_VERSION, "root": str(root), "files": inventory(concepts)},
+                    indent=2,
+                    ensure_ascii=False,
+                ) + "\n",
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            raise SystemExit(f"cannot write inventory: {exc}") from None
+        print(f"inventory: {args.inventory_out} ({len(concepts)} documents)")
+    elif args.manifest:
+        apply_manifest(args, concepts, root)
+    else:
+        remove_fields(args, concepts, root)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

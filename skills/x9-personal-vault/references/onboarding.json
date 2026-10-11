@@ -21,6 +21,21 @@
       "guidance_id": "install-command"
     },
     {
+      "id": "okf-companion",
+      "runtimes": [
+        "claude",
+        "codex"
+      ],
+      "kind": "skill",
+      "level": "required",
+      "needed_for": "Writing and validating the OKF metadata of vault notes.",
+      "check": {
+        "type": "skill-present",
+        "target_skill": "x9-okf-docs"
+      },
+      "guidance_id": "install-skill"
+    },
+    {
       "id": "obsidian-companion",
       "runtimes": [
         "claude",
