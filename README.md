@@ -81,6 +81,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You are building or preparing to release a public site or API: use [`x9-appsec`](skills/x9-appsec/SKILL.md).
 - The agent writes tests that prove nothing, the suite is full of duplicates and flaky tests, or you want to know how testing should be organized in your project: use [`x9-test-quality`](skills/x9-test-quality/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
+- You need timestamped transcripts of your own videos or want to find where you said something in them: use [`x9-video-transcripts`](skills/x9-video-transcripts/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - A large initiative still has choices that could change its direction or scope: map them before planning with [`x9-decision-map`](skills/x9-decision-map/SKILL.md).
 - You have an approved, implementation-ready plan and need connected tracker-ready work items: use [`x9-task-graph`](skills/x9-task-graph/SKILL.md).
@@ -223,6 +224,16 @@ Each route produces native editable source: `.excalidraw` JSON with checked bind
 Codex generates images with its built-in tool under a ChatGPT login, so no image API key is needed. This skill opens that route to agents outside Codex: Claude Code, OpenCode, or another harness on any model hands Codex a brief, and Codex shapes the prompt with its own image skill. Prompt quality therefore no longer depends on the model you happen to be using.
 
 The result counts only when a real PNG with readable dimensions exists at the requested path, and the final prompt comes back with it. If Codex generated the image but did not save it, the skill recovers the file instead of paying for a second generation. A finished prompt from the user can still be passed through unchanged.
+
+### Video and audio
+
+#### [`x9-video-transcripts`](skills/x9-video-transcripts/SKILL.md)
+
+Recorded a dozen videos and can no longer remember which one covers what? This skill transcribes your own video and audio files locally with whisper.cpp, from a single clip to a whole folder, and later finds the moment you said something, with the file and timestamp. Recognition runs in a script on your machine, so a batch costs the agent a progress line per file and a short summary, not the transcript text, and nothing is uploaded anywhere.
+
+Each recording gets `<name>.transcript.srt` for players and editors and `<name>.transcript.txt` with one `[hh:mm:ss]` line per phrase beside it, or in a separate library folder mirroring the same layout. Your own `.srt` files stay untouched, a rerun transcribes only new, changed, or previously failed files, and search tolerates letter case, ё/е, and Russian word endings. The default is Whisper large-v3-turbo with voice-activity detection, chosen after comparing five local models on Russian speech; source media are never modified.
+
+It needs `python3`, `ffmpeg`, and `whisper-cli`; the script downloads the two models, about 875 MB, on first use. It was verified on macOS with Apple Silicon.
 
 ### Planning and architecture
 

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode", "claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running the transcription and search script.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "ffmpeg-command",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Extracting audio from video and audio files.",
+      "check": {"type": "command-present", "command": "ffmpeg"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "whisper-cli-command",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Speech recognition with whisper.cpp.",
+      "check": {"type": "command-present", "command": "whisper-cli"},
+      "guidance_id": "install-command"
+    },
+    {
+      "id": "model-download",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Network access and about 875 MB of disk for the one-time model download that the agent runs with check --download.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    }
+  ]
+}

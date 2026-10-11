@@ -4,11 +4,16 @@
 
 ### Highlights
 
+- Add `x9-video-transcripts`. It transcribes the user's own video and audio files locally with whisper.cpp, from one clip to a whole folder, writing `<name>.transcript.srt` and a timestamped `<name>.transcript.txt` beside each recording or into a mirrored library folder. Reruns transcribe only new, changed, or failed files, a failed file never stops the batch, and the agent sees progress lines and a summary instead of the transcript text. A search command finds where something was said, returning the file and timestamp while tolerating letter case, ё/е, and Russian word endings.
 - The maintainer's private release workflow now checks that every published skill is linked into the personal `~/.agents/skills` and `~/.claude/skills` directories on both maintainer machines, adds any missing links itself, and blocks the release on broken or stale ones, so a newly added skill no longer stays invisible locally.
 
 ### Install / update
 
+- Update the skill package to use `x9-video-transcripts`. On first use it asks for `ffmpeg` and `whisper-cli` if they are missing and downloads its two default models, about 875 MB.
+
 ### Compatibility
+
+- `x9-video-transcripts` uses portable Agent Skills structure and is packaged for Claude Code and Codex. Its script needs `python3`, `ffmpeg`, and `whisper-cli`; it was verified on macOS with Apple Silicon.
 
 ### Breaking changes
 
