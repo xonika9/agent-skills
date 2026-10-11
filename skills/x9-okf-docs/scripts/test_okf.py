@@ -38,8 +38,13 @@ def write(path: Path, text: str):
     path.write_text(text, encoding="utf-8")
 
 
-def doc(type_="Note", description="A test document", extra=""):
-    return f'---\ntype: "{type_}"\ndescription: "{description}"\n{extra}---\n# Body\n'
+def doc(type_="Note", description="A test document", extra="", title='"Doc"', tags='["test", "okf"]'):
+    lines = f'type: "{type_}"\ndescription: "{description}"\n'
+    if title is not None:
+        lines += f"title: {title}\n"
+    if tags is not None:
+        lines += f"tags: {tags}\n"
+    return f"---\n{lines}{extra}---\n# Body\n"
 
 
 def fails_with(root: Path, text: str, *args):
@@ -98,7 +103,7 @@ def main():
         # Field contract.
         fields = temp / "fields"
         write(fields / "minimal.md", doc())
-        write(fields / "full.md", doc(description="Full", extra='title: "Full"\ntags: ["health", "video-ideas"]\n'))
+        write(fields / "full.md", doc(description="Full", title='"Full"', tags='["health", "video-ideas"]'))
         write(fields / "extra.md", doc(description="Extra", extra="state: active\ncreated: 2024-01-05\nwhen: 2024-01-05 10:00:00\ngenerated: { by: \"human:x\", at: \"2026-01-01T00:00:00Z\" }\n"))
         ok = run(VALIDATE, fields)
         expect("type and description suffice; unknown fields and dates are accepted", ok.returncode == 0 and "problems: 0" in ok.stdout, ok)
@@ -107,11 +112,13 @@ def main():
             "no-description.md": ('---\ntype: "Note"\n---\n# Body\n', "missing description"),
             "no-type.md": ('---\ndescription: "No type"\n---\n# Body\n', "missing type"),
             "no-header.md": ("# Body\n", "no frontmatter"),
-            "russian-tags.md": (doc(description="Ru", extra="tags: [здоровье]\n"), "English kebab-case"),
-            "many-tags.md": (doc(description="Many", extra="tags: [a, b, c, d, e, f]\n"), "at most 5"),
-            "empty-title.md": (doc(description="Empty", extra='title: ""\n'), "title must be a non-empty string"),
+            "russian-tags.md": (doc(description="Ru", tags="[здоровье]"), "English kebab-case"),
+            "many-tags.md": (doc(description="Many", tags="[a, b, c, d, e, f]"), "at most 5"),
+            "empty-title.md": (doc(description="Empty", title='""'), "title must be a non-empty string"),
             "duplicate.md": ('---\ntype: Note\ntype: Other\ndescription: "Dup"\n---\n', "duplicate key"),
             "multiline.md": ('---\ntype: Note\ndescription: |\n  one\n  two\n---\n', "one line"),
+            "no-title.md": (doc(description="No title", title=None), "missing title"),
+            "no-tags.md": (doc(description="No tags", tags=None), "missing tags"),
         }
         for name, (text, message) in cases.items():
             case_root = temp / "case" / name.replace(".md", "")
@@ -205,7 +212,7 @@ def main():
             "---\rcustom: |\r  before\r  ---\r  after\rвладелец: Алекс\rtitle: Old title\rtags: [здоровье, спорт]\r---\r".encode("utf-8")
             + custom_body
         )
-        write(root / "kept.md", '---\ntype: Note\ntitle: Mine\ndescription: "Mine"\n---\n# Kept\n')
+        write(root / "kept.md", '---\ntype: Note\ntitle: Mine\ndescription: "Mine"\ntags: [mine]\n---\n# Kept\n')
         nfd_name = unicodedata.normalize("NFD", "Йога.md")
         write(root / nfd_name, "# Yoga\n")
         write(root / "Входящее" / "idea.md", "# Idea\n")
@@ -216,10 +223,10 @@ def main():
 
         manifest = temp / "manifest.json"
         manifest.write_text(json.dumps({
-            "plain.md": {"type": "Note", "description": "Plain document", "title": "Plain", "confidence": "high"},
+            "plain.md": {"type": "Note", "description": "Plain document", "title": "Plain", "tags": ["plain"], "confidence": "high"},
             "custom.md": {"type": "Note", "description": "Custom document", "title": "New title", "tags": ["health", "sport"]},
-            "kept.md": {"type": "Note", "description": "Mine", "title": "Other"},
-            unicodedata.normalize("NFC", "Йога.md"): {"type": "Note", "description": "Yoga"},
+            "kept.md": {"type": "Note", "description": "Mine", "title": "Other", "tags": ["mine"]},
+            unicodedata.normalize("NFC", "Йога.md"): {"type": "Note", "description": "Yoga", "title": "Йога", "tags": ["yoga"]},
         }, ensure_ascii=False), encoding="utf-8")
         before = {path: path.read_bytes() for path in root.rglob("*.md")}
         dry = run(INSERT, root, "--manifest", manifest, "--inventory", inventory_path, "--dry-run")
@@ -255,7 +262,7 @@ def main():
 
         replace_inventory = temp / "replace-inventory.json"
         run(INSERT, root, "--inventory-out", replace_inventory)
-        manifest.write_text(json.dumps({"kept.md": {"type": "Note", "description": "Mine", "title": "Other"}}), encoding="utf-8")
+        manifest.write_text(json.dumps({"kept.md": {"type": "Note", "description": "Mine", "title": "Other", "tags": ["mine"]}}), encoding="utf-8")
         replaced = run(INSERT, root, "--manifest", manifest, "--inventory", replace_inventory, "--replace-existing")
         expect(
             "--replace-existing replaces valid values and names the old one",
@@ -284,8 +291,8 @@ def main():
         run(INSERT, atomic, "--inventory-out", atomic_inventory)
         write(atomic / "b.md", "# B edited\n")
         manifest.write_text(json.dumps({
-            "a.md": {"type": "Note", "description": "A"},
-            "b.md": {"type": "Note", "description": "B"},
+            "a.md": {"type": "Note", "description": "A", "title": "T", "tags": ["test"]},
+            "b.md": {"type": "Note", "description": "B", "title": "T", "tags": ["test"]},
         }), encoding="utf-8")
         drift = run(INSERT, atomic, "--manifest", manifest, "--inventory", atomic_inventory)
         expect(
@@ -353,7 +360,7 @@ def main():
         (mixed / "m.md").write_bytes(b"---\r\nstate: active\r\n---\r\n# Body\n\nLF body.\n")
         mixed_inventory = temp / "mixed-inventory.json"
         run(INSERT, mixed, "--inventory-out", mixed_inventory)
-        manifest.write_text(json.dumps({"m.md": {"type": "Note", "description": "Mixed"}}), encoding="utf-8")
+        manifest.write_text(json.dumps({"m.md": {"type": "Note", "description": "Mixed", "title": "T", "tags": ["test"]}}), encoding="utf-8")
         mixed_apply = run(INSERT, mixed, "--manifest", manifest, "--inventory", mixed_inventory)
         mixed_bytes = (mixed / "m.md").read_bytes()
         expect(
@@ -373,8 +380,8 @@ def main():
         expect("a repeated manifest path is refused", repeated.returncode != 0 and "twice" in repeated.stderr, repeated)
 
         for label, text, message in (
-            ("duplicate tags", doc(description="Dup tags", extra="tags: [health, health]\n"), "unique"),
-            ("boolean tag", doc(description="Bool tag", extra="tags: [on, health]\n"), "true or false"),
+            ("duplicate tags", doc(description="Dup tags", tags="[health, health]"), "unique"),
+            ("boolean tag", doc(description="Bool tag", tags="[on, health]"), "true or false"),
         ):
             tag_root = temp / "tag" / label.replace(" ", "-")
             write(tag_root / "t.md", text)
@@ -390,7 +397,7 @@ def main():
         write(oddities / "empty.md", "---\n---\n# Empty\n")
         odd_inventory = temp / "odd-inventory.json"
         run(INSERT, oddities, "--inventory-out", odd_inventory)
-        manifest.write_text(json.dumps({"empty.md": {"type": "Note", "description": "Empty header"}}), encoding="utf-8")
+        manifest.write_text(json.dumps({"empty.md": {"type": "Note", "description": "Empty header", "title": "T", "tags": ["test"]}}), encoding="utf-8")
         empty_apply = run(INSERT, oddities, "--manifest", manifest, "--inventory", odd_inventory)
         expect("an empty header can be filled", empty_apply.returncode == 0 and b'type: "Note"' in (oddities / "empty.md").read_bytes(), empty_apply)
 
@@ -400,6 +407,15 @@ def main():
         (linked_policy / ".x9-okf.json").symlink_to(temp / "policy-target.json")
         linked = run(VALIDATE, linked_policy)
         expect("a linked policy file is refused", linked.returncode != 0 and "not a link" in linked.stderr, linked)
+
+        included = temp / "included"
+        write(included / "docs" / "a.md", "# A\n")
+        write(included / "docs" / "deep" / "b.md", "# B\n")
+        write(included / "src" / "c.md", "# C\n")
+        write(included / "top.md", "# Top\n")
+        (included / ".x9-okf.json").write_text('{"include": ["docs"], "exclude": ["deep"]}', encoding="utf-8")
+        listed = run(VALIDATE, included, "--missing").stdout.split()
+        expect("include limits scope to listed folders, exclude still applies", listed == ["docs/a.md"], listed)
 
         anchored = temp / "anchored"
         write(anchored / "Архив" / "top.md", "# Top\n")

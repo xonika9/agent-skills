@@ -78,7 +78,7 @@ Relative paths resolve inside the vault. `remove` is accepted only in a manifest
 
 After the files are in place, write:
 
-- OKF headers for every note that came in, through the adoption route of `x9-okf-docs`, outside the exclusions in [the model](model.md#properties), and the vault's `.x9-okf.json` with those exclusions;
+- OKF headers for every note that came in, through the adoption route of `x9-okf-docs`, outside the exclusions in [the model](model.md#properties); the vault's `.x9-okf.json` with those exclusions and `README.md` included; and the `x9-okf-docs` block in `AGENTS.md`, whose Local part says that `type` values are listed in each area's README and the templates and names the vault's language;
 - each area's `README.md` and `log.md`, each stream's template, and the topic template in `<System>/<Templates>/`;
 - the first topics' `README.md` and `log.md`;
 - `memory/USER.md` with what the user said about themselves, and an empty `memory/MEMORY.md`;

@@ -16,14 +16,14 @@ python3 <skill-directory>/scripts/validate_okf.py <root>
 
 ## Adopt
 
-1. Agree on the scope. When the folder needs exclusions or includes `README.md`, write `.x9-okf.json` as described in [the contract](okf-format.md#scope) and show it in the plan.
+1. Agree on the scope, write `.x9-okf.json` as described in [the contract](okf-format.md#scope) when the defaults do not fit, and bring the `AGENTS.md` block in line with [the template](agents-block.md). Show both in the plan.
 2. Record body hashes in a file outside the folder:
 
    ```bash
    python3 <skill-directory>/scripts/insert_frontmatter.py <root> --inventory-out <inventory.json>
    ```
 
-3. List the work with `validate_okf.py <root> --missing`, read each listed document, and write a manifest that sets only the contract fields. A read-only subagent can propose them with [the proposal brief](markup-agent-prompt.md).
+3. List the work with `validate_okf.py <root> --missing`, read each listed document, and write a manifest that sets all four contract fields. A read-only subagent can propose them with [the proposal brief](markup-agent-prompt.md).
 
    ```json
    {"Темы/2026-09-21-medicine/README.md": {"type": "Тема", "title": "Обследование 2026", "description": "…", "tags": ["health", "checkup"]}}
@@ -53,7 +53,7 @@ python3 <skill-directory>/scripts/insert_frontmatter.py <root> \
   --remove-fields generated timestamp verified --dry-run
 ```
 
-`--paths` limits the removal to named documents; `type` and `description` cannot be removed. Run without `--dry-run` to write.
+`--paths` limits the removal to named documents; the four contract fields cannot be removed. Run without `--dry-run` to write.
 
 ## Completion
 

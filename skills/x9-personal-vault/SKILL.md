@@ -22,7 +22,7 @@ Infer the action from the request and the folder's state.
 
 - This skill owns the vault model, the vault's templates and how-to note, and the block between `<!-- x9-personal-vault:start -->` and `<!-- x9-personal-vault:end -->` in the vault's `AGENTS.md`, written per [agents-block](references/agents-block.md). Text outside the markers belongs to the user.
 - `x9-obsidian` owns link-preserving moves inside an Obsidian vault and Bases files; use it for those when Obsidian is in use.
-- `x9-okf-docs` owns the OKF metadata of every note outside the vault's [exclusions](references/model.md#properties).
+- `x9-okf-docs` owns the OKF header of every note outside the vault's [exclusions](references/model.md#properties) and its own block in the vault's `AGENTS.md`.
 - A file that the vault's `AGENTS.md` assigns to another skill, or that belongs to another app, is placed or linked, never rewritten.
 
 ## Boundaries

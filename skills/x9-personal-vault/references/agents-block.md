@@ -33,7 +33,7 @@ Creating, renaming, merging, or removing an area or stream, or changing these ru
 
 - Topic `README.md`, from its template: `state` (`active` now, `waiting` blocked on something, `later`, `done`, `reference`); `step` — the next action for `active` or what we wait for in `waiting`, required for both; `area` — a link such as `"[[<Areas>/<area>/README|<area>]]"`, omitted when none; `aliases` — one short name.
 - Stream unit `README.md`, from its template: `stage` — one value from the list in the stream's template; moving on is an edit of `stage`.
-- Every note outside `<Inbox>/`, `raw/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`, including these READMEs, is an OKF document per `x9-okf-docs`: give it `type` and a one-line `description`, usually `title` and one to five English kebab-case `tags`; after a substantive edit, correct those that no longer fit. `type` takes a value listed in the area's README or the template. `log.md` files have no properties.
+- Every note outside `<Inbox>/`, `raw/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`, including these READMEs, also carries the OKF header described in the `x9-okf-docs` block of this file. `log.md` files have no properties.
 - Dates are `YYYY-MM-DD`. Never invent one: when the real date is unknown, use the date the material was captured (for an inbox note, its file date) and say so in the note. A slug is a few lowercase words in <language> joined by hyphens.
 
 Record each notable change as one line in the touched topic's or area's `log.md` under `## YYYY-MM-DD`, newest first.
@@ -57,4 +57,4 @@ Keep the block within about 50 lines. A rule the vault's owner adds outside the 
 
 ## Done
 
-`CLAUDE.md` contains the line `@AGENTS.md`, every area, stream, template, and external link named in the block exists, every area and stream folder is named in the block, the block is within budget, and nothing outside the markers changed except the agreed insertion point or a newly created file.
+`CLAUDE.md` contains the line `@AGENTS.md`, the `x9-okf-docs` block is present, every area, stream, template, and external link named in the block exists, every area and stream folder is named in the block, the block is within budget, and nothing outside the markers changed except the agreed insertion point or a newly created file.

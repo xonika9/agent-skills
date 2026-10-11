@@ -4,14 +4,14 @@ The contract follows OKF v0.2, whose canonical specification is `SPEC.md` in [Go
 
 ## Fields
 
-A document is a UTF-8 Markdown file whose YAML header holds:
+A document is a UTF-8 Markdown file whose YAML header holds all four fields. Every one is required, so no agent has to judge which to skip.
 
 | Field | Rule |
 |---|---|
-| `type` | Required. The kind of document in a few words, such as `Тема`, `Research Note`, or `Playbook`; use the values the repository or its area lists. |
-| `description` | Required. One line on what the document holds and what it is for, so an agent can decide whether to open it. Keep it distinct from neighbouring documents. |
-| `title` | Recommended. The human name; include it whenever the file name does not say what the document is, as with every `README.md`. |
-| `tags` | Recommended. One to five unique English kebab-case tags for subjects that cross folders, such as `health` or `video-ideas`. |
+| `type` | The kind of document in a few words, such as `Тема`, `Research Note`, or `Playbook`; use the values the repository's block lists. |
+| `title` | The human name, even when the file name looks descriptive. |
+| `description` | One line on what the document holds and what it is for, so an agent can decide whether to open it. Keep it distinct from neighbouring documents. |
+| `tags` | One to five unique English kebab-case tags for subjects that cross folders, such as `health` or `video-ideas`. |
 
 ```yaml
 ---
@@ -34,10 +34,14 @@ Write no other OKF field. `generated`, `verified`, `status`, `stale_after`, `sou
 
 ## Scope
 
-Hidden folders, links, and the folders `raw`, `transcripts`, `summaries`, `artifacts`, `archive`, `node_modules`, `dist`, `build`, and `vendor` are outside scope. A repository extends this in `.x9-okf.json` at its root, which every script reads:
+Hidden folders, links, and the folders `raw`, `transcripts`, `summaries`, `artifacts`, `archive`, `node_modules`, `dist`, `build`, and `vendor` are outside scope. A repository sets its scope in `.x9-okf.json` at its root, which every script reads:
 
 ```json
-{"exclude": ["Входящее", "Архив", "memory", "Система/Шаблоны"], "include_readme": true}
+{"include": ["docs", "research"], "exclude": ["Входящее", "Система/Шаблоны"], "include_readme": true}
 ```
 
-An entry without `/` excludes every folder of that name; an entry with `/` is a path from the root and excludes that folder only. Case and Unicode form are ignored when names are compared.
+- `include` limits documents to these folders, as paths from the root; without it the whole root is in scope.
+- `exclude` removes folders: an entry without `/` excludes every folder of that name, an entry with `/` is a path from the root.
+- `include_readme` makes `README.md` files documents; they are excluded by default.
+
+Case and Unicode form are ignored when names are compared.

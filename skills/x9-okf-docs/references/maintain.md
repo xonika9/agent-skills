@@ -2,22 +2,23 @@
 
 ## Repository instructions
 
-Read the applicable `AGENTS.md` once. If it says the repository does not use OKF or excludes this skill, write no metadata and stop this route.
+If the repository's instructions say it does not use OKF or exclude this skill, write no metadata and stop. Otherwise bring the `AGENTS.md` block in line with [the block template](agents-block.md) as part of this task.
 
-If its OKF section pins a version, copies field rules, or names script options this skill no longer has, replace only that section with a pointer to `x9-okf-docs` through `x9-context-files-generator`, keeping the repository's scope, exclusions, and log conventions. Never edit text between another skill's markers, such as `<!-- x9-personal-vault:start -->` and its end marker; report the conflict instead. Without the companion skill, continue the document work and report the instructions as not updated.
+## Documents
 
-## New document
+[The contract](okf-format.md) defines the header. Which documents to touch:
 
-Write the header by hand with the body, following [the contract](okf-format.md). Then check it:
+- **A document you create** gets the full header as you write it.
+- **A document you work on anyway**, editing or extending its content, leaves this task with a valid header: add a missing one, fill missing fields, correct fields the edit made wrong, and delete retired OKF fields. Keep every field the contract does not name, such as a repository's own `state`.
+- **Every other document** stays as it is, even when its header is missing or old. A repository-wide pass happens only when the user asks; it follows [adapt](adapt.md).
+- Reading a document, fixing a link, or formatting never changes its header.
+
+Then check what you wrote:
 
 ```bash
-python3 <skill-directory>/scripts/validate_okf.py <root> --paths <path>
+python3 <skill-directory>/scripts/validate_okf.py <root> --paths <path> [<path> ...]
 ```
-
-## Edited document
-
-After a substantive edit, reread `description`, `title`, and `tags` and correct any that no longer fit; touch nothing else in the header. Run the same check when the header changed. Reading a document, fixing a link, or formatting never changes its header.
 
 ## Completion
 
-Only the named documents changed, plus a stale OKF section of `AGENTS.md` when one was repaired, and the check passes.
+Only the documents this task worked on changed, plus the `AGENTS.md` block and `.x9-okf.json` when they needed it, and the check passes for those documents.

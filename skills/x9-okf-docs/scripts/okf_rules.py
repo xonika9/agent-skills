@@ -21,7 +21,7 @@ DEFAULT_EXCLUDES = {
 }
 POLICY_FILE = ".x9-okf.json"
 FIELDS = ("type", "title", "description", "tags")
-REQUIRED = ("type", "description")
+REQUIRED = FIELDS
 MAX_TAGS = 5
 TAG_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 DATE_HEADING_RE = re.compile(r"(?m)^##[ \t]+(.+?)[ \t]*\r?$")
@@ -42,8 +42,9 @@ def rel_key(rel: str):
 
 
 class Scope:
-    def __init__(self, root: Path, excludes, include_readme: bool, policy_path):
+    def __init__(self, root: Path, excludes, include_readme: bool, policy_path, includes=()):
         self.root = root
+        self.includes = {rel_key(item) for item in includes if rel_key(item)}
         self.include_readme = include_readme
         self.policy_path = policy_path
         self.names = {name_key(item) for item in DEFAULT_EXCLUDES}
@@ -58,7 +59,17 @@ class Scope:
         if rel_parts[-1].startswith(".") or name_key(rel_parts[-1]) in self.names:
             return True
         key = "/".join(name_key(part) for part in rel_parts)
-        return any(key == path or key.startswith(path + "/") for path in self.paths)
+        if any(key == path or key.startswith(path + "/") for path in self.paths):
+            return True
+        return bool(self.includes) and not any(
+            key == path or key.startswith(path + "/") or path.startswith(key + "/") for path in self.includes
+        )
+
+    def included_file(self, rel_parts):
+        if not self.includes:
+            return True
+        key = "/".join(name_key(part) for part in rel_parts)
+        return any(key.startswith(path + "/") for path in self.includes)
 
     def describe(self):
         source = self.policy_path.name if self.policy_path else "defaults"
@@ -76,18 +87,22 @@ def load_scope(root: Path, extra_excludes=(), include_readme: bool = False):
             policy = json.loads(policy_path.read_text(encoding="utf-8"))
         except (OSError, ValueError) as exc:
             raise SystemExit(f"cannot read {POLICY_FILE}: {exc}") from None
-        if not isinstance(policy, dict) or set(policy) - {"exclude", "include_readme"}:
-            raise SystemExit(f"{POLICY_FILE} may contain only 'exclude' and 'include_readme'")
+        if not isinstance(policy, dict) or set(policy) - {"include", "exclude", "include_readme"}:
+            raise SystemExit(f"{POLICY_FILE} may contain only 'include', 'exclude', and 'include_readme'")
+        for key in ("include", "exclude"):
+            value = policy.get(key, [])
+            if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+                raise SystemExit(f"{POLICY_FILE}: '{key}' must be a list of folder names or paths")
         listed = policy.get("exclude", [])
-        if not isinstance(listed, list) or any(not isinstance(item, str) for item in listed):
-            raise SystemExit(f"{POLICY_FILE}: 'exclude' must be a list of folder names or paths")
+        includes = policy.get("include", [])
         if not isinstance(policy.get("include_readme", False), bool):
             raise SystemExit(f"{POLICY_FILE}: 'include_readme' must be true or false")
         excludes.extend(listed)
         include_readme = include_readme or policy.get("include_readme", False)
     else:
         policy_path = None
-    return Scope(root, excludes, include_readme, policy_path)
+        includes = []
+    return Scope(root, excludes, include_readme, policy_path, includes)
 
 
 def markdown_files(scope: Scope):
@@ -108,6 +123,7 @@ def markdown_files(scope: Scope):
                 or path.is_symlink()
                 or name.casefold() in INSTRUCTION_KEYS
                 or (name.casefold() == "readme.md" and not scope.include_readme)
+                or not scope.included_file(rel_base + [nfc(name)])
             ):
                 continue
             found["/".join(rel_base + [nfc(name)])] = path

@@ -29,6 +29,6 @@ One JSON object per document:
 
 - Use only the supplied content; report insufficient context instead of guessing.
 - Copy existing valid values unchanged; propose only missing or invalid ones.
-- Propose only `type`, `title`, `description`, and `tags`.
+- Propose all four of `type`, `title`, `description`, and `tags`, and nothing else.
 - Keep each description one line and distinct from its neighbours.
 - Do not emit shell commands, patches, or rewritten bodies.

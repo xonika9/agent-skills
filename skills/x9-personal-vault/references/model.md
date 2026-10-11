@@ -45,7 +45,7 @@ Notes in the inbox carry no properties, so a thought can be captured in one tap 
 
 ## Properties
 
-Every note outside the OKF exclusions is an OKF document, so an agent can choose a note from its header without reading it. `x9-okf-docs` owns the header: `type` and `description` required, `title` and `tags` recommended. Bodies of notes the user brought in stay byte-identical when they receive a header.
+Every note outside the OKF exclusions is an OKF document, so an agent can choose a note from its header without reading it. `x9-okf-docs` owns the header (`type`, `title`, `description`, `tags`, all required) and its own block in `AGENTS.md`; the vault block does not restate it. Bodies of notes the user brought in stay byte-identical when they receive a header.
 
 OKF exclusions: `<Inbox>/` (one-tap capture without frontmatter), `raw/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`. The vault's `.x9-okf.json` lists them and includes `README.md`, so every check uses the same scope.
 

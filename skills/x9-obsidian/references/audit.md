@@ -16,7 +16,7 @@ Report only checks actually performed. For each finding retain its category, vau
 - ambiguous basename resolution;
 - orphan or dead-end candidates, which may be intentional and are not defects without a vault convention or user goal;
 - invalid `.base` or `.canvas` structure, missing Canvas `file` or `background` targets, and edges whose endpoints do not exist;
-- property, index, or other convention violations only when the selected vault defines that convention.
+- property, index, or other convention violations only when the selected vault defines that convention; OKF headers are checked by `x9-okf-docs`, not here.
 
 Group the result by navigation breakage, ambiguity, structured-file integrity, and convention-specific maintainability. Distinguish observed structure from suggested remediation; do not create placeholder notes, normalize metadata, or infer a personal knowledge-management policy to make the counts smaller.
 

@@ -14,6 +14,8 @@ Use for repository `AGENTS.md` and `CLAUDE.md`, not global personal files.
 
 Read the live file immediately before editing. Existing rules may encode incidents that are invisible in code. Merge surgically; a full replacement requires explicit user intent and a before/after review.
 
+Text between a skill's markers, such as `<!-- x9-okf-docs:start -->` and `<!-- x9-okf-docs:end -->`, belongs to that skill: never rewrite, paraphrase, move, or merge it. Report a conflict with it instead.
+
 Use one canonical owner per fact. A concise summary may appear in another audience file when omitting it would cause a different action.
 
 ## Derivability test

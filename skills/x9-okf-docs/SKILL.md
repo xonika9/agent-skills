@@ -1,17 +1,17 @@
 ---
 name: x9-okf-docs
-description: Use when writing or updating OKF metadata for Markdown documents — creating a document in a repository or vault whose instructions use OKF, adopting OKF for a folder, checking OKF metadata, or removing retired OKF fields — «добавь OKF-метаданные», «адаптируй папку под OKF», «проверь OKF», "migrate docs to OKF". Do not use for reading documents, ordinary Markdown cleanup, prose rewrites, repositories whose instructions say they do not use OKF, or repository instruction files.
+description: Use when writing or updating OKF metadata for Markdown documents — creating or working on a document in a repository or vault whose instructions use OKF, adopting OKF for a folder, checking OKF metadata, removing retired OKF fields, or putting the OKF block into a repository's AGENTS.md — «добавь OKF-метаданные», «адаптируй папку под OKF», «проверь OKF», «обнови блок OKF в AGENTS», "migrate docs to OKF". Do not use for reading documents, ordinary Markdown cleanup, prose rewrites, repositories whose instructions say they do not use OKF, or giving repository instruction files a header.
 ---
 
 # OKF documentation
 
-Own the x9 OKF metadata contract: each document's header carries enough for an agent to decide whether to open it. Repositories point to this skill instead of copying field rules into their instructions. Preserve document bodies and act only on the documents in scope.
+Own the x9 OKF metadata contract: each document's header carries enough for an agent to decide whether to open it. Own also the block between `<!-- x9-okf-docs:start -->` and `<!-- x9-okf-docs:end -->` in a repository's `AGENTS.md`, written from [the block template](references/agents-block.md), so every repository states the same rules in the same words. Preserve document bodies and act only on the documents in scope.
 
 Read [the contract](references/okf-format.md) before writing any metadata.
 
 ## Choose the route
 
-- Create a document, edit one, or repair stale repository instructions: [maintain](references/maintain.md).
+- Create a document, work on one, or bring the repository's `AGENTS.md` block up to date: [maintain](references/maintain.md).
 - Adopt a folder, check it, or remove retired fields: [adapt](references/adapt.md).
 - Brief a read-only subagent that proposes metadata: [proposal brief](references/markup-agent-prompt.md).
 
