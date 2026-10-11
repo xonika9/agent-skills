@@ -414,8 +414,15 @@ def main():
         write(included / "src" / "c.md", "# C\n")
         write(included / "top.md", "# Top\n")
         (included / ".x9-okf.json").write_text('{"include": ["docs"], "exclude": ["deep"]}', encoding="utf-8")
+        write(included / ".claude" / "shared" / "refs" / "r.md", "# R\n")
+        write(included / ".claude" / "other" / "o.md", "# O\n")
+        (included / ".x9-okf.json").write_text('{"include": ["docs", ".claude/shared/refs"], "exclude": ["deep"]}', encoding="utf-8")
         listed = run(VALIDATE, included, "--missing").stdout.split()
-        expect("include limits scope to listed folders, exclude still applies", listed == ["docs/a.md"], listed)
+        expect(
+            "include limits scope to listed folders, reaches a named hidden folder, and exclude still applies",
+            listed == [".claude/shared/refs/r.md", "docs/a.md"],
+            listed,
+        )
 
         anchored = temp / "anchored"
         write(anchored / "Архив" / "top.md", "# Top\n")

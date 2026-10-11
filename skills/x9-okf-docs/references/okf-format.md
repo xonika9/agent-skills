@@ -40,7 +40,7 @@ Hidden folders, links, and the folders `raw`, `transcripts`, `summaries`, `artif
 {"include": ["docs", "research"], "exclude": ["Входящее", "Система/Шаблоны"], "include_readme": true}
 ```
 
-- `include` limits documents to these folders, as paths from the root; without it the whole root is in scope.
+- `include` limits documents to these folders, as paths from the root, including a listed hidden folder; without it the whole root is in scope.
 - `exclude` removes folders: an entry without `/` excludes every folder of that name, an entry with `/` is a path from the root.
 - `include_readme` makes `README.md` files documents; they are excluded by default.
 

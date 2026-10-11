@@ -56,14 +56,18 @@ class Scope:
             (self.paths if "/" in item.replace("\\", "/") else self.names).add(key)
 
     def excluded_dir(self, rel_parts):
-        if rel_parts[-1].startswith(".") or name_key(rel_parts[-1]) in self.names:
-            return True
         key = "/".join(name_key(part) for part in rel_parts)
         if any(key == path or key.startswith(path + "/") for path in self.paths):
             return True
-        return bool(self.includes) and not any(
+        on_include = any(
             key == path or key.startswith(path + "/") or path.startswith(key + "/") for path in self.includes
         )
+        if self.includes and not on_include:
+            return True
+        explicit = any(key == path or path.startswith(key + "/") for path in self.includes)
+        if not explicit and (rel_parts[-1].startswith(".") or name_key(rel_parts[-1]) in self.names):
+            return True
+        return False
 
     def included_file(self, rel_parts):
         if not self.includes:
