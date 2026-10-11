@@ -26,7 +26,7 @@ python3 <skill-directory>/scripts/validate_okf.py <root>
 3. List the work with `validate_okf.py <root> --missing`, read each listed document, and write a manifest that sets all four contract fields. A read-only subagent can propose them with [the proposal brief](markup-agent-prompt.md).
 
    ```json
-   {"Темы/2026-09-21-medicine/README.md": {"type": "Тема", "title": "Обследование 2026", "description": "…", "tags": ["health", "checkup"]}}
+   {"Темы/Здоровье/README.md": {"type": "Dossier", "title": "Здоровье", "description": "…", "tags": ["health", "checkup"]}}
    ```
 
 4. Preview, then apply:
