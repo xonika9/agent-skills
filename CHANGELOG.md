@@ -4,15 +4,18 @@
 
 ### Highlights
 
+- Add `x9-personal-vault`. It gathers one person's scattered notes and documents into a single vault with an inbox, long-lived areas, staged streams such as videos, short topics, and an archive. The agent inspects the folder and any other folders the user names, asks only what it could not tell, and changes nothing until the user approves one plan listing every move. A bundled script copies with checksum verification and keeps Finder tags, never overwrites even when names differ only in letter case or Unicode form, never writes through a link to an external disk, refuses cloud placeholders, keeps editing projects and media in place behind links, and writes a journal that undoes everything except a confirmed removal of originals; that removal runs separately and only when an independent identical copy exists. The daily rules go into a marked block in the vault's `AGENTS.md`, so ordinary sessions keep the vault in order without invoking the skill; the skill handles structural changes, checks, and schema upgrades. `x9-context-files-generator` leaves that block to it, and `x9-obsidian` leaves vault structure to it while keeping link audits.
 - Add `x9-video-transcripts`. It transcribes the user's own video and audio files locally with whisper.cpp, from one clip to a whole folder, writing `<name>.transcript.srt` and a timestamped `<name>.transcript.txt` beside each recording or into a mirrored library folder. Reruns transcribe only new, changed, or failed files, a failed file does not stop the batch unless the same recognizer error repeats, and the agent sees progress lines and a summary instead of the transcript text. A search command finds where something was said, returning the file and timestamp while tolerating letter case, ё/е, and Russian word endings.
 - The maintainer's private release workflow now checks that every published skill is linked into the personal `~/.agents/skills` and `~/.claude/skills` directories on both maintainer machines, adds any missing links itself, and blocks the release on broken or stale ones, so a newly added skill no longer stays invisible locally.
 
 ### Install / update
 
+- Update the skill package to use `x9-personal-vault`. Install `x9-obsidian` as well when the vault is used in Obsidian.
 - Update the skill package to use `x9-video-transcripts`. On first use it asks for `ffmpeg` and `whisper-cli` if they are missing and downloads its two default models, about 875 MB.
 
 ### Compatibility
 
+- `x9-personal-vault` uses portable Agent Skills structure and is packaged for Claude Code and Codex. Its file script needs `python3` and supports macOS and Linux; Obsidian and Git are optional.
 - `x9-video-transcripts` uses portable Agent Skills structure and is packaged for Claude Code and Codex. Its script needs `python3`, `ffmpeg`, and `whisper-cli`; it was verified on macOS with Apple Silicon.
 
 ### Breaking changes

@@ -1,6 +1,6 @@
 ---
 name: x9-obsidian
-description: Use when finding, auditing, or safely editing content in an Obsidian vault — notes, links, embeds, properties, Bases, or Canvas; includes «найди заметку», «проверь битые ссылки», «переименуй и сохрани ссылки», "audit this vault", "fix this .base", and "update this .canvas". Do not use for ordinary Markdown outside Obsidian, choosing a personal productivity system, research itself, or generic diagram design.
+description: Use when finding, auditing, or safely editing content in an Obsidian vault — notes, links, embeds, properties, Bases, or Canvas; includes «найди заметку», «проверь битые ссылки», «переименуй и сохрани ссылки», "audit this vault", "fix this .base", and "update this .canvas". Do not use for ordinary Markdown outside Obsidian, choosing a personal productivity system, setting up, restructuring, or checking the structure of a personal vault (x9-personal-vault), research itself, or generic diagram design.
 ---
 
 # Obsidian

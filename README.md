@@ -82,6 +82,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - The agent writes tests that prove nothing, the suite is full of duplicates and flaky tests, or you want to know how testing should be organized in your project: use [`x9-test-quality`](skills/x9-test-quality/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You need timestamped transcripts of your own videos or want to find where you said something in them: use [`x9-video-transcripts`](skills/x9-video-transcripts/SKILL.md).
+- Your notes and documents are scattered across folders and you want one personal vault that agents keep in order: use [`x9-personal-vault`](skills/x9-personal-vault/SKILL.md).
 - You want an idea challenged before investing in it: call [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md).
 - A large initiative still has choices that could change its direction or scope: map them before planning with [`x9-decision-map`](skills/x9-decision-map/SKILL.md).
 - You have an approved, implementation-ready plan and need connected tracker-ready work items: use [`x9-task-graph`](skills/x9-task-graph/SKILL.md).
@@ -136,7 +137,13 @@ It can also audit how testing is organized in the project as a whole, scaled to 
 
 It works with any language and test runner, takes commands from the project itself, and maps its recommendations onto Vitest, Jest, pytest, Go, and Playwright.
 
-### Obsidian notes
+### Personal notes and Obsidian
+
+#### [`x9-personal-vault`](skills/x9-personal-vault/SKILL.md)
+
+Gathers one person's scattered notes and documents into a single vault: an inbox for quick captures, long-lived areas such as health or a video blog, streams of same-shaped work that move through stages, short topics kept for reference, and an archive. The agent first looks through the folder and any other folders you name, asks only what it could not tell, and shows one plan listing every move. Nothing changes until you approve it. Copies are verified by checksum, editing projects and media can stay on an external disk behind a link, originals are removed only after a separate confirmation, and everything except that confirmed removal can be undone from the run's journal.
+
+The daily rules go into the vault's `AGENTS.md`, so ordinary Claude Code and Codex sessions file a video idea, a doctor's visit, or a new topic in the right place without invoking the skill. The skill is needed again for structural changes, checks, and upgrades. Obsidian and Git are optional.
 
 #### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
 
