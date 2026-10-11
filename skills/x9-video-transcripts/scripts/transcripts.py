@@ -52,7 +52,8 @@ def models_dir() -> Path:
 
 
 def whisper_cli() -> str | None:
-    return os.environ.get("X9_WHISPER_CLI") or shutil.which("whisper-cli")
+    # shutil.which also validates an explicit path, so a wrong X9_WHISPER_CLI reads as missing.
+    return shutil.which(os.environ.get("X9_WHISPER_CLI") or "whisper-cli")
 
 
 # ---------- pure helpers (unit-tested) ----------
@@ -124,6 +125,25 @@ def output_key(base: Path) -> str:
     return str(base).casefold()
 
 
+def recorded_source(txt: Path) -> Path | None:
+    """The source path written into a transcript's header, if any."""
+    try:
+        with open(txt, encoding="utf-8", errors="replace") as f:
+            head = [f.readline() for _ in range(3)]
+    except OSError:
+        return None
+    line = next((l for l in head if l.startswith("# source: ")), None)
+    return Path(line[len("# source: "):].rstrip("\n")) if line else None
+
+
+def owned_by_other(source: Path, base: Path) -> Path | None:
+    """An existing different source that the transcript at base already belongs to."""
+    rec = recorded_source(Path(str(base) + TXT_SUFFIX))
+    if rec is None or not rec.exists():
+        return None  # no transcript yet, or its source moved away: treat as this source's
+    return None if os.path.samefile(rec, source) else rec
+
+
 def is_current(source: Path, base: Path) -> bool:
     srt, txt = Path(str(base) + SRT_SUFFIX), Path(str(base) + TXT_SUFFIX)
     if not (srt.exists() and txt.exists()):
@@ -167,7 +187,8 @@ def search_lines(lines: list[str], query: str) -> list[int]:
 # ---------- side-effecting commands ----------
 
 def check(download: bool) -> int:
-    report: dict = {"ffmpeg": shutil.which("ffmpeg"), "whisper_cli": whisper_cli(), "models_dir": str(models_dir())}
+    report: dict = {"ffmpeg": shutil.which("ffmpeg"), "ffprobe": shutil.which("ffprobe"),
+                    "whisper_cli": whisper_cli(), "models_dir": str(models_dir())}
     for key, (name, url) in MODELS.items():
         path = models_dir() / name
         if not path.exists() and download:
@@ -176,7 +197,7 @@ def check(download: bool) -> int:
             except Exception as e:  # report instead of a traceback
                 report[f"{key}_download_error"] = str(e)
         report[f"{key}_model"] = str(path) if path.exists() else None
-    missing = [k for k in ("ffmpeg", "whisper_cli", "whisper_model", "vad_model") if report[k] is None]
+    missing = [k for k in ("ffmpeg", "ffprobe", "whisper_cli", "whisper_model", "vad_model") if report[k] is None]
     report["status"] = "ok" if not missing else "missing"
     report["missing"] = missing
     print(json.dumps(report, ensure_ascii=False, indent=1))
@@ -257,7 +278,8 @@ def run(paths: list[Path], out: Path | None, lang: str, force: bool, model: Path
     cli = whisper_cli()
     model = model or models_dir() / MODELS["whisper"][0]
     vad = models_dir() / MODELS["vad"][0]
-    problems = [n for n, ok in (("ffmpeg", shutil.which("ffmpeg")), ("whisper-cli", cli),
+    problems = [n for n, ok in (("ffmpeg", shutil.which("ffmpeg")), ("ffprobe", shutil.which("ffprobe")),
+                                ("whisper-cli", cli),
                                 (f"model {model}", model.exists()), (f"vad model {vad}", vad.exists())) if not ok]
     if problems:
         print(json.dumps({"status": "setup_required", "missing": problems}, ensure_ascii=False))
@@ -284,6 +306,11 @@ def run(paths: list[Path], out: Path | None, lang: str, force: bool, model: Path
             print(f"{label}: output name collides with {planned[key]}", file=sys.stderr)
             continue
         planned[key] = source
+        owner = owned_by_other(source, base)
+        if owner:
+            summary["collisions"].append({"file": str(source), "same_output_as": str(owner)})
+            print(f"{label}: existing transcript belongs to {owner}", file=sys.stderr)
+            continue
         if not force and is_current(source, base):
             summary["skipped"] += 1
             print(f"{label}: up to date", file=sys.stderr)
@@ -299,6 +326,7 @@ def run(paths: list[Path], out: Path | None, lang: str, force: bool, model: Path
             print(f"{label}: FAILED output folder is not writable", file=sys.stderr)
             continue
         secs = duration(source)
+        print(f"{label}: transcribing {hms(secs)} of audio", file=sys.stderr)
         t0 = time.time()
         try:
             segments = transcribe_one(source, base, lang, model, vad, cli, secs)  # type: ignore[arg-type]
@@ -337,14 +365,22 @@ def search(query: str, paths: list[Path], limit: int) -> int:
         if not p.exists():
             print(f"not found: {p}")
             return 2
-        files += [p] if p.is_file() else sorted(p.rglob("*" + TXT_SUFFIX))
+        if p.is_dir():
+            files += sorted(p.rglob("*" + TXT_SUFFIX))
+            continue
+        txt = p if p.name.endswith(TXT_SUFFIX) else Path(str(output_base(p, p.parent, None)) + TXT_SUFFIX)
+        if not txt.exists():
+            print(f"no transcript for {p}; pass its {TXT_SUFFIX} file or the folder holding it")
+            return 2
+        files.append(txt)
     if not files:
         print("no transcripts found; run the run command first")
         return 2
     shown = 0
     for f in files:
         lines = f.read_text(encoding="utf-8", errors="replace").splitlines()
-        src = next((l[len("# source: "):] for l in lines[:3] if l.startswith("# source: ")), str(f))
+        rec = recorded_source(f)
+        src = str(rec) if rec and rec.exists() else str(f)  # a moved source is reported by its transcript
         for i in search_lines(lines, query):
             if shown >= limit:
                 print("... more matches; raise --max to see them")

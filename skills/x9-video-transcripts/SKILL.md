@@ -18,7 +18,7 @@ Each source `<name>.<ext>` gets two files beside it:
 
 The `.transcript` suffix leaves the user's own `<name>.srt` untouched. Nothing central is created: a folder of 50 videos gains 100 small files next to them, and a source counts as current while both of its outputs are newer than it. `--out DIR` mirrors the same names under `DIR`, relative to the widest folder argument that contains each source; use it when the source location is read-only, short on synced space, or the user wants a separate library.
 
-Sources whose outputs would share a name, such as `clip.mp4` and `Clip.MOV`, are listed under `collisions` instead of overwriting each other; only renaming one of them or giving them separate `--out` runs resolves that, not a rerun.
+A source is listed under `collisions` and left untranscribed when its outputs would share a name with another source in the same run, such as `clip.mp4` and `Clip.MOV`, or with an existing transcript whose `# source:` header names a different file that still exists, such as `2025/intro.mp4` and `2026/intro.mp4` sent to one `--out` folder in separate runs. Only renaming one of them or giving it a different `--out` folder resolves that; a rerun or `--force` does not. A transcript whose recorded source no longer exists, as after moving a folder, stays with the same-named source.
 
 ## Transcribe
 
@@ -28,7 +28,7 @@ python3 <skill-directory>/scripts/transcripts.py run <file-or-folder>... [--lang
 
 - Pass `--lang` whenever the spoken language is known; auto-detection misfires on short or music-heavy recordings.
 - Folders are scanned recursively for common audio and video extensions, skipping hidden entries and without following folder symlinks; a file named explicitly is passed to ffmpeg whatever its extension.
-- Runtime grows with audio length. For long recordings or more than a few files, run the command in the background and wait for it to exit instead of polling; progress goes to stderr, the summary to stdout. If the runtime stops the command before it exits, run the same command again: current files are skipped.
+- Runtime grows with audio length. For long recordings or more than a few files, run the command in the background and wait for it to exit instead of polling; progress goes to stderr, the summary to stdout. If the runtime stops the command before it exits, run the same command again: finished files are skipped. If a rerun stops again while the same file is `transcribing`, stop retrying and report that file's audio length and the runtime's command time limit.
 - Use `--force` only when the user asks to redo existing transcripts, for example with another model or language.
 
 Read the summary's `status`:
@@ -42,15 +42,15 @@ Never delete, move, or re-encode source media.
 
 ## Setup
 
-`transcripts.py check` reports `ffmpeg`, `whisper-cli`, and the two model files; `check --download` fetches missing default models, about 875 MB, into `$X9_TRANSCRIPTS_MODELS` or `~/.cache/x9-video-transcripts/models`. A transcription request authorizes that download; state its size when starting it. Installing `ffmpeg` or whisper.cpp changes the system, so give the install command (with Homebrew: `brew install ffmpeg whisper-cpp`) and wait for the user's go-ahead. Set `X9_WHISPER_CLI` when `whisper-cli` is not on `PATH`.
+`transcripts.py check` reports `ffmpeg`, `ffprobe`, `whisper-cli`, and the two model files; `check --download` fetches missing default models, about 875 MB, into `$X9_TRANSCRIPTS_MODELS` or `~/.cache/x9-video-transcripts/models`. A transcription request authorizes that download; state its size when starting it. Installing `ffmpeg` or whisper.cpp changes the system, so give the install command (with Homebrew: `brew install ffmpeg whisper-cpp`) and wait for the user's go-ahead. Set `X9_WHISPER_CLI` when `whisper-cli` is not on `PATH`.
 
 ## Find a moment
 
 ```bash
-python3 <skill-directory>/scripts/transcripts.py search "<words>" <folder-or-transcript>... [--max 50]
+python3 <skill-directory>/scripts/transcripts.py search "<words>" <folder-or-file>... [--max 50]
 ```
 
-Matching ignores case, treats ё as е, and drops the last letters of longer words so inflected forms match; every word must occur in one segment or across two adjacent ones. Each hit prints the source path and timestamp. Exit 2 means no transcripts exist under the given paths, which is not evidence that the words were never said. Answer from the hits, and read transcript lines into context only to quote, summarize, or check a hit's surroundings.
+Matching ignores case, treats ё as е, and drops the last letters of longer words so inflected forms match; every word must occur in one segment or across two adjacent ones. A file argument is a `.transcript.txt` or a source with its transcript beside it. Each hit prints the source path, or the transcript path when the recorded source has moved, and the timestamp. Exit 2 means a path is missing or has no transcript, which is not evidence that the words were never said. Answer from the hits, and read transcript lines into context only to quote, summarize, or check a hit's surroundings.
 
 Recognition misspells rare names and terms, so when a name finds nothing, search for a distinctive ordinary word from the same passage or a likely alternative spelling.
 
@@ -62,4 +62,4 @@ Recognition misspells rare names and terms, so when a name finds nothing, search
 
 ## Done
 
-The last `run` summary has `status: ok`, or every entry in its `failed`, `collisions`, `no_speech`, and `not_attempted` lists has been reported to the user with its reason.
+After `run`, every entry in the last summary's `failed`, `collisions`, `no_speech`, and `not_attempted` lists has been reported to the user with its reason. After `search`, the answer cites each relevant hit's file and timestamp, or states how many transcripts were searched without a match.

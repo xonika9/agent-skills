@@ -21,6 +21,15 @@
       "guidance_id": "install-command"
     },
     {
+      "id": "ffprobe-command",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Reading audio length for progress and per-file time limits.",
+      "check": {"type": "command-present", "command": "ffprobe"},
+      "guidance_id": "install-command"
+    },
+    {
       "id": "whisper-cli-command",
       "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",

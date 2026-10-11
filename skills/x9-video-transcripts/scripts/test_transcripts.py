@@ -254,6 +254,52 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(json.loads(out)["status"], "setup_required")
         self.assertEqual(self.calls(), [])
 
+    def test_separate_runs_into_one_library_do_not_overwrite(self):
+        lib = self.tmp / "lib"
+        for year in ("2025", "2026"):
+            (self.tmp / year).mkdir()
+            (self.tmp / year / "intro.mp4").write_text("x")
+        self.call("run", str(self.tmp / "2025"), "--out", str(lib))
+        for extra in ((), ("--force",)):
+            code, out = self.call("run", str(self.tmp / "2026"), "--out", str(lib), *extra)
+            summary = json.loads(out)
+            self.assertEqual((code, summary["done"], len(summary["collisions"])), (1, 0, 1))
+        self.assertIn("/2025/intro.mp4", (lib / "intro.transcript.txt").read_text().splitlines()[0])
+        self.assertEqual(len(self.calls()), 1)
+
+    def test_moved_folder_stays_current_and_search_names_the_transcript(self):
+        old = self.tmp / "old"
+        old.mkdir()
+        (old / "talk.mp4").write_text("x")
+        self.call("run", str(old))
+        new = self.tmp / "new"
+        old.rename(new)
+        code, out = self.call("run", str(new))
+        self.assertEqual((code, json.loads(out)["skipped"]), (0, 1))
+        code, out = self.call("search", "пространствус", str(new))
+        self.assertTrue(out.startswith(f"{new / 'talk.transcript.txt'}\t"), out)
+
+    def test_search_on_media_reads_its_transcript_and_rejects_other_files(self):
+        self.call("run", str(self.videos / "a.mp4"))
+        code, out = self.call("search", "пространствус", str(self.videos / "a.mp4"))
+        self.assertEqual((code, out.count("\n")), (0, 1))
+        for other in ("a.transcript.srt", "day2/b.mov"):
+            code, _out = self.call("search", "пространствус", str(self.videos / other))
+            self.assertEqual(code, 2, other)
+
+    def test_missing_ffprobe_or_wrong_whisper_path_requires_setup(self):
+        with mock_env({"X9_WHISPER_CLI": str(self.tmp / "nowhere" / "whisper-cli")}):
+            code, out = self.call("run", str(self.videos))
+        self.assertEqual((code, json.loads(out)["missing"]), (2, ["whisper-cli"]))
+        partial_bin = self.tmp / "partial-bin"
+        partial_bin.mkdir()
+        for name in ("ffmpeg", "whisper-cli"):
+            (partial_bin / name).symlink_to(self.tmp / "bin" / name)
+        with mock_env({"PATH": str(partial_bin)}):
+            code, out = self.call("run", str(self.videos))
+        self.assertEqual((code, json.loads(out)["missing"]), (2, ["ffprobe"]))
+        self.assertEqual(self.calls(), [])
+
     def test_search_prints_source_and_timestamp(self):
         self.call("run", str(self.videos / "a.mp4"))
         code, out = self.call("search", "пространствус", str(self.videos))
