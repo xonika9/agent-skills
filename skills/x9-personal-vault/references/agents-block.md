@@ -39,8 +39,8 @@ A finished topic stays in place with `state: done`. `<Archive>/` holds old perio
 
 ### Properties
 
-- Topic or episode `README.md`, from its template: `state` (`active` now, `waiting` blocked on something, `later`, `done`, `reference` nothing pending); `step`, the next action for `active` or what we wait for in `waiting`, required for both; `area`, one of <`value`, `value`, …>.
-- Stream item `README.md`, from its template: `stage`, one value from the list in the stream's template; moving on is an edit of `stage`.
+- Topic or episode `README.md`, from its template: `state` (`active` now, `waiting` blocked on something, `later`, `done`, `reference` nothing pending); `step`, the next action for `active` or what we wait for in `waiting`, required for both; `area`, one of <`value`, `value`, …>; `aliases`, a list holding the folder's name, so Obsidian shows it instead of `README`.
+- Stream item `README.md`, from its template: `stage`, one value from the list in the stream's template, and `aliases` as above; moving on is an edit of `stage`.
 - Every note outside `<Inbox>/`, `raw/`, `archive/`, `<Archive>/`, `memory/`, and `<System>/<Templates>/`, including these READMEs, also carries the OKF header described in the `x9-okf-docs` block of this file. `log.md` files have no properties.
 
 Record each notable change as one line in the topic's `log.md` under `## YYYY-MM-DD`, newest first.

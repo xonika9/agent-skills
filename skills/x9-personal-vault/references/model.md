@@ -65,12 +65,12 @@ Every note outside the OKF exclusions is an OKF document, so an agent can choose
 
 OKF exclusions: `<Inbox>/` (the user's drop zone, without frontmatter), `raw/`, `archive/` inside topics, `<Archive>/`, `memory/`, and `<System>/<Templates>/`. The vault's `.x9-okf.json` lists them and includes `README.md`, so every check uses the same scope.
 
-The vault adds its own keys to entry notes:
+The vault adds its own keys to entry notes. Every entry note is named `README.md`, so `aliases` carries its folder's name: Obsidian then shows `Здоровье` in search, links, and tabs instead of a row of `README`s.
 
 | Note | Vault keys |
 | --- | --- |
-| Topic or episode `README.md` | `state`: `active` (now), `waiting` (blocked on something), `later`, `done`, `reference` (nothing pending, kept for reference); `step`: the next action for `active` or what we wait for in `waiting`, required for both; `area`: one value from the block's list |
-| Stream item `README.md` | `stage`: one value from the stream template's list |
+| Topic or episode `README.md` | `state`: `active` (now), `waiting` (blocked on something), `later`, `done`, `reference` (nothing pending, kept for reference); `step`: the next action for `active` or what we wait for in `waiting`, required for both; `area`: one value from the block's list; `aliases`: a list holding the folder's name |
+| Stream item `README.md` | `stage`: one value from the stream template's list; `aliases`: a list holding the folder's name |
 
 Each topic keeps `log.md` in the OKF log format: `## YYYY-MM-DD` headings, newest first, one line per notable change, no frontmatter. History is not reconstructed retroactively.
 
@@ -88,5 +88,5 @@ Editing projects, raw media, and other bulky or app-owned material can stay on a
 
 ## Optional layers
 
-- **Obsidian.** When the user uses Obsidian, add a home note in the root and a Bases file in `<System>/` with views built from properties, not folder paths: Now (`state: active`, with `step`), Waiting (`state: waiting`), Attention (topics with an unknown `state`, or `active`/`waiting` without `step`), Inbox (notes in the inbox folder), topics grouped by `area`, and one board per stream grouped by `stage`. Views show a topic by its folder name. Set the app's folder for new notes to the inbox. Bases syntax and link-safe moves belong to `x9-obsidian`. Without Obsidian, an agent answers "what is active now" from the same properties on request.
+- **Obsidian.** When the user uses Obsidian, add a home note in the root and a Bases file in `<System>/` with views built from properties, not folder paths: Now (`state: active`, with `step`), Waiting (`state: waiting`), Attention (topics with an unknown `state`, or `active`/`waiting` without `step`), Inbox (notes in the inbox folder), topics grouped by `area`, and one board per stream grouped by `stage`. Views show a topic by its `aliases`. Set the app's folder for new notes to the inbox. Bases syntax and link-safe moves belong to `x9-obsidian`. Without Obsidian, an agent answers "what is active now" from the same properties on request.
 - **Git.** Local history only; when the vault sits inside an existing repository, use that one. Ignore media and app project files. A remote is the user's separate decision.
