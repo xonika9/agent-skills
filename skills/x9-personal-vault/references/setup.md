@@ -1,6 +1,6 @@
 # Set up a vault
 
-The goal is a vault the user recognizes as theirs: their areas, their recurring work as streams, their existing material in place, and nothing lost or broken on the way.
+The goal is a vault the user recognizes as theirs: their matters as topics, their recurring work as streams, their existing material in place, and nothing lost or broken on the way.
 
 ## Inspect
 
@@ -12,13 +12,14 @@ Inspection reads; it does not open the contents of every file. Read enough of ea
 
 Ask only what inspection could not answer, offering your best reading of the folder for the user to confirm or correct. Cover:
 
-- what the user does and what keeps accumulating in their life: the candidate areas;
+- what keeps accumulating in their life and what they are working through right now: the topics;
+- how they would group those topics: the `area` values, a handful at most;
 - what they produce again and again in the same shape, and the stages each item goes through: the candidate streams;
-- what they are working through right now: the first topics;
 - other folders anywhere else that belong in this vault, by path; inspect each one named the same way;
 - what lives on external disks or in cloud folders and should stay there;
 - whether they use Obsidian, and on which devices;
 - whether anything is shared with another person or owned by another app or skill;
+- where they start the agent: in this folder, or in a parent folder that also holds other material;
 - the language for folder names when it is not obvious from the conversation.
 
 Several answers can come from one message. Stop asking once the plan can be written; a missing detail with a reasonable default becomes a stated assumption in the plan.
@@ -27,8 +28,9 @@ Several answers can come from one message. Stop asking once the plan can be writ
 
 Present one plan in the conversation:
 
-- the folder tree with areas, streams, and the first topics;
-- for each area, what its README will say it holds and how it is laid out; for each stream, its stages;
+- the folder tree with topics and streams, and the `area` values;
+- for each long-lived topic, what its README will say it holds and how it is laid out; for each stream, its stages;
+- for a folder that already has its own structure, how each existing folder maps onto the model, including renames of topic folders whose names carry a date or a slug;
 - a manifest table: source, destination, kind, action;
 - what stays where it is and is linked instead;
 - the optional layers chosen (Obsidian views, Git) and the block that will be written;
@@ -41,8 +43,8 @@ An approval of part of the plan applies only that part.
 | Kind | Examples | Action |
 | --- | --- | --- |
 | note or document | `.md`, `.txt`, office files, PDFs, scans, photos of documents | move inside the target folder; copy from other folders |
-| media | video, audio, raw photo libraries | stays where it is and is linked from the area's README; moved only when the user asks for that folder |
-| app project | editor, design, or photo-library projects and bundles | never moved; a symbolic link to its folder may be added to the area |
+| media | video, audio, raw photo libraries | stays where it is and is linked from the topic's README; moved only when the user asks for that folder |
+| app project | editor, design, or photo-library projects and bundles | never moved; a symbolic link to its folder may be added to the topic |
 | cloud placeholder | files not downloaded from a cloud service | not copied; the user downloads them first or leaves them |
 
 The script does not rewrite links. Split the manifest by that:
@@ -59,11 +61,11 @@ The script does not rewrite links. Split the manifest by that:
 {
   "vault": "/absolute/path/to/vault",
   "operations": [
-    {"op": "mkdir", "path": "Области/Медицина/Визиты"},
-    {"op": "move", "from": "старое/анализы.pdf", "to": "Области/Медицина/Анализы/анализы.pdf"},
-    {"op": "copy", "from": "/absolute/path/to/other/folder", "to": "Области/Видеоблог/Сценарии"},
-    {"op": "symlink", "target": "/Volumes/Disk/Projects", "path": "Области/Видеоблог/Проекты"},
-    {"op": "remove", "path": "/absolute/path/to/other/folder", "verified_copy": "Области/Видеоблог/Сценарии"}
+    {"op": "mkdir", "path": "Темы/Здоровье/Визиты"},
+    {"op": "move", "from": "старое/анализы.pdf", "to": "Темы/Здоровье/Анализы/анализы.pdf"},
+    {"op": "copy", "from": "/absolute/path/to/other/folder", "to": "Темы/Видеоблог/Сценарии"},
+    {"op": "symlink", "target": "/Volumes/Disk/Projects", "path": "Темы/Видеоблог/Проекты"},
+    {"op": "remove", "path": "/absolute/path/to/other/folder", "verified_copy": "Темы/Видеоблог/Сценарии"}
   ]
 }
 ```
@@ -78,12 +80,11 @@ Relative paths resolve inside the vault. `remove` is accepted only in a manifest
 
 After the files are in place, write:
 
-- OKF headers for every note that came in, through the adoption route of `x9-okf-docs`, outside the exclusions in [the model](model.md#properties); the vault's `.x9-okf.json` with those exclusions and `README.md` included; and the `x9-okf-docs` block in `AGENTS.md`, whose Local part says that `type` values are listed in each area's README and the templates and names the vault's language;
-- each area's `README.md` and `log.md`, each stream's template, and the topic template in `<System>/<Templates>/`;
-- the first topics' `README.md` and `log.md`;
+- OKF headers for every note that came in, through the adoption route of `x9-okf-docs`, outside the exclusions in [the model](model.md#properties); the vault's `.x9-okf.json` with those exclusions and `README.md` included; and the `x9-okf-docs` block in the vault's `AGENTS.md`, whose Local part lists the vault's `type` values and names its language; when the parent folder has its own `.x9-okf.json`, exclude the vault there so each note is checked once;
+- each topic's `README.md` and `log.md`, each stream's template, and the topic template in `<System>/<Templates>/`;
 - `memory/USER.md` with what the user said about themselves, and an empty `memory/MEMORY.md`;
-- the how-to note in `<System>/`, one screen in the user's language: open the agent in the vault root; capture into the inbox; ask the agent to sort it; how areas, streams, and topics differ; how to change a topic's `state` or a unit's `stage`;
-- the block per [agents-block](agents-block.md);
+- the how-to note in `<System>/`, one screen in the user's language: where to open the agent; capture into the inbox; ask the agent to sort it; everything is a topic, grouped by `area`, with streams inside topics; how to change a topic's `state` or an item's `stage`;
+- the block per [agents-block](agents-block.md), and the parent folder's pointer when the agent starts there;
 - the optional Obsidian views and Git setup when chosen.
 
 ## Done

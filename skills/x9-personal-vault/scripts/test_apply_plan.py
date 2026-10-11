@@ -49,23 +49,23 @@ class ApplyPlanTest(unittest.TestCase):
 
     def standard_ops(self):
         return [
-            {"op": "mkdir", "path": "Области/Видеоблог"},
-            {"op": "copy", "from": str(self.outside / "Сценарии"), "to": "Области/Видеоблог/Сценарии"},
-            {"op": "move", "from": "старое.md", "to": "Области/Видеоблог/старое.md"},
-            {"op": "symlink", "target": "/Volumes/Missing/Проекты", "path": "Области/Видеоблог/Проекты"},
+            {"op": "mkdir", "path": "Темы/Видеоблог"},
+            {"op": "copy", "from": str(self.outside / "Сценарии"), "to": "Темы/Видеоблог/Сценарии"},
+            {"op": "move", "from": "старое.md", "to": "Темы/Видеоблог/старое.md"},
+            {"op": "symlink", "target": "/Volumes/Missing/Проекты", "path": "Темы/Видеоблог/Проекты"},
         ]
 
     def test_dry_run_changes_nothing(self):
         code, result = self.run_main(self.manifest(self.standard_ops()))
         self.assertEqual(code, 0)
         self.assertEqual(len(result["would_apply"]), 4)
-        self.assertFalse((self.vault / "Области").exists())
+        self.assertFalse((self.vault / "Темы").exists())
         self.assertTrue((self.vault / "старое.md").exists())
 
     def test_apply_then_undo_restores_original_state(self):
         code, result = self.run_main(self.manifest(self.standard_ops()), "--apply")
         self.assertEqual(code, 0, result)
-        area = self.vault / "Области" / "Видеоблог"
+        area = self.vault / "Темы" / "Видеоблог"
         self.assertEqual((area / "Сценарии" / "кофе.md").read_text(encoding="utf-8"), "сценарий")
         self.assertTrue((area / "Сценарии" / "вложено" / "заметка.txt").is_file())
         self.assertFalse((self.vault / "старое.md").exists())
@@ -74,7 +74,7 @@ class ApplyPlanTest(unittest.TestCase):
 
         code, undone = self.run_main("--undo", result["journal"])
         self.assertEqual(code, 0, undone)
-        self.assertFalse((self.vault / "Области").exists())
+        self.assertFalse((self.vault / "Темы").exists())
         self.assertEqual((self.vault / "старое.md").read_text(encoding="utf-8"), "старая заметка")
 
     def test_move_across_devices_verifies_and_undoes(self):
@@ -112,7 +112,7 @@ class ApplyPlanTest(unittest.TestCase):
         ops = self.standard_ops() + [{"op": "move", "from": "нет-такого.md", "to": "x.md"}]
         code, result = self.run_main(self.manifest(ops), "--apply")
         self.assertEqual(code, 1)
-        self.assertFalse((self.vault / "Области").exists())
+        self.assertFalse((self.vault / "Темы").exists())
         self.assertFalse((self.vault / apply_plan.JOURNAL_DIR).exists())
 
     def test_refuses_cloud_placeholder(self):
