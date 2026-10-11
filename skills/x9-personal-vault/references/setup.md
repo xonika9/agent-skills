@@ -83,7 +83,7 @@ After the files are in place, write:
 - OKF headers for every note that came in, through the adoption route of `x9-okf-docs`, outside the exclusions in [the model](model.md#properties); the vault's `.x9-okf.json` with those exclusions and `README.md` included; and the `x9-okf-docs` block in the vault's `AGENTS.md`, whose Local part lists the vault's `type` values and names its language; when the parent folder has its own `.x9-okf.json`, exclude the vault there so each note is checked once;
 - each topic's `README.md` and `log.md`, each stream's template, and the topic template in `<System>/<Templates>/`;
 - `memory/USER.md` with what the user said about themselves, and an empty `memory/MEMORY.md`;
-- the how-to note in `<System>/`, one screen in the user's language: where to open the agent; capture into the inbox; ask the agent to sort it; everything is a topic, grouped by `area`, with streams inside topics; how to change a topic's `state` or an item's `stage`;
+- the how-to note in `<System>/`, one screen in the user's language: where to open the agent; drop notes and files into the inbox and ask the agent to sort it; the agent itself never writes there; everything is a topic, grouped by `area`, with streams inside topics; how to change a topic's `state` or an item's `stage`;
 - the block per [agents-block](agents-block.md), and the parent folder's pointer when the agent starts there;
 - the optional Obsidian views and Git setup when chosen.
 

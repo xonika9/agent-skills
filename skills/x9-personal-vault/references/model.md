@@ -8,7 +8,7 @@ Folder names are chosen in the user's language during setup; the Russian default
 
 | Role | Russian default | Holds |
 | --- | --- | --- |
-| Inbox | `Входящее/` | quick captures with no properties; membership is by location |
+| Inbox | `Входящее/` | the user's drop zone: notes and files they leave for the agent to sort; no properties |
 | Topics | `Темы/<Name>/` | every matter: health, a video blog, a tax deduction, a trip |
 | Archive | `Архив/` | old periods and material nobody works with; changes only on request |
 | System | `Система/` | templates (`Шаблоны/`, the Templates role), the how-to note, optional Obsidian views |
@@ -22,7 +22,7 @@ New material needs one decision:
 
 - **Part of an existing topic:** it goes inside that topic, following the layout the topic's `README.md` describes; a large part, such as one year's medical checkup, becomes a subfolder. An existing topic is preferred over a new one.
 - **A new matter the user is working on:** a new topic, created as soon as the work starts; questions are asked inside it.
-- **Unclear capture:** a plain note in the inbox.
+- **No topic fits and the matter is unclear:** the agent asks where it goes, offering two or three concrete options, such as the closest existing topics or a new topic with `state: later`.
 
 News about a tracked matter, such as a video reaching the next stage or a reply arriving, is an update to the existing item or topic, never a new note.
 
@@ -45,7 +45,7 @@ A stream is a series of same-shaped items moving through stages, such as videos.
 
 ## Inbox
 
-Notes in the inbox carry no properties, so a thought can be captured in one tap on any device. Sorting moves each note's content to its place and then removes the inbox note, because its text now lives there; a note whose place is still unclear stays. Sorting happens when the user asks.
+The inbox belongs to the user: they drop notes and files there, in one tap on any device and without properties, for the agent to sort. An agent never creates anything in it, so the inbox only ever holds what the user has not had sorted yet. Sorting happens when the user asks: each note's content moves to its place and the inbox note is removed, because its text now lives there. For a note whose place is unclear, the agent offers options as above; until the user chooses, the note stays.
 
 ## Properties
 

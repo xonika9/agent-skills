@@ -18,13 +18,13 @@ Every matter lives in one topic folder, `<Topics>/<Name>/`, whether it never end
 
 - **Part of an existing topic:** put it inside that topic, following the layout its `README.md` describes; a large part becomes a subfolder. Find the topic by folder name, `area`, and README description, and prefer it over a new topic.
 - **A new matter the user is working on:** create `<Topics>/<Name>/README.md` from `<System>/<Templates>/<topic>.md` right away, then ask what is needed.
-- **Unclear, or a quick capture:** a plain note in `<Inbox>/`, no properties.
+- **No topic fits and the matter is unclear:** ask where it goes, offering two or three concrete options, such as the closest existing topics or a new topic with `state: later`.
 
 News about something the vault tracks, such as a stage reached or a reply received, is an update: change the item's `stage` or the topic's `state` and `step` right away and add a log line.
 
 Streams are series of same-shaped items moving through stages. Each item, from a bare idea on, is a folder `<Name>/README.md` created from the stream's template at its first stage, never an inbox note. Streams: `<Topics>/<topic>/<stream>/` (template `<System>/<Templates>/<item>.md`).
 
-Sort the inbox only when the user asks. Sorting moves each note's content to its place by these rules, merging it into an existing note when it continues one, then removes the inbox note. A note whose place is still unclear stays; say why.
+`<Inbox>/` is the user's drop zone for notes and files they want sorted; never create anything in it. Sort it only when the user asks: move each note's content to its place by these rules, merging it into an existing note when it continues one, then remove the inbox note. For a note whose place is unclear, offer options as above; until the user chooses, it stays.
 
 A finished topic stays in place with `state: done`. `<Archive>/` holds old periods; add to it or change it only when the user asks.
 
