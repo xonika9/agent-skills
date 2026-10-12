@@ -14,7 +14,7 @@ export const OrderListSchema = z.object({ items: z.array(OrderSchema) }).openapi
 export const NewOrderSchema = z
   .object({
     title: z.string().trim().min(1).max(200),
-    amountCents: z.int().nonnegative(),
+    amountCents: z.int().nonnegative().max(2_147_483_647),
   })
   .openapi("NewOrder");
 

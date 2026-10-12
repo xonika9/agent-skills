@@ -6,6 +6,8 @@ import re
 import subprocess
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
 PATTERNS = {
     "private key": re.compile(
         r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"
@@ -31,9 +33,10 @@ PATTERNS = {
 
 def tracked_files() -> list[Path]:
     output = subprocess.check_output(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=ROOT,
     )
-    return [Path(item.decode()) for item in output.split(b"\0") if item]
+    return [ROOT / item.decode() for item in output.split(b"\0") if item]
 
 
 def scan_files() -> list[str]:
@@ -53,7 +56,7 @@ def scan_files() -> list[str]:
                 ):
                     continue
                 line = text.count("\n", 0, match.start()) + 1
-                problems.append(f"{path}:{line}: {label}")
+                problems.append(f"{path.relative_to(ROOT)}:{line}: {label}")
     return problems
 
 

@@ -56,6 +56,16 @@ def main():
             no_ruby.stdout,
         )
 
+        invalid_utf8 = base / "invalid-utf8"
+        invalid_utf8.mkdir()
+        (invalid_utf8 / "SKILL.md").write_bytes(b"---\nname: invalid-utf8\ndescription: Fixture.\n---\n# \xff\n")
+        result = run(invalid_utf8)
+        expect(
+            "invalid UTF-8 produces a validation diagnostic",
+            result.returncode != 0 and "must be valid UTF-8" in result.stdout and "Traceback" not in result.stderr,
+            result.stdout + result.stderr,
+        )
+
         malformed = base / "malformed"
         skill(malformed, 'name: malformed\ndescription: "unterminated')
         expect("malformed YAML", run(malformed).returncode != 0, run(malformed).stdout)
@@ -143,12 +153,14 @@ def main():
             "name: internal-metadata\ndescription: Use when testing. Do not use otherwise.\n"
             "metadata:\n  internal: true",
         )
-        result = run(internal_metadata, "portable", "claude", "codex")
+        result = run(internal_metadata, "portable")
         expect(
-            "boolean metadata.internal",
-            result.returncode == 0,
+            "portable metadata.internal must be a string",
+            result.returncode != 0 and "must be strings" in result.stdout,
             result.stdout,
         )
+        result = run(internal_metadata, "claude", "codex")
+        expect("runtime-only boolean metadata.internal", result.returncode == 0, result.stdout)
 
         internal_string = base / "internal-string"
         skill(
@@ -158,8 +170,8 @@ def main():
         )
         result = run(internal_string)
         expect(
-            "string metadata.internal is rejected",
-            result.returncode != 0 and "metadata.internal must be boolean" in result.stdout,
+            "portable string metadata.internal is accepted",
+            result.returncode == 0,
             result.stdout,
         )
 
@@ -270,16 +282,16 @@ def main():
         ("reporting explains why every change helps", "Why these changes help", reporting_text),
         ("reporting limits explanation length", "no more than two short sentences", reporting_text),
         ("degraded status has precedence", "`degraded` takes precedence", reporting_text),
-        ("batch requires reading every worker report", "Read every complete worker report", batch_text),
+        ("batch links canonical QA", "[batch QA and handoff](audit-reporting.md#batch-handoff)", batch_text),
         ("batch loads the instruction rubric", "Load and apply `x9-agent-instructions`", batch_text),
         ("batch reports instruction-rubric coverage", "Instruction rubric: applied|not applicable|degraded", batch_text),
         ("batch writes a consolidated report", "summary.md", batch_text),
         ("batch assigns one report language", "pass its exact `Report language: <tag>` to every worker", batch_text),
         ("workers must not infer another language", "Do not infer another language from the target", batch_text),
         ("worker responses return the report language", "Report language: <tag>", batch_text),
-        ("orchestrator verifies report language", "Verify that every report records the assigned `Report language: <tag>`", batch_text),
+        ("orchestrator verifies report language", "verify the assigned report language in each report", batch_text),
         ("batch uses the canonical localized verdict block", "localized persistent-report verdict block defined by [audit reporting](audit-reporting.md)", batch_text),
-        ("batch final response uses the complete table", table_header, batch_text),
+        ("batch final response uses the canonical handoff", "[batch handoff](audit-reporting.md#batch-handoff)", batch_text),
     ):
         expect(label, fragment in text)
 

@@ -4,16 +4,20 @@ The wrapper owns the volatile `opencode2 api` syntax. It calls the current verif
 OpenCode V2 Sessions API and normalizes `{data, cursor?}` envelopes before printing JSON.
 Do not substitute a browser, an undocumented database, or another harness's session API.
 
+Resolve `scripts/opencode_sessions.py` from this loaded skill directory and set
+`OPENCODE_SESSIONS_WRAPPER` to that resolved path before using the recipes. Do not
+resolve the wrapper from the caller's working directory.
+
 ## Inspect
 
 ```bash
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py list --search "billing"
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py list --roots --limit 10
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py list --parent-id <session-id>
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py show <session-id>
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py active
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py messages <session-id>
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py message <session-id> <message-id>
+python3 "$OPENCODE_SESSIONS_WRAPPER" list --search "billing"
+python3 "$OPENCODE_SESSIONS_WRAPPER" list --roots --limit 10
+python3 "$OPENCODE_SESSIONS_WRAPPER" list --parent-id <session-id>
+python3 "$OPENCODE_SESSIONS_WRAPPER" show <session-id>
+python3 "$OPENCODE_SESSIONS_WRAPPER" active
+python3 "$OPENCODE_SESSIONS_WRAPPER" messages <session-id>
+python3 "$OPENCODE_SESSIONS_WRAPPER" message <session-id> <message-id>
 ```
 
 The inspection routes return JSON. An empty response body from any of them is an
@@ -42,10 +46,10 @@ sessions can be distinguished safely.
 ## Send, wait, reconcile
 
 ```bash
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py prompt <session-id> "Please return the final result."
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py prompt <session-id> "Please return the final result." --message-id <preview-message-id> --apply
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py wait <session-id>
-python3 skills/x9-opencode-sessions/scripts/opencode_sessions.py message <session-id> <message-id>
+python3 "$OPENCODE_SESSIONS_WRAPPER" prompt <session-id> "Please return the final result."
+python3 "$OPENCODE_SESSIONS_WRAPPER" prompt <session-id> "Please return the final result." --message-id <preview-message-id> --apply
+python3 "$OPENCODE_SESSIONS_WRAPPER" wait <session-id>
+python3 "$OPENCODE_SESSIONS_WRAPPER" message <session-id> <message-id>
 ```
 
 The prompt route is `POST /api/session/{sessionID}/prompt` with `text` and a caller-supplied

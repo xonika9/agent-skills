@@ -58,7 +58,9 @@ jobs:
           python3 scripts/check_package.py
 
       - name: Check public data
-        run: python3 scripts/check_public.py
+        run: |
+          python3 scripts/test_check_public.py
+          python3 scripts/check_public.py
 
       - name: Check changelog coverage and release metadata
         run: |

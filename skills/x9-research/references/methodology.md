@@ -14,8 +14,8 @@ List the claims that materially affect the conclusion. For each, record:
 ## Evidence thresholds
 
 - **Direct authoritative fact:** one current primary source may be sufficient when it directly owns the fact and there is no sign of dispute.
-- **Contested or inferential claim:** require independent corroboration and an active search for evidence that would overturn it.
-- **High-stakes rule, eligibility, rate, or deadline:** verify against the current authoritative text; use corroboration when interpretation or personal application is involved.
+- **Contested, inferential, surprising, or high-stakes claim:** require independent corroboration and an active search for evidence that would overturn it.
+- **High-stakes rule, eligibility, rate, or deadline:** also verify against the current authoritative text.
 - **Forecast:** separate observations from assumptions and give scenarios rather than false precision.
 - **Sentiment:** describe the sample, search terms, platform bias, and what was not observed.
 

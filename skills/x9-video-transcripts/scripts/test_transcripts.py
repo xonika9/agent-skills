@@ -98,7 +98,8 @@ class Pure(unittest.TestCase):
 
 class EndToEnd(unittest.TestCase):
     def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp())
+        self._temporary = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._temporary.name)
         bin_dir = self.tmp / "bin"
         bin_dir.mkdir()
         write_exec(bin_dir / "ffmpeg", STUB_FFMPEG)
@@ -123,7 +124,10 @@ class EndToEnd(unittest.TestCase):
             (self.videos / rel).write_text("x")
 
     def tearDown(self):
-        self.env.__exit__(None, None, None)
+        try:
+            self.env.__exit__(None, None, None)
+        finally:
+            self._temporary.cleanup()
 
     def call(self, *argv):
         out, err = io.StringIO(), io.StringIO()
@@ -229,6 +233,18 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(len(summary["not_attempted"]), 1)
         self.assertEqual(len(self.calls()), 2)
 
+    def test_nonrecognizer_failure_breaks_repeated_error_sequence(self):
+        folder = self.tmp / "interrupted-error-sequence"
+        folder.mkdir()
+        for name in ("1.mp4", "2-noaudio.mp4", "3.mp4", "4.mp4"):
+            (folder / name).write_text("media")
+        with mock_env({"X9_STUB_FAIL": "1"}):
+            code, out = self.call("run", str(folder))
+        summary = json.loads(out)
+        self.assertEqual((code, summary["status"], len(summary["failed"])), (1, "aborted", 4))
+        self.assertEqual(summary["not_attempted"], [])
+        self.assertTrue(summary["failed"][-1]["file"].endswith("4.mp4"))
+
     def test_no_speech_is_reported(self):
         with mock_env({"X9_STUB_EMPTY": "1"}):
             code, out = self.call("run", str(self.videos / "a.mp4"))
@@ -266,6 +282,41 @@ class EndToEnd(unittest.TestCase):
             self.assertEqual((code, summary["done"], len(summary["collisions"])), (1, 0, 1))
         self.assertIn("/2025/intro.mp4", (lib / "intro.transcript.txt").read_text().splitlines()[0])
         self.assertEqual(len(self.calls()), 1)
+
+    def test_output_cannot_replace_an_explicit_source_with_unlisted_extension(self):
+        second = self.videos / "a.transcript.srt"
+        second.write_bytes(b"user recording with an unlisted extension")
+        before = second.read_bytes()
+        code, out = self.call("run", str(self.videos / "a.mp4"), str(second))
+        summary = json.loads(out)
+        self.assertEqual(second.read_bytes(), before)
+        self.assertEqual((code, len(summary["collisions"])), (1, 1))
+        self.assertIn("overwrite", summary["collisions"][0]["error"])
+
+    def test_output_hard_links_to_supplied_sources_are_collisions(self):
+        for suffix in (".transcript.srt", ".transcript.txt", ".transcript.srt.part", ".transcript.txt.part"):
+            with self.subTest(suffix=suffix):
+                folder = self.tmp / suffix.replace(".", "_")
+                folder.mkdir()
+                source, other = folder / "clip.mp4", folder / "other.mp4"
+                source.write_bytes(b"first recording")
+                other.write_bytes(b"second recording")
+                destination = folder / ("clip" + suffix)
+                os.link(other, destination)
+                code, out = self.call("run", str(source), str(other))
+                summary = json.loads(out)
+                self.assertEqual(source.read_bytes(), b"first recording")
+                self.assertEqual(other.read_bytes(), b"second recording")
+                self.assertEqual((code, len(summary["collisions"])), (1, 1))
+                self.assertIn("overwrite", summary["collisions"][0]["error"])
+
+    def test_existing_temporary_output_with_a_distinct_inode_does_not_block(self):
+        temporary = self.videos / "a.transcript.srt.part"
+        temporary.write_text("old disposable output")
+        code, out = self.call("run", str(self.videos / "a.mp4"))
+        self.assertEqual((code, json.loads(out)["done"]), (0, 1))
+        self.assertEqual((self.videos / "a.mp4").read_text(), "x")
+        self.assertFalse(temporary.exists())
 
     def test_moved_folder_stays_current_and_search_names_the_transcript(self):
         old = self.tmp / "old"

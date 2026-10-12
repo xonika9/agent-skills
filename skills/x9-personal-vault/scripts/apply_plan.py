@@ -2,7 +2,8 @@
 """Apply a personal-vault file manifest with verification, a journal, and undo.
 
 Operations: mkdir, move, copy, symlink, remove. Every operation is validated
-before anything changes and rechecked just before it runs. Names are compared
+before anything changes and rechecked before apply or undo. These checks do not
+lock filesystem paths against changes between checks and system calls. Names are compared
 after Unicode NFC normalization and case folding, so nothing is overwritten on
 case-insensitive or normalizing file systems. Copies are verified by SHA-256
 and keep file metadata where the platform allows. Destinations must stay
@@ -16,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import errno
 import datetime as dt
 import hashlib
 import json
@@ -30,6 +32,76 @@ JOURNAL_DIR = ".x9-personal-vault"
 SF_DATALESS = getattr(stat, "SF_DATALESS", 0x40000000)
 # macOS copyfile(3): ACL | STAT | XATTR | DATA, fail if the destination exists, never follow the source link.
 COPYFILE_FLAGS = 0xF | (1 << 17) | (1 << 18)
+
+# Metadata fingerprints exclude atime: reading to verify a copy changes it.
+_METADATA_LIBC = ctypes.CDLL(None, use_errno=True) if sys.platform == "darwin" else None
+
+
+def metadata_snapshot(descriptor: int) -> dict:
+    info = os.fstat(descriptor)
+    attributes = []
+    acl_digest = None
+    if sys.platform == "darwin":
+        libc = _METADATA_LIBC
+        libc.flistxattr.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
+        libc.flistxattr.restype = ctypes.c_ssize_t
+        libc.fgetxattr.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_uint32, ctypes.c_int]
+        libc.fgetxattr.restype = ctypes.c_ssize_t
+        length = libc.flistxattr(descriptor, None, 0, 0)
+        if length < 0:
+            error = ctypes.get_errno()
+            raise OSError(error, os.strerror(error))
+        names = ctypes.create_string_buffer(length)
+        if length and libc.flistxattr(descriptor, names, length, 0) != length:
+            raise OSError("extended attributes changed while being read")
+        for name in sorted(filter(None, names.raw.split(b"\0"))):
+            length = libc.fgetxattr(descriptor, name, None, 0, 0, 0)
+            if length < 0:
+                error = ctypes.get_errno()
+                raise OSError(error, os.strerror(error))
+            value = ctypes.create_string_buffer(length)
+            if libc.fgetxattr(descriptor, name, value, length, 0, 0) != length:
+                raise OSError("extended attribute changed while being read")
+            attributes.append((name, value.raw))
+        libc.acl_get_fd_np.argtypes = [ctypes.c_int, ctypes.c_int]
+        libc.acl_get_fd_np.restype = ctypes.c_void_p
+        libc.acl_to_text.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_ssize_t)]
+        libc.acl_to_text.restype = ctypes.c_void_p
+        libc.acl_free.argtypes = [ctypes.c_void_p]
+        # macOS extended ACLs; a valid descriptor with no ACL returns ENOENT.
+        acl = libc.acl_get_fd_np(descriptor, 0x100)
+        if not acl:
+            error = ctypes.get_errno()
+            if error not in (errno.ENOENT, errno.ENOTSUP):
+                raise OSError(error, os.strerror(error))
+        else:
+            acl_text = None
+            try:
+                acl_length = ctypes.c_ssize_t()
+                acl_text = libc.acl_to_text(acl, ctypes.byref(acl_length))
+                if not acl_text:
+                    error = ctypes.get_errno()
+                    raise OSError(error, os.strerror(error))
+                acl_digest = hashlib.sha256(ctypes.string_at(acl_text, acl_length.value)).hexdigest()
+            finally:
+                if acl_text:
+                    libc.acl_free(acl_text)
+                libc.acl_free(acl)
+    elif hasattr(os, "listxattr"):
+        attributes = [(os.fsencode(name), os.getxattr(descriptor, name)) for name in sorted(os.listxattr(descriptor))]
+    digest = hashlib.sha256()
+    for name, value in attributes:
+        digest.update(len(name).to_bytes(8, "big") + name + len(value).to_bytes(8, "big") + value)
+    return {"mode": stat.S_IMODE(info.st_mode), "uid": info.st_uid, "gid": info.st_gid,
+            "mtime_ns": info.st_mtime_ns, "flags": getattr(info, "st_flags", 0), "xattrs": digest.hexdigest(), "acl": acl_digest}
+
+
+def path_metadata(path: Path) -> dict:
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    try:
+        return metadata_snapshot(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 class PlanError(Exception):
@@ -94,12 +166,28 @@ def walk_files(root: Path):
             yield entry.relative_to(root), entry
 
 
+def walk_entries(root: Path):
+    """Include directories so verification and undo preserve empty/user directories."""
+    yield Path("."), root
+    if is_link(root) or not root.is_dir():
+        return
+    for current, dirs, files in os.walk(root, followlinks=False):
+        base = Path(current)
+        for name in sorted(dirs + files):
+            entry = base / name
+            yield entry.relative_to(root), entry
+        dirs[:] = [name for name in dirs if not is_link(base / name)]
+
+
 def compare_trees(src: Path, copy: Path) -> str | None:
     """Return the first entry of src without an identical twin in copy."""
-    for rel, entry in walk_files(src):
+    for rel, entry in walk_entries(src):
         twin = copy if rel == Path(".") else copy / rel
         if is_link(entry):
             if not is_link(twin) or os.readlink(twin) != os.readlink(entry):
+                return str(rel)
+        elif entry.is_dir():
+            if not twin.is_dir() or is_link(twin):
                 return str(rel)
         elif not twin.is_file() or is_link(twin) or sha256(twin) != sha256(entry):
             return str(rel)
@@ -107,8 +195,12 @@ def compare_trees(src: Path, copy: Path) -> str | None:
 
 
 def within(path: Path, root: Path) -> bool:
-    path_key, root_key = key(path), key(root)
-    return path_key == root_key or path_key.startswith(root_key.rstrip(os.sep) + os.sep)
+    # Collision equivalence is not filesystem containment on case-sensitive volumes.
+    try:
+        Path(os.path.abspath(path)).relative_to(Path(os.path.abspath(root)))
+        return True
+    except ValueError:
+        return False
 
 
 class Plan:
@@ -135,7 +227,7 @@ class Plan:
         path = self.lexical(value)
         if path == self.vault or not within(path, self.vault):
             raise PlanError(f"{field} leaves the vault: {value}")
-        if not within(Path(os.path.realpath(path.parent)), self.vault) or key(os.path.realpath(path.parent)) != key(path.parent):
+        if not within(Path(os.path.realpath(path.parent)), self.vault) or Path(os.path.realpath(path.parent)) != path.parent:
             raise PlanError(f"{field} goes through a link: {value}")
         for link in self.planned_links:
             if within(path, link):
@@ -145,7 +237,7 @@ class Plan:
     def source(self, value: str, op: str) -> Path:
         path = self.lexical(value)
         resolved = Path(os.path.realpath(path.parent)) / path.name
-        if op in ("move", "remove") and within(path, self.vault) and key(resolved) != key(path):
+        if op in ("move", "remove") and within(path, self.vault) and resolved != path:
             raise PlanError(f"{op} source goes through a link: {value}")
         return resolved
 
@@ -222,39 +314,101 @@ class Plan:
         return {"op": "remove", "path": path, "verified_copy": copy}
 
 
-def copy_file(src: Path, dst: Path) -> None:
-    """Copy one file with its metadata, failing if dst exists."""
+def copy_file(src: Path, dst: Path) -> list[int]:
+    """Own an exclusive destination descriptor and clean up only that inode on failure."""
+    source_fd = os.open(src, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    destination_fd = None
+    owned = None
+    try:
+        destination_fd = os.open(dst, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        owned = os.fstat(destination_fd)
+        if sys.platform == "darwin":
+            libc = ctypes.CDLL(None, use_errno=True)
+            libc.fcopyfile.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_void_p, ctypes.c_uint32]
+            if libc.fcopyfile(source_fd, destination_fd, None, 0xF) != 0:
+                error = ctypes.get_errno()
+                raise OSError(error, os.strerror(error), str(dst))
+        else:
+            with os.fdopen(os.dup(source_fd), "rb") as reader, os.fdopen(os.dup(destination_fd), "wb") as writer:
+                shutil.copyfileobj(reader, writer, 1 << 20)
+            shutil.copystat(src, dst, follow_symlinks=False)
+        return [owned.st_dev, owned.st_ino]
+    except BaseException:
+        if owned is not None and lexists(dst):
+            current = os.lstat(dst)
+            if (current.st_dev, current.st_ino) == (owned.st_dev, owned.st_ino):
+                dst.unlink()
+        raise
+    finally:
+        os.close(source_fd)
+        if destination_fd is not None:
+            os.close(destination_fd)
+
+
+def copy_directory_metadata(src: Path, dst: Path) -> None:
+    """Copy directory metadata after contents, including macOS ACLs and xattrs."""
     if sys.platform == "darwin":
         libc = ctypes.CDLL(None, use_errno=True)
         libc.copyfile.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32]
-        if libc.copyfile(os.fsencode(src), os.fsencode(dst), None, COPYFILE_FLAGS) != 0:
+        if libc.copyfile(os.fsencode(src), os.fsencode(dst), None, 0x7) != 0:
             error = ctypes.get_errno()
             raise OSError(error, os.strerror(error), str(dst))
-        return
-    with src.open("rb") as reader, dst.open("xb") as writer:
-        shutil.copyfileobj(reader, writer, 1 << 20)
-    shutil.copystat(src, dst, follow_symlinks=False)
+    else:
+        shutil.copystat(src, dst, follow_symlinks=False)
 
 
+
+def created_entry(path: Path, identity=None, **kind) -> dict:
+    info = os.lstat(path)
+    actual = [info.st_dev, info.st_ino]
+    if identity is not None and actual != identity:
+        raise PlanError(f"destination changed during copy: {path}")
+    entry = {"path": str(path), "identity": actual, **kind}
+    if not is_link(path):
+        entry["metadata"] = path_metadata(path)
+    return entry
+
+
+def entry_changed(item: dict, *, directory_times=True) -> bool:
+    path = Path(item["path"])
+    if not lexists(path) or "identity" not in item:
+        return True
+    info = os.lstat(path)
+    if [info.st_dev, info.st_ino] != item["identity"]:
+        return True
+    if "link" in item:
+        return not is_link(path) or os.readlink(path) != item["link"]
+    if is_link(path) or (not path.is_dir() if item.get("dir") else not path.is_file()):
+        return True
+    if "metadata" not in item:
+        return True
+    current, expected = path_metadata(path), item["metadata"]
+    if item.get("dir") and not directory_times:
+        current = {k: v for k, v in current.items() if k != "mtime_ns"}
+        expected = {k: v for k, v in expected.items() if k != "mtime_ns"}
+    if current != expected:
+        return True
+    return item.get("sha256") is not None and sha256(path) != item["sha256"]
 
 
 def copy_tree(src: Path, dst: Path, created: list[dict]) -> None:
-    """Copy files and links, verifying each file and recording every entry as it is created."""
+    """Record ownership immediately; copy metadata after directory contents."""
     if is_link(src):
         target = os.readlink(src)
         os.symlink(target, dst)
-        created.append({"path": str(dst), "link": target})
+        created.append(created_entry(dst, link=target))
         return
     if src.is_file():
-        copy_file(src, dst)
-        created.append({"path": str(dst), "sha256": None})
+        identity = copy_file(src, dst)
+        entry = created_entry(dst, identity, sha256=None)
+        created.append(entry)
         digest = sha256(src)
-        if sha256(dst) != digest:
+        if sha256(dst) != digest or entry_changed(entry):
             raise PlanError(f"copy verification failed: {dst}")
-        created[-1]["sha256"] = digest
+        entry["sha256"] = digest
         return
     os.mkdir(dst)
-    created.append({"path": str(dst), "dir": True})
+    created.append(created_entry(dst, dir=True))
     for current, dirs, files in os.walk(src, followlinks=False):
         base = Path(current)
         target_base = dst / base.relative_to(src)
@@ -264,32 +418,50 @@ def copy_tree(src: Path, dst: Path, created: list[dict]) -> None:
                 copy_tree(entry, target_base / name, created)
             else:
                 os.mkdir(target_base / name)
-                created.append({"path": str(target_base / name), "dir": True})
+                created.append(created_entry(target_base / name, dir=True))
         dirs[:] = [d for d in dirs if not is_link(base / d)]
         for name in sorted(files):
             copy_tree(base / name, target_base / name, created)
-    shutil.copystat(src, dst)
+    owned = {item["path"]: item for item in created}
+    for current, _, _ in os.walk(src, topdown=False, followlinks=False):
+        base = Path(current)
+        if is_link(base):
+            continue
+        target = dst / base.relative_to(src)
+        item = owned[str(target)]
+        if entry_changed(item, directory_times=False):
+            raise PlanError(f"destination changed during copy: {target}")
+        copy_directory_metadata(base, target)
+        item["metadata"] = path_metadata(target)
 
 
-def discard(created: list[dict]) -> None:
-    """Remove entries this run created, newest first."""
+def discard(created: list[dict]) -> list[str]:
+    """Remove only unchanged owned entries; leave replacements and edits in place."""
+    kept = []
     for item in reversed(created):
         path = Path(item["path"])
-        if item.get("dir"):
-            try:
+        if not lexists(path):
+            continue
+        try:
+            if entry_changed(item, directory_times=False):
+                kept.append(str(path))
+            elif item.get("dir"):
                 os.rmdir(path)
-            except OSError:
-                pass
-        elif lexists(path):
-            path.unlink()
+            else:
+                path.unlink()
+        except OSError:
+            kept.append(str(path))
+    return kept
 
 
 def fresh_copy(src: Path, dst: Path) -> list[dict]:
     created: list[dict] = []
     try:
         copy_tree(src, dst, created)
-    except BaseException:
-        discard(created)
+    except BaseException as error:
+        kept = discard(created)
+        if kept:
+            raise PlanError(f"{error}; cleanup kept changed or nonempty entries: {', '.join(kept)}") from error
         raise
     return created
 
@@ -305,7 +477,31 @@ def same_device(src: Path, dst_parent: Path) -> bool:
     return os.lstat(src).st_dev == os.stat(dst_parent).st_dev
 
 
+def guard_parent(path: Path) -> None:
+    """Reject a changed/symlinked ancestor before any script-owned write."""
+    absolute = Path(os.path.abspath(path))
+    if Path(os.path.realpath(absolute.parent)) != absolute.parent:
+        raise PlanError(f"path parent changed or goes through a link: {path}")
+
+
+def guard_step(step: dict, vault: Path) -> None:
+    op = step["op"]
+    destination = step.get("to") if op in ("move", "copy") else step.get("verified_copy") if op == "remove" else step.get("path")
+    if destination is not None:
+        destination = Path(destination)
+        if destination == vault or not within(destination, vault):
+            raise PlanError(f"destination leaves the vault: {destination}")
+        guard_parent(destination)
+    source = step.get("from") if op in ("move", "copy") else step.get("path") if op == "remove" else None
+    if source is not None:
+        guard_parent(Path(source))
+
+
 def apply(planned: list[dict], journal: Path) -> dict:
+    vault = journal.parent.parent
+    guard_parent(journal)
+    if journal.parent.is_symlink():
+        raise PlanError("journal directory must not be a link")
     journal.parent.mkdir(parents=True, exist_ok=True)
     done = 0
     with journal.open("x", encoding="utf-8") as log:
@@ -316,6 +512,8 @@ def apply(planned: list[dict], journal: Path) -> dict:
 
         try:
             for seq, step in enumerate(planned):
+                guard_parent(journal)
+                guard_step(step, vault)
                 record({"seq": seq, "status": "intent", **{k: v if isinstance(v, bool) else str(v) for k, v in step.items()}})
                 record({"seq": seq, "status": "done", **apply_step(step, seq, record)})
                 done += 1
@@ -378,11 +576,21 @@ def load_journal(journal: Path) -> tuple[list[dict], bool]:
 
 
 def undo(journal: Path) -> dict:
+    guard_parent(journal)
+    if journal.is_symlink() or journal.parent.name != JOURNAL_DIR:
+        raise PlanError("undo requires an unlinked vault journal")
+    vault = journal.parent.parent
     entries, undone = load_journal(journal)
     if undone:
         raise PlanError(f"journal was already undone: {journal}")
     reversed_count, skipped = 0, []
     for entry in reversed(entries):
+        guard_step(entry, vault)
+        for item in entry.get("created", []):
+            path = Path(item["path"] if isinstance(item, dict) else item)
+            if not within(path, vault):
+                raise PlanError(f"journal created path leaves the vault: {path}")
+            guard_parent(path)
         note = undo_entry(entry)
         if note:
             skipped.append(note)
@@ -434,40 +642,62 @@ def undo_entry(entry: dict) -> str | None:
 
 
 def restore_move(entry: dict) -> str | None:
-    """Put back every source entry missing after a cross-device move, then drop the copy."""
+    """Restore missing entries, then metadata of newly restored directories."""
     src, dst = Path(entry["from"]), Path(entry["to"])
     changed = changed_since(dst, entry["created"])
     if changed:
         return f"moved copy changed since apply, kept both: {changed}"
     restored: list[dict] = []
+    new_directories = []
     try:
-        for rel, item in walk_files(dst):
-            back = src if rel == Path(".") else src / rel
-            if lexists(back):
+        if not lexists(src):
+            restored = fresh_copy(dst, src)
+        else:
+            for rel, item in walk_entries(dst):
+                back = src if rel == Path(".") else src / rel
+                if lexists(back):
+                    continue
+                back.parent.mkdir(parents=True, exist_ok=True)
+                if item.is_dir() and not is_link(item):
+                    back.mkdir()
+                    new_directories.append((item, back))
+                else:
+                    copy_tree(item, back, restored)
+            for item, back in reversed(new_directories):
+                copy_directory_metadata(item, back)
+        mismatch = compare_trees(dst, src)
+        if mismatch:
+            return f"restored {src} differs at {mismatch}; the moved copy is kept at {dst}"
+        # Existing source directories may have been changed by interrupted removal.
+        # Keep them untouched; a non-time metadata conflict retains the recovery copy.
+        for rel, item in walk_entries(dst):
+            if is_link(item):
                 continue
-            back.parent.mkdir(parents=True, exist_ok=True)
-            copy_tree(item, back, restored)
+            back = src if rel == Path(".") else src / rel
+            before, after = path_metadata(item), path_metadata(back)
+            if item.is_dir():
+                before.pop("mtime_ns", None)
+                after.pop("mtime_ns", None)
+            if before != after:
+                return f"restored metadata differs at {back}; the moved copy is kept at {dst}"
     except (PlanError, OSError) as error:
         return f"could not restore {src}: {error}; the moved copy is kept at {dst}"
-    mismatch = compare_trees(dst, src)
-    if mismatch:
-        return f"restored {src} differs at {mismatch}; the moved copy is kept at {dst}"
     remove_tree(dst)
     return None
 
 
 def changed_since(root: Path, created: list[dict]) -> str | None:
-    known = {key(item["path"]) for item in created}
+    known = {item["path"] for item in created}
     if not lexists(root):
         return str(root)
-    for _, entry in walk_files(root):
-        if key(entry) not in known:
+    for _, entry in walk_entries(root):
+        if str(entry) not in known:
             return str(entry)
     for item in created:
-        path = Path(item["path"])
-        if "sha256" in item and (not path.is_file() or sha256(path) != item["sha256"]):
-            return item["path"]
-        if "link" in item and (not is_link(path) or os.readlink(path) != item["link"]):
+        try:
+            if entry_changed(item):
+                return item["path"]
+        except OSError:
             return item["path"]
     return None
 

@@ -98,7 +98,7 @@ The canonical initiative ID is a durable, lowercase stable slug such as `checkou
 - A sharp open question has a bounded answer and an explicit decision consequence. Reframe it as fog when its answer, owner, or decision consequence cannot yet be named.
 - Fog describes uncertainty without pretending that it is already an answerable question. Its next step belongs on the frontier only when there is a concrete nearest unblocker.
 - A frontier entry is immediate discovery or decision-unblocking work. Do not place implementation tasks, broad plans, or speculative follow-ons there.
-- Dependencies and effects use record IDs. A changed or withdrawn evidence record invalidates every reachable dependent record until reviewed; record that propagation in `Invalidation history`.
+- Dependencies and effects use record IDs. When evidence changes, retain the old evidence and decision history; replace none silently. A changed or withdrawn evidence record marks every reachable dependent decision, question, fog item, and frontier entry visibly invalidated or needing review, using a status allowed by that record type. Record that propagation in `Invalidation history`, then refresh the frontier from still-current dependencies.
 - `Out of scope` is a map-level boundary. Put excluded alternatives there rather than representing them as silently abandoned decisions.
 
 ## Portable handoff brief

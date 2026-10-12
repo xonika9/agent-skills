@@ -12,8 +12,8 @@ schemas when a named surface is absent.
 
 ## `chrome-devtools` MCP allowlist
 
-Targets in this list bypass the browser extension in every route that offers one. An
-entry matches the exact hostname and its subdomains; do not infer sibling or look-alike
+Targets in this list default to MCP when the user has not explicitly selected another
+browser or controller. An entry matches the exact hostname and its subdomains; do not infer sibling or look-alike
 domains.
 
 - `avito.ru`
@@ -51,15 +51,14 @@ parent task. Avito work is sequential even when the rest of the research is dele
 1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic
    operation. An explicit request to open, inspect, or operate a browser UI overrides
    this preference.
-2. Resolve the allowlist branch before initializing any browser controller. When the
-   target hostname matches the
+2. Resolve the allowlist branch before initializing any browser controller. When
+   default routing applies and the target hostname matches the
    [`chrome-devtools` MCP allowlist](#chrome-devtools-mcp-allowlist), use the runtime's
    MCP route: OpenCode uses the live `chrome-devtools` target in its current tool catalog
    without inferring a profile; Claude Code and Codex use MCP against the verified Edge
    profile. Before declaring MCP unavailable, inspect both the directly exposed and
    lazily discoverable live tool catalog; absence from the primary tool list is not
-   evidence that the MCP is unavailable. This route overrides the runtime default and
-   an explicit in-app selection. If MCP cannot attach or complete the operation,
+   evidence that the MCP is unavailable. This route overrides the runtime default. If MCP cannot attach or complete the operation,
    continue directly to the `agent-edge` fallback under the shared unattended-Edge
    condition.
 3. In Claude Code or Codex, use the runtime's in-app browser immediately when the user
@@ -87,8 +86,8 @@ parent task. Avito work is sequential even when the rest of the research is dele
 8. Once a controller works, keep it through ordinary stale-reference, redraw, and
    timeout errors. Do not alternate controllers on the same task tab.
 
-Outside the allowlist route above, the in-app browser remains the isolated route in
-Claude Code and Codex for an explicit request and local web development. It has a
+The in-app browser is the isolated route in Claude Code and Codex for an explicit
+request, and for local web development outside the default allowlist route. It has a
 separate profile and does not carry the user's Edge extensions. Use Edge when exact
 account state, region, cart, saved data, personalized content, ad blocking, or another
 installed extension matters.
@@ -123,6 +122,13 @@ only when the binding above is re-established, then enumerate the pages again. I
 cannot be established, stop dependent browser work and report the missing evidence
 instead of creating another context. This recovery rule takes precedence over the
 general fallback chain for a lost connection to an already selected browser.
+
+## Runtime restart
+
+Missing MCP tools do not establish a restart cause. Suggest restarting the current
+runtime only when safe connection evidence shows the component is configured but
+absent from its live catalog. Restart it only when the user has already authorized
+that action; otherwise report the prerequisite and continue the permitted fallback.
 
 ## Shared Edge safety
 
@@ -172,13 +178,11 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 - Use the live `chrome-devtools` MCP in the current tool catalog as the primary
   browser-control surface. Do not infer configuration paths, flags, or a separate
   in-app browser from another runtime.
-- Create a task-owned page with `background: true`, select it with
-  `bringToFront: false`, and keep one controller on that task page. Apply the shared
-  private-surface safety and Avito traffic rules.
-- If the MCP is absent, use `agent-edge` only under the shared unattended-Edge
-  condition. A restart conclusion is permitted only when safe evidence shows that the
-  MCP is configured but not visible in the live catalog; otherwise return `DEGRADED` or
-  `BLOCKED` with the missing prerequisite.
+- Apply the task-page and focus rules in [Shared Edge safety](#shared-edge-safety),
+  the shared private-surface safety, and Avito traffic rules.
+- If the MCP is absent, follow the permitted route in
+  [Choose the surface](#choose-the-surface). For a potential runtime restart, apply
+  [Runtime restart](#runtime-restart).
 
 ## Claude Code
 
@@ -188,13 +192,13 @@ Read before mutating. Posting, purchasing, sending, deleting, or changing accoun
 - For other browser work, use the `chrome-devtools` MCP from `~/.claude.json` with the
   shared focus-safe rules. Do not initialize or fall back to the Claude browser
   extension unless the user explicitly requests that extension.
-- If MCP tools are absent after Edge is running, restart Claude Code once. Use
-  `agent-edge` only under the shared unattended-Edge condition.
+- If MCP tools are absent after Edge is running, apply
+  [Runtime restart](#runtime-restart) and the permitted fallback chain.
 
 ## Codex
 
 Resolve the hostname and its allowlist branch before calling any Codex browser-control
-tool. For an allowlisted hostname, inspect the live lazy tool catalog for
+tool. For an allowlisted hostname using default routing, inspect the live lazy tool catalog for
 `mcp__chrome_devtools__list_pages` and the related `mcp__chrome_devtools__*` tools. In
 the current Codex runtime, this catalog is available as `ALL_TOOLS` inside
 `functions.exec`. When the tools are present, begin with
@@ -219,10 +223,10 @@ assuming a skill name or initialization method from another Codex version.
   A route that cannot preserve the required profile or focus is unavailable for that
   task and follows the permitted fallback chain.
 - The Codex MCP route uses `~/.codex/config.toml` and the shared focus-safe rules.
-  It is primary for allowlisted hostnames. Outside the allowlist, enter it only after
+  It is primary for allowlisted hostnames using default routing. Otherwise enter it only after
   the Edge extension remains unavailable following its documented troubleshooting.
-- If MCP tools are absent after Edge is running, restart Codex once. Use `agent-edge`
-  only under the shared unattended-Edge condition.
+- If MCP tools are absent after Edge is running, apply
+  [Runtime restart](#runtime-restart) and the permitted fallback chain.
 
 ## Install an adapter
 
@@ -237,7 +241,7 @@ instead of entering the controller fallback chain.
 Report cancelled or failed browser calls as failures. For an implicit/default browser
 selection, use the runtime-specific chain: Codex extension → MCP → `agent-edge`;
 OpenCode MCP → `agent-edge`; Claude Code MCP → `agent-edge`; use the allowlist route defined in
-[Choose the surface](#choose-the-surface) instead of the Codex default. For an allowed
+[Choose the surface](#choose-the-surface) instead of the Codex default. For an
 explicit in-app choice, do not enter an Edge chain without approval. If an implicitly
 selected local-development browser is unavailable, use the runtime's Edge chain and
 report the fallback. Do not substitute remembered data or a public page when the task

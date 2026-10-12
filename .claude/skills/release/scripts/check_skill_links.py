@@ -82,6 +82,11 @@ def main() -> None:
                 problems.append(f"{entry}: missing")
 
         for entry in sorted(directory.glob("x9-*")):
+            if directory == CLAUDE_DIR and entry.name in CLAUDE_EXCLUDED:
+                problems.append(
+                    f"{entry}: excluded from Claude Code ({CLAUDE_EXCLUDED[entry.name]})"
+                )
+                continue
             if entry.name in targets or not entry.is_symlink():
                 continue
             if not entry.exists():

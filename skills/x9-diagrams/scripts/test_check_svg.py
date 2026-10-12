@@ -1286,5 +1286,11 @@ class EllipseAndArcGeometryTests(SvgTestCase):
                 _shape_box(ET.fromstring(f'<path xmlns="http://www.w3.org/2000/svg" d="{data}"/>'))
 
 
+class StylesheetInstructionRegressionTests(SvgTestCase):
+    def test_rejects_external_xml_stylesheet(self):
+        source = '<?xml-stylesheet type="text/css" href="https://example.invalid/style.css"?>\n' + VALID
+        self.assertErrors(source, "xml-stylesheet processing instructions are not allowed")
+
+
 if __name__ == "__main__":
     unittest.main()

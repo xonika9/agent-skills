@@ -25,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import zlib
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -59,16 +60,71 @@ PROMPT>>>
 
 
 def png_info(path: Path) -> tuple[int, int, bool] | None:
-    """Return (width, height, has_alpha_channel) from the PNG header."""
+    """Validate PNG chunks, checksums and raster layout without another dependency."""
     try:
-        with path.open("rb") as handle:
-            head = handle.read(26)
-    except OSError:
+        data = path.read_bytes()
+        if data[:8] != PNG_SIGNATURE:
+            return None
+        offset, header, compressed, palette, ended = 8, None, bytearray(), False, False
+        while offset < len(data):
+            if offset + 12 > len(data):
+                return None
+            size = struct.unpack(">I", data[offset:offset + 4])[0]
+            kind = data[offset + 4:offset + 8]
+            end = offset + 12 + size
+            if end > len(data):
+                return None
+            content = data[offset + 8:end - 4]
+            if zlib.crc32(kind + content) != struct.unpack(">I", data[end - 4:end])[0]:
+                return None
+            if header is None and kind != b"IHDR":
+                return None
+            if kind == b"IHDR":
+                if header is not None or size != 13:
+                    return None
+                header = struct.unpack(">IIBBBBB", content)
+            elif kind == b"PLTE":
+                if not size or size % 3 or size > 768:
+                    return None
+                palette = True
+            elif kind == b"IDAT":
+                compressed.extend(content)
+            elif kind == b"IEND":
+                if size or end != len(data):
+                    return None
+                ended = True
+                break
+            offset = end
+        if not header or not compressed or not ended:
+            return None
+        width, height, depth, color, compression, filtering, interlace = header
+        depths = {0: (1, 2, 4, 8, 16), 2: (8, 16), 3: (1, 2, 4, 8),
+                  4: (8, 16), 6: (8, 16)}
+        if (not width or not height or depth not in depths.get(color, ()) or compression
+                or filtering or interlace not in (0, 1) or (color == 3 and not palette)):
+            return None
+        decoder = zlib.decompressobj()
+        raw = decoder.decompress(bytes(compressed)) + decoder.flush()
+        if not decoder.eof or decoder.unused_data:
+            return None
+        channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color]
+        passes = ((0, 0, 1, 1),) if interlace == 0 else (
+            (0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4),
+            (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2))
+        position = 0
+        for x, y, dx, dy in passes:
+            columns = max(0, (width - x + dx - 1) // dx)
+            rows = max(0, (height - y + dy - 1) // dy)
+            if not columns or not rows:
+                continue
+            row_size = (columns * channels * depth + 7) // 8 + 1
+            for _ in range(rows):
+                if position + row_size > len(raw) or raw[position] > 4:
+                    return None
+                position += row_size
+        return (width, height, color in (4, 6)) if position == len(raw) else None
+    except (OSError, struct.error, zlib.error):
         return None
-    if len(head) < 26 or head[:8] != PNG_SIGNATURE or head[12:16] != b"IHDR":
-        return None
-    width, height = struct.unpack(">II", head[16:24])
-    return width, height, head[25] in (4, 6)
 
 
 def parse_events(jsonl: str) -> tuple[str | None, list[str], list[str]]:
@@ -100,12 +156,21 @@ def classify(text: str) -> str:
     return "network_error" if NETWORK_ERROR.search(text) else "failed"
 
 
+def displayed_proxy(url: str) -> str:
+    """Keep proxy credentials in the child environment, outside JSON and logs."""
+    return re.sub(r"(://)[^/]*@", r"\1", url, count=1)
+
+
 def proxy_problem(url: str) -> str | None:
-    parts = urlsplit(url)
-    if parts.scheme != "http" or not parts.hostname or not parts.port:
+    try:
+        parts = urlsplit(url)
+        port = parts.port
+    except ValueError as error:
+        return f"invalid proxy URL: {error}"
+    if parts.scheme != "http" or not parts.hostname or not port:
         return "expected http://host:port"
     try:
-        socket.create_connection((parts.hostname, parts.port), timeout=5).close()
+        socket.create_connection((parts.hostname, port), timeout=5).close()
     except OSError as error:
         return f"not reachable ({error})"
     return None
@@ -187,9 +252,14 @@ def main() -> int:
         return finish("usage_error", error="--out must be inside --root, or workspace-write cannot copy it")
     if out.exists() and not args.overwrite:
         return finish("usage_error", error="--out already exists; pass --overwrite only if replacing it was requested")
-    text = args.brief_file.read_text(encoding="utf-8").strip()
+    try:
+        text = args.brief_file.expanduser().read_bytes().decode("utf-8")
+        if not args.verbatim:
+            text = text.strip()
+    except (OSError, UnicodeError) as error:
+        return finish("usage_error", error=f"cannot read brief: {error}")
     marker = "PROMPT>>>" if args.verbatim else "BRIEF>>>"
-    if not text or marker in text:
+    if not text.strip() or marker in text:
         return finish("usage_error", error=f"brief is empty or contains the {marker} marker")
     for image in args.image:
         if not image.is_file():
@@ -200,9 +270,9 @@ def main() -> int:
     if proxy:
         problem = proxy_problem(proxy)
         if problem:
-            return finish("proxy_unreachable", error=f"{PROXY_ENV}={proxy}: {problem}")
+            return finish("proxy_unreachable", error=f"{PROXY_ENV}={displayed_proxy(proxy)}: {problem}")
         env = dict(os.environ, HTTPS_PROXY=proxy, HTTP_PROXY=proxy)
-        result["proxy"] = proxy
+        result["proxy"] = displayed_proxy(proxy)
 
     out.parent.mkdir(parents=True, exist_ok=True)
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -214,6 +284,9 @@ def main() -> int:
 
     replace = "Replacing the existing file there is explicitly requested. " if out.exists() else ""
     task = (VERBATIM_TASK if args.verbatim else BRIEF_TASK).format(out=out, replace=replace, text=text)
+    original_stat = out.stat() if out.exists() else None
+    original_signature = (original_stat.st_ino, original_stat.st_size,
+                          original_stat.st_mtime_ns, original_stat.st_ctime_ns) if original_stat else None
     started = time.time()
     timed_out = False
     with (log_dir / "run.jsonl").open("w") as stdout, (log_dir / "run.err").open("w") as stderr:
@@ -253,13 +326,20 @@ def main() -> int:
     result.update(elapsed_seconds=elapsed, thread_id=thread_id, codex_exit=exit_code, last_message=last,
                   final_prompt=final_prompt_text)
 
+    def output_was_written() -> bool:
+        try:
+            current = out.stat()
+        except OSError:
+            return False
+        signature = (current.st_ino, current.st_size, current.st_mtime_ns, current.st_ctime_ns)
+        return current.st_mtime >= started - 1 and signature != original_signature
+
     def fresh_png() -> tuple[int, int, bool] | None:
-        info = png_info(out)
-        return info if info and out.stat().st_mtime >= started - 1 else None
+        return png_info(out) if output_was_written() else None
 
     source = "codex-copy"
     if fresh_png() is None:
-        if out.exists() and out.stat().st_mtime >= started - 1:
+        if output_was_written():
             return finish("failed", error="Codex wrote a file at --out that is not a PNG")
         codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
         recovered = recover(codex_home, thread_id, started, out)

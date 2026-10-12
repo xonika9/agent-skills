@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+import struct
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -86,12 +87,35 @@ def validate_shared_metadata(claude: dict, codex: dict) -> None:
         )
 
 
+def validate_png_asset(asset: Path, field: str) -> None:
+    data = asset.read_bytes()
+    require(len(data) <= 5 * 1024 * 1024, f"{field} must be at most 5 MiB")
+    require(
+        len(data) >= 33
+        and data[:8] == b"\x89PNG\r\n\x1a\n"
+        and data[8:16] == b"\x00\x00\x00\rIHDR",
+        f"{field} must have a PNG header",
+    )
+    width, height = struct.unpack(">II", data[16:24])
+    require(
+        width == height and 48 <= width <= 4096,
+        f"{field} must be square and between 48 and 4096 pixels",
+    )
+
+
 def validate_codex_interface(codex: dict) -> None:
     interface = codex.get("interface")
     require(isinstance(interface, dict), ".codex-plugin/plugin.json.interface is required")
     for field in ("displayName", "shortDescription", "longDescription", "developerName", "category", "websiteURL"):
         require(isinstance(interface.get(field), str) and interface[field], f"Codex interface.{field} is required")
     require(bool(HEX_COLOR.fullmatch(interface.get("brandColor", ""))), "Codex interface.brandColor must use #RRGGBB")
+
+    capabilities = interface.get("capabilities")
+    require(
+        isinstance(capabilities, list)
+        and all(isinstance(item, str) and item for item in capabilities),
+        "Codex interface.capabilities must be an array of non-empty strings",
+    )
 
     prompts = interface.get("defaultPrompt")
     require(isinstance(prompts, list) and 1 <= len(prompts) <= 3, "Codex interface.defaultPrompt must contain 1-3 prompts")
@@ -100,6 +124,7 @@ def validate_codex_interface(codex: dict) -> None:
     for field in ("composerIcon", "logo", "logoDark"):
         asset = package_path(interface.get(field), f"Codex interface.{field}")
         require(asset.suffix.lower() == ".png", f"Codex interface.{field} must point to a PNG")
+        validate_png_asset(asset, f"Codex interface.{field}")
 
 
 def main() -> None:

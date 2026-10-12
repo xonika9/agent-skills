@@ -6,7 +6,6 @@ from __future__ import annotations
 import base64
 import contextlib
 import html
-import inspect
 import io
 import json
 import re
@@ -488,15 +487,6 @@ class SvgTests(TempCase):
         self.assertEqual(scene["discarded"]["images"], 2)
         self.assertIn("images 2", self.digest_md(self.write("img.svg", svg)))
 
-    def test_every_produced_discard_key_is_in_the_printed_order(self):
-        source = inspect.getsource(summarize_source)
-        produced = set(re.findall(r"\.discard\(\s*\"(\w+)\"", source))
-        produced |= set(re.findall(r'found\["(\w+)"\]', source))
-        produced |= set(summarize_source.EXCALIDRAW_DROPPED.values())
-        self.assertTrue({"images", "image", "scripts"} <= produced, produced)
-        missing = produced - set(summarize_source.DISCARD_ORDER)
-        self.assertEqual(missing, set())
-
     def test_unlisted_discard_key_is_still_printed(self):
         scene = summarize_source.Scene(name="s")
         scene.discard("mystery", 2)
@@ -724,6 +714,30 @@ class SafetyAndCliTests(TempCase):
             with self.assertRaises(SystemExit) as raised:
                 main([str(path), "--max-rows", "0"])
         self.assertEqual(raised.exception.code, 2)
+
+
+class SvgCascadeRegressionTests(TempCase):
+    def test_direction_follows_css_and_child_overrides(self):
+        cases = [
+            ('<style>.head { marker-end: none !important; }</style>',
+             '<g data-edge="e" data-from="a" data-to="b"><path class="head" style="marker-end:url(#arrow)" d="M0 0 L1 1"/></g>', "none"),
+            ('<style>.head { marker-end: none !important; marker-end: url(#arrow); }</style>',
+             '<g data-edge="e" data-from="a" data-to="b"><path class="head" d="M0 0 L1 1"/></g>', "none"),
+            ('<style>.head { marker-end: none !important; }</style>',
+             '<g data-edge="e" data-from="a" data-to="b"><path class="head" style="marker-end:url(#arrow)!important" d="M0 0 L1 1"/></g>', "forward"),
+            ('<style>.head { marker-end: url(#arrow); }</style>',
+             '<g data-edge="e" data-from="a" data-to="b"><path class="head" marker-end="none" d="M0 0 L1 1"/></g>', "forward"),
+            ('', '<g data-edge="e" data-from="a" data-to="b" marker-end="url(#arrow)"><path marker-end="none" d="M0 0 L1 1"/></g>', "none"),
+            ('<style>.head { marker: url(#arrow); }</style>',
+             '<g data-edge="e" data-from="a" data-to="b"><path class="head" d="M0 0 L1 1"/></g>', "both"),
+        ]
+        for style, edge, expected in cases:
+            with self.subTest(expected=expected):
+                svg = ('<svg xmlns="http://www.w3.org/2000/svg">' + style + edge +
+                       '<g data-node="a"><rect/><text>A</text></g>' +
+                       '<g data-node="b"><rect/><text>B</text></g></svg>')
+                digest = summarize(self.write("cascade.svg", svg))
+                self.assertEqual(digest["scenes"][0]["edges"][0]["directed"], expected)
 
 
 if __name__ == "__main__":

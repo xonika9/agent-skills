@@ -157,11 +157,13 @@ Agents often produce a plausible answer from memory and call it research. This s
 
 Plain research requests stay in chat. Ask to save the work or create it in a folder and the skill writes a Markdown work file inside the matching long-lived `docs/research/` subject area. Ask to update research and it resolves the existing file through OKF frontmatter, refreshes its evidence, and automatically synchronizes a same-basename HTML presentation when one already exists. Explicitly requesting HTML creates or updates that reader-facing companion beside the Markdown file; the two formats share an identity but not the same composition. Browser work is routed through `x9-browser-session`.
 
+For selective installation, add `x9-okf-docs` when saving or updating research, and `x9-browser-session` for browser or social research.
+
 #### [`x9-browser-session`](skills/x9-browser-session/SKILL.md)
 
 A clean automation browser is enough to test a public website. It is the wrong tool for a personal task where your account, region, saved data, or feed changes the result. This skill chooses between a connector, a clean browser, and a dedicated authenticated Chromium profile, then works in its own tab without taking over yours.
 
-The [setup guide](skills/x9-browser-session/references/setup.md), which you can hand directly to an agent, includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. OpenCode uses the live `chrome-devtools` MCP from its current tool catalog. Claude Code and Codex use their in-app browser for local web development and explicit in-app requests unless the target appears in the skill's extensible MCP allowlist. Allowlisted domains, currently `avito.ru`, use the current live MCP target in OpenCode and MCP against the verified Edge profile in Claude Code and Codex. Other Codex browser work defaults to its Edge extension; other Claude Code browser work defaults to MCP. All three reserve `agent-edge` for unattended fallback.
+The [setup guide](skills/x9-browser-session/references/setup.md), which you can hand directly to an agent, includes a tested Edge/macOS adapter and the portable Chromium/CDP contract behind it. OpenCode uses the live `chrome-devtools` MCP from its current tool catalog. An explicit user choice of browser or controller takes precedence over the default routes, including the skill's extensible MCP allowlist. Claude Code and Codex use their in-app browser for local web development and explicit in-app requests. Without an explicit choice, allowlisted domains, currently `avito.ru`, use the current live MCP target in OpenCode and MCP against the verified Edge profile in Claude Code and Codex. Other Codex browser work defaults to its Edge extension; other Claude Code browser work defaults to MCP. All three reserve `agent-edge` for unattended fallback.
 
 The verified Edge recipe uses localhost CDP port `9223` and checks that the endpoint belongs to the expected automation profile before private or authenticated work. Existing installations copied from the earlier `9222` recipe must update the launcher, MCP endpoint, and `agent-edge` wrapper together.
 
@@ -256,6 +258,8 @@ When a repository has competing architectural directions or unclear seams, this 
 
 Structural report validation is separate from browser rendering evidence, so unavailable inspection is stated as `DEGRADED` or `NOT_PROVEN`, not treated as a pass.
 
+It needs `python3` for report validation and `x9-diagrams` when creating diagrams. The external `codebase-design` skill enriches the method; without it, the baseline audit remains available with method status `DEGRADED`. If you require that exact method, its absence blocks the audit.
+
 ### Repositories and reusable workflows
 
 #### [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md)
@@ -264,7 +268,7 @@ On a new repository, it creates useful `README.md`, `AGENTS.md`, and `CLAUDE.md`
 
 For personal cross-runtime repositories, root `AGENTS.md` is the source of truth for root-local context and `CLAUDE.md` imports it with `@AGENTS.md`. A branch-specific procedure belongs in its profile document; root `AGENTS.md` may point to it only when the condition and target are explicit. Claude Code and AGENTS-aware harnesses receive the same root context without two copies drifting apart.
 
-For agent-facing prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying prompt-quality rules. The full plugin already includes both skills; install them together when copying `x9-context-files-generator` individually. Without the companion, repository and structural checks continue, but agent-file instruction quality is reported as degraded. README-only work does not require it.
+For agent-facing prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying prompt-quality rules. The full plugin already includes both skills; install them together when copying `x9-context-files-generator` individually. Without the companion, readiness checks report the skill as needing setup; repository and structural checks still run, but agent-file instruction quality is reported as degraded.
 
 #### [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md)
 

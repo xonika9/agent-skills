@@ -33,7 +33,7 @@
       "id": "agent-instructions-rubric",
       "runtimes": ["opencode", "claude", "codex"],
       "kind": "skill",
-      "level": "optional",
+      "level": "required",
       "needed_for": "Reviewing agent-facing instruction prose.",
       "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
       "guidance_id": "install-skill"

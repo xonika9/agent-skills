@@ -150,11 +150,27 @@ def check_assets() -> None:
         )
 
 
-def copy_assets(target: Path, name: str, bun_version: str) -> None:
+def copy_assets(target: Path, name: str, bun_version: str, *, preserve_existing: bool = False) -> None:
+    target = target.resolve()
+    destinations = []
     for rel in FILES:
         source = ASSETS / rel
         parts = [RENAMES.get(part, part) for part in source.relative_to(ASSETS).parts]
         dest = target.joinpath(*parts)
+        # A resumed bootstrap must not copy or run tools through user-owned links.
+        for part in (dest, *dest.parents):
+            if part == target:
+                break
+            if part.is_symlink():
+                raise SystemExit(f"refusing to bootstrap through symbolic link: {part}")
+        if not dest.resolve().is_relative_to(target):
+            raise SystemExit(f"refusing to write outside the project: {dest}")
+        if dest.is_file() and dest.stat().st_nlink > 1:
+            raise SystemExit(f"refusing to bootstrap through multiply-linked file: {dest}")
+        destinations.append((source, dest))
+    for source, dest in destinations:
+        if preserve_existing and dest.exists():
+            continue
         dest.parent.mkdir(parents=True, exist_ok=True)
         if source.suffix in TEXT_SUFFIXES or source.name == "Dockerfile":
             text = source.read_text(encoding="utf-8")
@@ -176,7 +192,17 @@ def move_shared_to_catalog(target: Path) -> list[str]:
     shared = sorted(set.intersection(*names))
     shared = [n for n in shared if not deps(manifests["apps/api"])[n].startswith("workspace:")]
     first = deps(manifests["apps/api"])
-    root["workspaces"]["catalog"] = {n: first[n] for n in shared}
+    catalog = dict(root["workspaces"].get("catalog", {}))
+    for n in shared:
+        version = first[n]
+        if version == "catalog:":
+            if n not in catalog:
+                raise SystemExit(f"missing existing catalog version for {n}; nothing written")
+        elif n in catalog and catalog[n] != version:
+            raise SystemExit(f"catalog version conflict for {n}; preserve the existing entry and resolve before continuing")
+        else:
+            catalog[n] = version
+    root["workspaces"]["catalog"] = catalog
     root_path.write_text(json.dumps(root, indent=2) + "\n")
     for path, manifest in manifests.items():
         for section in ("dependencies", "devDependencies"):
@@ -220,12 +246,12 @@ def main() -> int:
     else:
         target.mkdir(parents=True, exist_ok=True)
         (target / MARKER).write_text("bootstrap in progress; rerun bootstrap.py to continue\n")
-        copy_assets(target, name, args.bun_version)
-        inside = subprocess.run([git, "rev-parse", "--show-toplevel"], cwd=target, capture_output=True, text=True)
-        if inside.returncode == 0 and Path(inside.stdout.strip()).resolve() != target:
-            print(f"warning: {target} is inside the repository {inside.stdout.strip()}", file=sys.stderr)
-        if not (target / ".git").exists():
-            run([git, "init", "-q"], target)
+    copy_assets(target, name, args.bun_version, preserve_existing=resuming)
+    inside = subprocess.run([git, "rev-parse", "--show-toplevel"], cwd=target, capture_output=True, text=True)
+    if inside.returncode == 0 and Path(inside.stdout.strip()).resolve() != target:
+        print(f"warning: {target} is inside the repository {inside.stdout.strip()}", file=sys.stderr)
+    if not (target / ".git").exists():
+        run([git, "init", "-q"], target)
 
     for workspace, groups in DEPENDENCIES.items():
         cwd = target / workspace

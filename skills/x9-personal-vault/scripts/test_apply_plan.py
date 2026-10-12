@@ -291,6 +291,167 @@ class ApplyPlanTest(unittest.TestCase):
         with mock.patch.object(apply_plan.os, "lstat", return_value=SimpleNamespace(st_flags=0)):
             self.assertFalse(apply_plan.is_placeholder(Path("x")))
 
+    def test_undo_preserves_new_empty_directory(self):
+        source = self.outside / "Сценарии"
+        code, result = self.run_main(self.manifest([{"op": "copy", "from": str(source), "to": "copied"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        added = self.vault / "copied" / "user-empty"
+        added.mkdir()
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 2, undo)
+        self.assertTrue(added.is_dir())
+
+    def test_cross_device_undo_restores_empty_directory_and_modes(self):
+        source = self.outside / "Сценарии"
+        (source / "empty").mkdir()
+        os.chmod(source / "вложено", 0o700)
+        with mock.patch.object(apply_plan, "same_device", return_value=False):
+            code, result = self.run_main(self.manifest([{"op": "move", "from": str(source), "to": "moved"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 0, undo)
+        self.assertTrue((source / "empty").is_dir())
+        self.assertEqual((source / "вложено").stat().st_mode & 0o777, 0o700)
+
+    def test_failed_tree_copy_keeps_user_replacement(self):
+        source = self.outside / "two-files"
+        source.mkdir()
+        (source / "a.md").write_bytes(b"original a")
+        (source / "b.md").write_bytes(b"original b")
+        original = apply_plan.copy_tree
+        user_path = self.vault / "copied" / "a.md"
+
+        def fail_after_user_replace(src, dst, created):
+            if src.name == "b.md":
+                replacement = user_path.parent / "replacement"
+                replacement.write_bytes(b"user data")
+                os.replace(replacement, user_path)
+                raise OSError("controlled later-file failure")
+            return original(src, dst, created)
+
+        with mock.patch.object(apply_plan, "copy_tree", side_effect=fail_after_user_replace):
+            code, result = self.run_main(self.manifest([{"op": "copy", "from": str(source), "to": "copied"}]), "--apply")
+        self.assertEqual(code, 1, result)
+        self.assertTrue(user_path.is_file())
+        self.assertEqual(user_path.read_bytes(), b"user data")
+
+    def test_undo_preserves_user_mode_edit(self):
+        code, result = self.run_main(self.manifest([{"op": "copy", "from": "старое.md", "to": "copied.md"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        target = self.vault / "copied.md"
+        os.chmod(target, 0o600)
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 2, undo)
+        self.assertTrue(target.exists())
+        self.assertEqual(target.stat().st_mode & 0o777, 0o600)
+
+    @unittest.skipUnless(sys.platform == "darwin", "Finder metadata exists on macOS only")
+    def test_cross_device_undo_preserves_directory_finder_metadata(self):
+        import subprocess
+        source = self.outside / "Сценарии"
+        for path in (source, source / "вложено"):
+            subprocess.run(["xattr", "-w", "com.apple.metadata:kMDItemComment", "original metadata", str(path)], check=True)
+        with mock.patch.object(apply_plan, "same_device", return_value=False):
+            code, result = self.run_main(self.manifest([{"op": "move", "from": str(source), "to": "moved"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 0, undo)
+        for path in (source, source / "вложено"):
+            value = subprocess.run(["xattr", "-p", "com.apple.metadata:kMDItemComment", str(path)], capture_output=True, text=True, check=False)
+            self.assertEqual(value.returncode, 0, value.stderr)
+            self.assertEqual(value.stdout.strip(), "original metadata")
+
+    @unittest.skipUnless(sys.platform == "darwin", "Finder metadata exists on macOS only")
+    def test_undo_preserves_user_finder_metadata(self):
+        import subprocess
+        code, result = self.run_main(self.manifest([{"op": "copy", "from": "старое.md", "to": "copied.md"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        target = self.vault / "copied.md"
+        subprocess.run(["xattr", "-w", "com.apple.metadata:kMDItemComment", "user metadata", str(target)], check=True)
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 2, undo)
+        self.assertTrue(target.is_file())
+        value = subprocess.run(["xattr", "-p", "com.apple.metadata:kMDItemComment", str(target)], capture_output=True, text=True, check=False)
+        self.assertEqual(value.returncode, 0, value.stderr)
+        self.assertEqual(value.stdout.strip(), "user metadata")
+
+    def test_failed_file_copy_does_not_leave_partial_file(self):
+        import ctypes
+        import errno
+
+        class FailedCall:
+            def __init__(self, by_fd):
+                self.by_fd = by_fd
+            def __call__(self, src, dst, *_):
+                if self.by_fd:
+                    os.write(dst, b"partial")
+                else:
+                    Path(os.fsdecode(dst)).write_bytes(b"partial")
+                ctypes.set_errno(errno.ENOSPC)
+                return -1
+
+        class FailedLibc:
+            copyfile = FailedCall(False)
+            fcopyfile = FailedCall(True)
+
+        if sys.platform == "darwin":
+            patch = mock.patch.object(apply_plan.ctypes, "CDLL", return_value=FailedLibc())
+        else:
+            def incomplete(reader, writer, *_):
+                writer.write(b"partial")
+                raise OSError(errno.ENOSPC, "controlled copy failure")
+            patch = mock.patch.object(apply_plan.shutil, "copyfileobj", side_effect=incomplete)
+        with patch:
+            code, result = self.run_main(self.manifest([{"op": "copy", "from": "старое.md", "to": "partial.md"}]), "--apply")
+        self.assertEqual(code, 1, result)
+        self.assertFalse((self.vault / "partial.md").exists())
+
+    def test_journal_symlink_is_rejected(self):
+        external = self.outside / "journal-target"
+        external.mkdir()
+        (self.vault / apply_plan.JOURNAL_DIR).symlink_to(external, target_is_directory=True)
+        code, result = self.run_main(self.manifest([{"op": "copy", "from": "старое.md", "to": "copy.md"}]), "--apply")
+        self.assertEqual(code, 1, result)
+        self.assertEqual(list(external.iterdir()), [])
+        self.assertFalse((self.vault / "copy.md").exists())
+
+    def test_parent_symlink_after_validation_is_rejected(self):
+        (self.vault / "dest").mkdir()
+        external = self.outside / "parent-target"
+        external.mkdir()
+        planned = apply_plan.Plan({"vault": str(self.vault), "operations": [{"op": "copy", "from": "старое.md", "to": "dest/copy.md"}]}).validate()
+        (self.vault / "dest").rmdir()
+        (self.vault / "dest").symlink_to(external, target_is_directory=True)
+        with self.assertRaises(apply_plan.PlanError):
+            apply_plan.apply(planned, self.vault / apply_plan.JOURNAL_DIR / "run.jsonl")
+        self.assertEqual(list(external.iterdir()), [])
+
+    def test_case_distinct_sibling_destination_is_rejected(self):
+        sibling = self.vault.parent / "VAULT"
+        try:
+            sibling.mkdir()
+        except FileExistsError:
+            self.skipTest("filesystem does not distinguish these directory names")
+        code, result = self.run_main(self.manifest([{"op": "copy", "from": "старое.md", "to": str(sibling / "escape.md")}]), "--apply")
+        self.assertEqual(code, 1, result)
+        self.assertFalse((sibling / "escape.md").exists())
+
+
+    @unittest.skipUnless(sys.platform == "darwin", "extended ACLs exist on macOS only")
+    def test_undo_preserves_user_acl_edit(self):
+        import pwd
+        import subprocess
+        code, result = self.run_main(self.manifest([{"op": "copy", "from": "старое.md", "to": "copied.md"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        target = self.vault / "copied.md"
+        username = pwd.getpwuid(os.getuid()).pw_name
+        subprocess.run(["chmod", "+a", f"{username} allow read", str(target)], check=True)
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 2, undo)
+        self.assertTrue(target.is_file())
+        acl = subprocess.run(["ls", "-le", str(target)], capture_output=True, text=True, check=True)
+        self.assertIn("allow read", acl.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

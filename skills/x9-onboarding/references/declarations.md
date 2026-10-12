@@ -10,8 +10,8 @@
 `references/onboarding.json` is a version 1, read-only declaration of external
 requirements for its owning skill. It is data, not an instruction: the
 declaration cannot contain commands to run, arguments, URLs, paths, secrets, or
-free-form setup steps. A skill without external requirements does not need this
-file.
+free-form setup steps. A skill without external requirements or a runtime
+restriction does not need this file.
 
 Resolve the loaded `x9-onboarding` directory from its loaded `SKILL.md`. Independently
 resolve the actual package `skills` root to validate; it may belong to another package,
@@ -53,7 +53,8 @@ The top-level object has exactly these fields:
 perform its main contract. It prevents an explicit target from becoming `READY`
 merely because runtime filtering removed every requirement.
 
-`requirements` is a non-empty array. Each requirement has `id`, `runtimes`,
+`requirements` is an array. It is empty when the declaration only restricts
+`supported_runtimes`; never invent a requirement to fill it. Each requirement has `id`, `runtimes`,
 `kind`, `level`, `needed_for`, `check`, and `guidance_id`, plus optional
 `group`.
 Requirement IDs are unique inside their declaration.
@@ -88,6 +89,7 @@ or shared extra fields.
 | --- | --- | --- |
 | `skill` | `{"type":"skill-present","target_skill":"x9-example"}` | `install-skill` |
 | `command` | `{"type":"command-present","command":"toolctl"}` | `install-command` |
+| `command` | `{"type":"command-version","command":"python3","min_version":"3.11"}` | `install-command` |
 | `agent` | `{"type":"runtime-component","component_id":"codex:codex-rescue"}` | `create-agent` |
 | `mcp` | `{"type":"runtime-component","component_id":"chrome-devtools"}` | `configure-mcp` |
 | `runtime-feature` | `{"type":"runtime-feature","feature_id":"active-skill-catalog"}` | `enable-runtime-feature` |
@@ -96,6 +98,13 @@ or shared extra fields.
 `target_skill` must be an `x9-` lowercase hyphen-case name and must name an
 existing directory immediately below the supplied `skills` root. `command` is
 one executable name only, without a path, whitespace, or arguments.
+
+`command-version` sets a minimum version for a command from the validator's
+allowlist, currently `python3` only, and `min_version` is a dotted numeric
+version such as `3.11`. After `command -v` finds the command, the adapter may
+run exactly `<command> --version` and retain only the parsed version and
+whether it meets the minimum. A missing command or an older version is an
+absent fact; output that does not parse is unavailable evidence.
 
 `component_id` names the exact entry expected in the runtime's live catalog. It
 uses lowercase letters and digits separated by `.`, `:`, or `-`; `kind`

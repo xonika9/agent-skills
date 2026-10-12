@@ -49,11 +49,11 @@
                     "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
                   },
                   {
-                    "group": ["**/db/client.ts"],
+                    "group": ["**/db/client", "**/db/client.ts", "**/db/client.js"],
                     "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
                   },
                   {
-                    "group": ["**/testing.ts"],
+                    "group": ["**/testing", "**/testing.ts", "**/testing.js"],
                     "message": "Test factories are for tests only."
                   }
                 ]
@@ -89,11 +89,11 @@
                     "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
                   },
                   {
-                    "group": ["**/db/client.ts"],
+                    "group": ["**/db/client", "**/db/client.ts", "**/db/client.js"],
                     "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
                   },
                   {
-                    "group": ["**/testing.ts"],
+                    "group": ["**/testing", "**/testing.ts", "**/testing.js"],
                     "message": "Test factories are for tests only."
                   },
                   {
@@ -121,11 +121,11 @@
                     "message": "Use another module only through #api/modules/<name>/index.ts."
                   },
                   {
-                    "group": ["**/db/client.ts"],
+                    "group": ["**/db/client", "**/db/client.ts", "**/db/client.js"],
                     "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
                   },
                   {
-                    "group": ["**/testing.ts"],
+                    "group": ["**/testing", "**/testing.ts", "**/testing.js"],
                     "message": "Test factories are for tests only."
                   },
                   {
@@ -153,11 +153,11 @@
                     "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
                   },
                   {
-                    "group": ["**/db/client.ts"],
+                    "group": ["**/db/client", "**/db/client.ts", "**/db/client.js"],
                     "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
                   },
                   {
-                    "group": ["**/testing.ts"],
+                    "group": ["**/testing", "**/testing.ts", "**/testing.js"],
                     "message": "Test factories are for tests only."
                   },
                   {
@@ -189,7 +189,7 @@
                     "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
                   },
                   {
-                    "group": ["**/testing.ts"],
+                    "group": ["**/testing", "**/testing.ts", "**/testing.js"],
                     "message": "Test factories are for tests only."
                   }
                 ]
@@ -213,11 +213,11 @@
                     "message": "app.ts mounts routes.ts; everything else goes through index.ts."
                   },
                   {
-                    "group": ["**/db/client.ts"],
+                    "group": ["**/db/client", "**/db/client.ts", "**/db/client.js"],
                     "message": "Receive the database through ctx. Only index.ts, db/migrate.ts and tests connect."
                   },
                   {
-                    "group": ["**/testing.ts"],
+                    "group": ["**/testing", "**/testing.ts", "**/testing.js"],
                     "message": "Test factories are for tests only."
                   }
                 ]
@@ -245,7 +245,7 @@
                     "message": "Hono belongs in routes.ts and app.ts; module functions take ctx."
                   },
                   {
-                    "group": ["**/testing.ts"],
+                    "group": ["**/testing", "**/testing.ts", "**/testing.js"],
                     "message": "Test factories are for tests only."
                   }
                 ]

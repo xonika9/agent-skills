@@ -69,11 +69,11 @@ def writer_checks():
         real_replace = insert_frontmatter.os.replace
         calls = []
 
-        def failing_replace(source, target):
+        def failing_replace(source, target, **kwargs):
             calls.append(target)
             if len(calls) == 2:
                 raise OSError("simulated failure")
-            return real_replace(source, target)
+            return real_replace(source, target, **kwargs)
 
         insert_frontmatter.os.replace = failing_replace
         try:
@@ -91,6 +91,121 @@ def writer_checks():
             first.read_bytes() == b"one\n" and second.read_bytes() == b"two\n"
             and sorted(path.name for path in temp.iterdir()) == ["first.md", "second.md"],
         )
+
+
+def data_safety_checks():
+    import argparse
+    import insert_frontmatter as writer
+    from unittest import mock
+
+    with tempfile.TemporaryDirectory() as tmp:
+        temp = Path(tmp).resolve()
+        a, b = temp / "a.md", temp / "b.md"
+        a.write_bytes(b"old a")
+        b.write_bytes(b"old b")
+        replace = writer.os.replace
+        calls = [0]
+
+        def fail_after_user_edit(source, target, **kwargs):
+            calls[0] += 1
+            if calls[0] == 2:
+                a.write_bytes(b"user data")
+                raise OSError("controlled second replacement failure")
+            return replace(source, target, **kwargs)
+
+        with mock.patch.object(writer.os, "replace", side_effect=fail_after_user_edit):
+            try:
+                writer.atomic_replace_many([("a.md", a, b"old a", b"new a"), ("b.md", b, b"old b", b"new b")])
+                raise AssertionError("the injected write failure must propagate")
+            except OSError:
+                pass
+        expect("rollback preserves an intervening user edit", a.read_bytes() == b"user data" and b.read_bytes() == b"old b")
+
+        a.write_bytes(b"old a")
+        calls[0] = 0
+
+        def edit_next(source, target, **kwargs):
+            calls[0] += 1
+            result = replace(source, target, **kwargs)
+            if calls[0] == 1:
+                b.write_bytes(b"user next document")
+            return result
+
+        with mock.patch.object(writer.os, "replace", side_effect=edit_next):
+            try:
+                writer.atomic_replace_many([("a.md", a, b"old a", b"new a"), ("b.md", b, b"old b", b"new b")])
+            except OSError:
+                pass
+        expect("each replacement rechecks the next document", a.read_bytes() == b"old a" and b.read_bytes() == b"user next document")
+
+        for linked in (True, False):
+            root = temp / ("linked-root" if linked else "replaced-root")
+            outside = temp / ("linked-outside" if linked else "replaced-outside")
+            (root / "docs").mkdir(parents=True)
+            outside.mkdir()
+            before = b"# Original body\n"
+            path = root / "docs" / "a.md"
+            path.write_bytes(before)
+            os.link(path, outside / "a.md")
+            inventory = temp / "inventory.json"
+            inventory.write_text(json.dumps({"version": 5, "files": writer.inventory({"docs/a.md": path})}))
+            manifest = temp / "manifest.json"
+            manifest.write_text(json.dumps({"docs/a.md": {"type": "Note", "title": "A", "description": "A document", "tags": ["test"]}}))
+            verify = writer.verify_outputs
+
+            def replace_parent(planned):
+                verify(planned)
+                (root / "docs").rename(root / "original-docs")
+                if linked:
+                    (root / "docs").symlink_to(outside, target_is_directory=True)
+                else:
+                    (root / "docs").mkdir()
+                    os.link(root / "original-docs" / "a.md", root / "docs" / "a.md")
+
+            args = argparse.Namespace(inventory=inventory, manifest=manifest, replace_existing=False, dry_run=False)
+            with mock.patch.object(writer, "verify_outputs", side_effect=replace_parent):
+                try:
+                    writer.apply_manifest(args, {"docs/a.md": path}, root)
+                except (OSError, SystemExit):
+                    pass
+            expect("parent replacement never redirects the planned write", (root / "original-docs" / "a.md").read_bytes() == before
+                   and (outside / "a.md").read_bytes() == before and (linked or path.read_bytes() == before))
+
+        if sys.platform == "darwin":
+            a.write_bytes(b"old a")
+            b.write_bytes(b"old b")
+            attribute = "com.apple.metadata:kMDItemComment"
+            subprocess.run(["xattr", "-w", attribute, "original metadata", str(a)], check=True)
+            import pwd
+            username = pwd.getpwuid(os.getuid()).pw_name
+            subprocess.run(["chmod", "+a", f"{username} allow read", str(a)], check=True)
+            writer.atomic_replace_many([("a.md", a, b"old a", b"new a")])
+            value = subprocess.run(["xattr", "-p", attribute, str(a)], capture_output=True, text=True, check=True)
+            expect("a successful replacement preserves Finder metadata", value.stdout.strip() == "original metadata")
+            acl = subprocess.run(["ls", "-le", str(a)], capture_output=True, text=True, check=True)
+            expect("a successful replacement preserves an extended ACL", "allow read" in acl.stdout)
+            a.write_bytes(b"old a")
+            calls[0] = 0
+
+            def fail_second(source, target, **kwargs):
+                calls[0] += 1
+                if calls[0] == 2:
+                    raise OSError("controlled second replacement failure")
+                return replace(source, target, **kwargs)
+
+            with mock.patch.object(writer.os, "replace", side_effect=fail_second):
+                try:
+                    writer.atomic_replace_many([("a.md", a, b"old a", b"new a"), ("b.md", b, b"old b", b"new b")])
+                except OSError:
+                    pass
+            value = subprocess.run(["xattr", "-p", attribute, str(a)], capture_output=True, text=True, check=True)
+            expect("rollback restores original bytes and Finder metadata", a.read_bytes() == b"old a" and value.stdout.strip() == "original metadata")
+
+        scoped = temp / "explicit-excluded"
+        write(scoped / "docs" / "skip" / "private.md", "# Private\n")
+        (scoped / ".x9-okf.json").write_text('{"include": ["docs/skip"], "exclude": ["skip"]}')
+        listed = run(VALIDATE, scoped, "--missing")
+        expect("an explicit include does not bypass a name exclusion", listed.returncode == 0 and listed.stdout.strip() == "", listed)
 
 
 def main():
@@ -466,6 +581,7 @@ def main():
         expect("a document created after the inventory is a warning", later.returncode == 0 and "new since the inventory" in later.stdout, later)
 
     writer_checks()
+    data_safety_checks()
     print("PASS: x9 OKF contract, scope, adoption, and cleanup scenarios")
 
 

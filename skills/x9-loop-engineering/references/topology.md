@@ -17,14 +17,7 @@ Use this reference only when the workflow needs multiple executors, parallel bra
 
 ## Select the smallest topology
 
-| Topology | Use when | Avoid when |
-|---|---|---|
-| Single agent | One context, toolset, authority boundary, and state owner are sufficient | Independent evidence or parallel ownership is load-bearing |
-| Linear workflow | Ordered stages have distinct contracts but no branching or dynamic routing | A deterministic script can perform the same transformation more reliably |
-| Static graph | Stable branches, joins, specialist ownership, or veto gates recur across runs | The structure changes arbitrarily per task |
-| Dynamic graph | Runtime evidence legitimately creates, cancels, merges, or reorders work | Static routing plus bounded retries is sufficient |
-
-Each additional node must contribute distinct context, tools, authority, evidence, or useful parallel capacity. Prefer a deterministic function, router, join, or human checkpoint when an autonomous agent loop is unnecessary.
+Use [the core topology qualification](../SKILL.md#qualify-the-topology) for the topology and admission rule for added nodes. Prefer a deterministic function, router, join, or human checkpoint when an autonomous agent loop is unnecessary. A linear workflow may have distinct stage contracts; a dynamic graph is justified only when static routing plus bounded retries cannot satisfy the outcome.
 
 ## Use hierarchical ownership
 

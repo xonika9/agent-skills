@@ -25,5 +25,6 @@ Notes that change a recommendation:
 - Go timeouts and the `-short` flag act per package and by convention; per-size limits need separate packages, build tags, or a helper that fails a test on its own deadline.
 - Go caches passing test results per package; medium tests that use external services need `-count=1` so a cached pass cannot hide their failures.
 - pytest's `faulthandler_timeout` only prints stack traces; a failing timeout needs `pytest-timeout`.
+- `pytest-timeout --session-timeout` is cooperative: it checks between completed tests and cannot interrupt a hanging test by itself. Pair it with a per-test `--timeout`; use an external process deadline when a hard whole-run limit is required.
 - Monorepo build tools select affected projects from the dependency graph: `nx affected`, `turbo run --affected`, and Bazel test targets by `size` and `timeout`.
 - A quarantine that keeps a test running without blocking needs either a separate non-blocking CI job that runs the quarantined category, or a reporter that treats it as non-fatal; a plain skip does neither.

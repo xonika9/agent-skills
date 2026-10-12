@@ -14,10 +14,22 @@ export class ApiError extends Error {
   }
 }
 
+export class NetworkError extends Error {
+  constructor(cause: unknown) {
+    super("Network request failed", { cause });
+  }
+}
+
 // Every request goes through this wrapper: shared headers and 401 handling
 // live here, not in components.
 const appFetch: typeof fetch = async (input, init) => {
-  const res = await fetch(input, { ...init, credentials: "same-origin" });
+  let res: Response;
+  try {
+    res = await fetch(input, { ...init, credentials: "same-origin" });
+  } catch (error) {
+    if (error instanceof TypeError) throw new NetworkError(error);
+    throw error;
+  }
   if (res.status === 401) window.dispatchEvent(new Event("app:unauthorized"));
   return res;
 };
@@ -41,7 +53,7 @@ function isProblem(value: unknown): value is Problem {
 // Retry only network failures and server errors; a 4xx will not change.
 export function shouldRetry(failureCount: number, error: unknown) {
   if (failureCount >= 2) return false;
-  if (error instanceof ApiError) return error.problem.status >= 500;
-  if (error instanceof DetailedError) return (error.statusCode ?? 500) >= 500;
-  return true;
+  if (error instanceof ApiError) return error.problem.status >= 500 && error.problem.status < 600;
+  if (error instanceof DetailedError) return error.statusCode >= 500 && error.statusCode < 600;
+  return error instanceof NetworkError;
 }

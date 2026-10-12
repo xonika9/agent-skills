@@ -2,6 +2,14 @@
 
 The goal is a vault the user recognizes as theirs: their matters as topics, their recurring work as streams, their existing material in place, and nothing lost or broken on the way.
 
+## Contents
+
+- [Inspect](#inspect)
+- [Talk](#talk)
+- [Plan](#plan)
+- [Apply](#apply)
+- [Done](#done)
+
 ## Inspect
 
 Survey the target folder before asking anything: its tree to a sensible depth, file counts and sizes by kind, existing `AGENTS.md`, `CLAUDE.md`, `.obsidian/`, `.git/`, symbolic links, links between the user's notes, and the material that must not be moved (see the manifest kinds below). On macOS, cloud files that are not downloaded carry the `dataless` flag (`ls -lO`); `scripts/apply_plan.py` refuses them.
@@ -55,17 +63,18 @@ The script does not rewrite links. Split the manifest by that:
 
 ## Apply
 
-`scripts/apply_plan.py` runs the file operations from a JSON manifest on macOS and Linux. It validates every operation before changing anything, verifies every copy by SHA-256 and keeps file metadata such as Finder tags, never overwrites (names that differ only in case or Unicode form count as the same), never writes outside the vault or through a link, refuses cloud placeholders, and writes a journal that `--undo` reverses. Without `--apply` it only reports what it would do.
+`scripts/apply_plan.py` runs the file operations from a JSON manifest on macOS and Linux. It validates every operation before changing anything, verifies every copy by SHA-256 and keeps file metadata such as Finder tags, never overwrites (names that differ only in case or Unicode form count as the same), checks destination containment and link ancestors before applying or undoing an operation, refuses cloud placeholders, and writes a journal for `--undo`. Filesystem changes between a check and its system call are not locked. Undo keeps copies whose identity, contents, or recorded metadata changed; journals from older versions without metadata fingerprints need manual review before a copy is removed. Without `--apply` it only reports what it would do.
 
 ```json
 {
   "vault": "/absolute/path/to/vault",
   "operations": [
     {"op": "mkdir", "path": "Темы/Здоровье/Визиты"},
+    {"op": "mkdir", "path": "Темы/Здоровье/Анализы"},
+    {"op": "mkdir", "path": "Темы/Видеоблог"},
     {"op": "move", "from": "старое/анализы.pdf", "to": "Темы/Здоровье/Анализы/анализы.pdf"},
     {"op": "copy", "from": "/absolute/path/to/other/folder", "to": "Темы/Видеоблог/Сценарии"},
-    {"op": "symlink", "target": "/Volumes/Disk/Projects", "path": "Темы/Видеоблог/Проекты"},
-    {"op": "remove", "path": "/absolute/path/to/other/folder", "verified_copy": "Темы/Видеоблог/Сценарии"}
+    {"op": "symlink", "target": "/Volumes/Disk/Projects", "path": "Темы/Видеоблог/Проекты"}
   ]
 }
 ```
@@ -76,7 +85,18 @@ python3 <skill-directory>/scripts/apply_plan.py <manifest.json> --apply    # run
 python3 <skill-directory>/scripts/apply_plan.py --undo <journal.jsonl>     # reverse a run
 ```
 
-Relative paths resolve inside the vault. `remove` is accepted only in a manifest of its own and only when an independent copy inside the vault is byte-identical; it cannot be undone, so it runs after the deletion confirmation the skill's boundaries require. Keep the manifest outside the vault; the script writes journals to `.x9-personal-vault/` in the vault.
+Relative paths resolve inside the vault. A separately approved removal uses a separate manifest:
+
+```json
+{
+  "vault": "/absolute/path/to/vault",
+  "operations": [
+    {"op": "remove", "path": "/absolute/path/to/other/folder", "verified_copy": "Темы/Видеоблог/Сценарии"}
+  ]
+}
+```
+
+`remove` is accepted only in a manifest of its own and only when an independent copy inside the vault is byte-identical; it cannot be undone, so it runs after the deletion confirmation the skill's boundaries require. Keep the manifest outside the vault; the script writes journals to `.x9-personal-vault/` in the vault.
 
 After the files are in place, write:
 

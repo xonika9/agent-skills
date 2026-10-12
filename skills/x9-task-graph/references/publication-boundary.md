@@ -8,22 +8,23 @@ Save locally only on an explicit request that names the destination path. Re-rea
 
 ## External publication gate
 
-Publish only when the user explicitly requests publication and names the target tracker, project, list, or equivalent destination. Before any tracker request, generate one opaque correlation ID for this publication attempt and keep it in the draft and preview.
+Publish only when the user explicitly requests publication and names the target tracker, project, list, or equivalent destination. Before any tracker request, generate one opaque correlation ID for this publication attempt and keep it in the draft and preview. Give each distinct mutating request its own stable operation ID and retain the mapping from operation ID to exact payload and source work-item IDs; the attempt correlation ID groups them for reconciliation.
 
 Freshly read the named target through a reachable connector, MCP tool, API, or documented CLI. Do not bundle, assume, or fabricate a client for any tracker. If no reachable interface can read the target, produce `DEGRADED` with the missing interface and do not mutate the tracker.
 
 After the fresh read, show a preview of the exact creates and updates: destination,
 correlation ID, proposed tracker fields, source work-item IDs, selected recovery route,
-and every intended mutation. Do not write until the user has explicitly authorized that
+operation IDs, and every intended mutation. Do not write until the user has explicitly authorized that
 preview's mutations.
 
 ## Idempotency and reconciliation
 
 Before a write, establish one safe recovery route:
 
-- use the correlation ID as the tracker interface's native idempotency key, after
-  confirming that its documented contract permits the exact request to be repeated with
-  that key and that the target can be read afterward for reconciliation; or
+- use each request's operation ID as its native idempotency key, after confirming the
+  interface's documented key scope and replay contract and that the target can be read
+  afterward for reconciliation. Never reuse one key for distinct payloads. A documented
+  atomic batch is one request and may use one operation ID; or
 - embed a searchable correlation marker in each created or updated object and confirm that the interface can search the target for that marker.
 
 An interface that cannot satisfy every condition of its selected route is `BLOCKED` after preview. Do not attempt the write or guess whether it succeeded.
@@ -32,7 +33,9 @@ When a write's outcome is uncertain, use only the recovery route included in the
 authorized preview:
 
 - For native idempotency, repeat the exact request through the documented retry contract
-  with the same correlation ID as its idempotency key. Then freshly read the target and
+  with the same operation ID as its idempotency key. Preserve operation IDs across
+  partial success and retries; do not redispatch already reconciled successful operations.
+  Then freshly read the target and
   reconcile the observed objects against the preview.
 - For an embedded marker, do not repeat the write. Search the freshly scoped target by
   that marker and reconcile the found objects against the preview.

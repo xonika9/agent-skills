@@ -26,6 +26,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterator
 
+from check_svg import _css_rules, _resolved_property
+
 
 MAX_FILE_BYTES = 20 * 1024 * 1024
 MAX_ELEMENTS = 100_000
@@ -711,39 +713,6 @@ def extract_inline_svg(text: str) -> tuple[str, int]:
     return text[start:end], extra
 
 
-def _css_class_properties(root: ET.Element) -> dict[str, dict[str, str]]:
-    properties: dict[str, dict[str, str]] = defaultdict(dict)
-    for element in root.iter():
-        if local_name(element.tag) != "style":
-            continue
-        css = re.sub(r"/\*.*?\*/", "", "".join(element.itertext()), flags=re.S)
-        for selectors, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css):
-            declarations = {}
-            for declaration in body.split(";"):
-                if ":" in declaration:
-                    key, value = declaration.split(":", 1)
-                    declarations[key.strip().lower()] = value.strip()
-            for selector in selectors.split(","):
-                match = re.fullmatch(r"\s*[A-Za-z]*\.([\w-]+)\s*", selector)
-                if match:
-                    properties[match.group(1)].update(declarations)
-    return properties
-
-
-def _effective(element: ET.Element, css: dict[str, dict[str, str]]) -> dict[str, str]:
-    props: dict[str, str] = {}
-    for name in element.get("class", "").split():
-        props.update(css.get(name, {}))
-    for key in ("marker-start", "marker-end", "stroke-dasharray"):
-        if key in element.attrib:
-            props[key] = element.attrib[key].strip()
-    for declaration in element.get("style", "").split(";"):
-        if ":" in declaration:
-            key, value = declaration.split(":", 1)
-            props[key.strip().lower()] = value.strip()
-    return props
-
-
 def _walk_own(group: ET.Element, foreign: set[int]) -> Iterator[ET.Element]:
     """Yield group and its descendants in document order, skipping nested semantic groups."""
     stack = [group]
@@ -868,7 +837,11 @@ def parse_svg(text: str, *, from_html: bool = False) -> list[Scene]:
         return [scene]
 
     foreign = {id(e) for e in semantic_elements}
-    css = _css_class_properties(root)
+    parents = {child: parent for parent in elements for child in parent}
+    css = []
+    for style in elements:
+        if local_name(style.tag) == "style":
+            css.extend(_css_rules("".join(style.itertext())))
     edge_ids = set()
     label_texts: dict[str, list[str]] = defaultdict(list)
     for element in semantic_elements:
@@ -916,11 +889,14 @@ def parse_svg(text: str, *, from_html: bool = False) -> list[Scene]:
             start = end = False
             dashes = None
             for inner in _walk_own(element, foreign):
-                props = _effective(inner, css)
-                start = start or props.get("marker-start", "none") not in ("", "none")
-                end = end or props.get("marker-end", "none") not in ("", "none")
-                dash = props.get("stroke-dasharray", "none")
-                if dash not in ("", "none", "0") and dashes is None:
+                if local_name(inner.tag) not in ("path", "line", "polyline"):
+                    continue
+                first = _resolved_property(inner, "marker-start", parents, css)
+                last = _resolved_property(inner, "marker-end", parents, css)
+                start = start or (first is not None and first.lower() not in ("", "none"))
+                end = end or (last is not None and last.lower() not in ("", "none"))
+                dash = _resolved_property(inner, "stroke-dasharray", parents, css)
+                if dash is not None and dash.lower() not in ("", "none", "0") and dashes is None:
                     dashes = dash
             style = "solid"
             if dashes is not None:

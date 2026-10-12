@@ -13,7 +13,7 @@ Help tests catch regressions without slowing the developer down. This file gover
 
 Practices for writing tests are in [references/test-design.md](references/test-design.md); runner mechanics in [references/tooling.md](references/tooling.md).
 
-This skill is model-invoked in Claude Code and Codex; its portable claim is structural Agent Skills compatibility only. It assumes no particular language, test runner, or CI system.
+This skill is model-invoked in Claude Code and Codex, as its [onboarding declaration](references/onboarding.json) records; its portable claim is structural Agent Skills compatibility only. It assumes no particular language, test runner, or CI system.
 
 ## Authority
 

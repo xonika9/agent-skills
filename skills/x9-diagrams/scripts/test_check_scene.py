@@ -779,5 +779,15 @@ class GeometryWarningTests(unittest.TestCase):
         self.assertIn("NOTE: geometry not checked for rotated element block", stdout)
 
 
+class CurrentFontRegressionTests(unittest.TestCase):
+    def test_preserves_all_current_native_font_families(self):
+        for font in (7, 8, 9, 10):
+            with self.subTest(font=font):
+                candidate = scene()
+                candidate["elements"][1]["fontFamily"] = font
+                errors, _ = validate_scene(candidate)
+                self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()

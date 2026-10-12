@@ -42,6 +42,8 @@ for skill in skills/*; do
   python3 skills/x9-skill-creator/scripts/validate.py \
     --runtime portable --runtime claude --runtime codex "$skill"
 done
+python3 skills/x9-skill-creator/scripts/validate.py \
+  --runtime claude --runtime codex .claude/skills/release
 
 python3 skills/x9-skill-creator/scripts/test_validate.py
 python3 skills/x9-onboarding/scripts/test_validate_onboarding.py
@@ -51,11 +53,14 @@ python3 skills/x9-onboarding/scripts/validate_profiles.py
 python3 skills/x9-opencode-sessions/scripts/test_opencode_sessions.py
 python3 skills/x9-agent-instructions/scripts/test_check_globals.py
 python3 skills/x9-diagrams/scripts/test_check_scene.py
+python3 skills/x9-diagrams/scripts/test_check_svg.py
+python3 skills/x9-diagrams/scripts/test_summarize_source.py
 python3 skills/x9-okf-docs/scripts/test_okf.py
 python3 skills/x9-personal-vault/scripts/test_apply_plan.py
 python3 skills/x9-research/scripts/test_validate_html.py
 python3 skills/x9-architecture-scout/scripts/test_validate_report.py
 python3 .claude/skills/release/scripts/check_global_files.py --published-only
+printf '@AGENTS.md\n' | cmp - CLAUDE.md
 python3 scripts/test_check_package.py
 python3 scripts/check_package.py
 python3 scripts/check_public.py

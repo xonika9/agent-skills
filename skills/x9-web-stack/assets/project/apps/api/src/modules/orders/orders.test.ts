@@ -52,6 +52,21 @@ describe("orders", () => {
     expect(body.errors.map((e) => e.path).sort()).toEqual(["amountCents", "title"]);
   });
 
+  it("rejects amounts outside the database integer range", async () => {
+    const res = await app.request(
+      "/api/orders",
+      as(crypto.randomUUID(), {
+        method: "POST",
+        body: JSON.stringify({ title: "Desk", amountCents: 2_147_483_648 }),
+      }),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({
+      code: "common.validation",
+      errors: [{ path: "amountCents" }],
+    });
+  });
+
   it("requires sign-in", async () => {
     const res = await app.request("/api/orders");
     expect(res.status).toBe(401);

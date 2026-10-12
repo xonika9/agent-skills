@@ -60,9 +60,7 @@ Use one `--runtime` per target runtime; repeat it to require one file to satisfy
 ## Done
 
 - Structural validation exits 0 without unexplained warnings.
-- The handoff records the instruction rubric as `applied`, `not applicable`, or `degraded`; a full skill audit is not `clean` when it is `degraded`.
 - The judge checklist in the rubric passes.
 - The handoff states the action and evidence tier, does not claim evidence outside that scope, and follows the single or batch table contract in [audit reporting](references/audit-reporting.md).
 - In batch mode, the orchestrator has quality-checked worker findings and removed unsupported or duplicate recommendations before presenting them.
 - If behavioral evidence was selected, representative scenarios show correct trigger, boundary, failure, and completion behavior.
-- Static evidence may support a `clean` audit without live evaluation; unverified behavioral claims remain explicit follow-up evidence, not an automatic finding.

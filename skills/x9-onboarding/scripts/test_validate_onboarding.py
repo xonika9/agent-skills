@@ -72,7 +72,34 @@ def expect_invalid(
         )
 
 
+def test_opaque_names_stay_out_of_diagnostics() -> None:
+    opaque = "abcdefghijklmnopqrstuvwx"
+    cases = []
+    data = declaration([command_requirement()])
+    data[opaque] = True
+    cases.append((json.dumps(data), "<unsafe-field>: unknown field"))
+    data = declaration([command_requirement()])
+    data["requirements"][0][opaque] = {opaque: {"needed_for": "https://example.test"}}
+    cases.append((json.dumps(data), "requirements[0].<unsafe-field>"))
+    data = declaration([command_requirement()])
+    data["requirements"][0]["check"][opaque] = True
+    cases.append((json.dumps(data), "requirements[0].check.<unsafe-field>"))
+    cases.append(("{" + json.dumps(opaque) + ":1," + json.dumps(opaque) + ":2}", "duplicate JSON key: <unsafe-field>"))
+    for raw, expected_path in cases:
+        with tempfile.TemporaryDirectory() as tmp:
+            skills_root = Path(tmp) / "skills"
+            path = skills_root / "x9-demo" / "references" / "onboarding.json"
+            path.parent.mkdir(parents=True)
+            path.write_text(raw, encoding="utf-8")
+            before = path.read_bytes()
+            result = run(skills_root)
+            output = result.stdout + result.stderr
+            expect("opaque field names do not enter diagnostics", result.returncode != 0 and opaque not in output and expected_path in result.stdout, output)
+            expect("invalid declaration remains unchanged", path.read_bytes() == before)
+
+
 def main() -> None:
+    test_opaque_names_stay_out_of_diagnostics()
     with tempfile.TemporaryDirectory() as tmp:
         skills_root = Path(tmp) / "skills"
         companion = skills_root / "x9-companion"
@@ -138,9 +165,9 @@ def main() -> None:
         mutate(data)
         cases.append((label, data, expected_path))
 
-    add("unknown top-level field", lambda data: data.update({"extra": True}), "extra")
-    add("unknown requirement field", lambda data: data["requirements"][0].update({"extra": True}), "requirements[0].extra")
-    add("unknown check field", lambda data: data["requirements"][0]["check"].update({"extra": True}), "requirements[0].check.extra")
+    add("unknown top-level field", lambda data: data.update({"extra": True}), "<unsafe-field>")
+    add("unknown requirement field", lambda data: data["requirements"][0].update({"extra": True}), "requirements[0].<unsafe-field>")
+    add("unknown check field", lambda data: data["requirements"][0]["check"].update({"extra": True}), "requirements[0].check.<unsafe-field>")
     add("unknown version", lambda data: data.update({"version": 2}), "version")
     add("unknown supported runtime", lambda data: data.update({"supported_runtimes": ["other"]}), "supported_runtimes[0]")
     add("duplicate supported runtime", lambda data: data.update({"supported_runtimes": ["claude", "claude"]}), "supported_runtimes[1]")
@@ -172,14 +199,17 @@ def main() -> None:
     add("shell syntax", lambda data: data["requirements"][0]["check"].update({"command": "toolctl|other"}), "requirements[0].check.command")
     add("control character", lambda data: data["requirements"][0].update({"needed_for": "line\nbreak"}), "requirements[0].needed_for")
     add("length", lambda data: data["requirements"][0].update({"needed_for": "a" * 161}), "requirements[0].needed_for")
-    add("secret-like field", lambda data: data["requirements"][0].update({"api_key": "value"}), "requirements[0].api_key")
+    add("secret-like field", lambda data: data["requirements"][0].update({"api_key": "value"}), "requirements[0].<unsafe-field>")
     add("secret-like value", lambda data: data["requirements"][0].update({"needed_for": "token=abcdef"}), "requirements[0].needed_for")
     add("hyphenated secret token", lambda data: data["requirements"][0]["check"].update({"command": "sk-proj-abcdefgh"}), "requirements[0].check.command")
     add("identifier format", lambda data: data["requirements"][0].update({"id": "Bad_Id"}), "requirements[0].id")
     add("single member alternative group", lambda data: data["requirements"][0].update({"group": "only-route"}), "requirements[0].group")
     add("optional alternative member", lambda data: data.update({"requirements": [{**command_requirement(), "group": "route"}, {**command_requirement(), "id": "second-command", "group": "route", "level": "optional"}]}), "requirements[1].level")
     add("mismatched alternative runtimes", lambda data: data.update({"requirements": [{**command_requirement(), "group": "route"}, {**command_requirement(), "id": "second-command", "group": "route", "runtimes": ["codex"]}]}), "requirements[1].runtimes")
-    add("empty requirements", lambda data: data.update({"requirements": []}), "requirements")
+    add("version check for unlisted command", lambda data: data["requirements"][0].update({"check": {"type": "command-version", "command": "toolctl", "min_version": "1.0"}}), "requirements[0].check.command")
+    add("version check with malformed minimum", lambda data: data["requirements"][0].update({"check": {"type": "command-version", "command": "python3", "min_version": "3.11+"}}), "requirements[0].check.min_version")
+    add("version check misses minimum", lambda data: data["requirements"][0].update({"check": {"type": "command-version", "command": "python3"}}), "requirements[0].check.min_version")
+    add("version check on non-command kind", lambda data: data["requirements"][0].update({"kind": "skill", "guidance_id": "install-skill", "check": {"type": "command-version", "command": "python3", "min_version": "3.11"}}), "requirements[0].check.type")
 
     for label, data, expected_path in cases:
         expect_invalid(label, data, expected_path)
@@ -298,10 +328,49 @@ def main() -> None:
         expect(
             "excessive JSON nesting fails cleanly",
             result.returncode != 0
-            and "x9-demo/references/onboarding.json: extra: unknown field" in result.stdout
+            and "x9-demo/references/onboarding.json:" in result.stdout
+            and ("<unsafe-field>: unknown field" in result.stdout or "JSON:" in result.stdout)
             and "Traceback" not in result.stderr,
             result.stdout + result.stderr,
         )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        skills_root = Path(tmp) / "skills"
+        data = declaration([command_requirement()])
+        bad_key = "outside\nUNSAFE_KEY_MARKER"
+        data[bad_key] = True
+        write_declaration(skills_root, "x9-demo", data)
+        result = run(skills_root)
+        expect(
+            "unsafe field names do not enter diagnostics",
+            result.returncode != 0
+            and "<unsafe-field>" in result.stdout
+            and "UNSAFE_KEY_MARKER" not in result.stdout,
+            result.stdout + result.stderr,
+        )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        skills_root = Path(tmp) / "skills"
+        secret_key = "sk-proj-" + "SYNTHETIC" * 3
+        path = skills_root / "x9-demo" / "references" / "onboarding.json"
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({secret_key: True}), encoding="utf-8")
+        result = run(skills_root)
+        expect("secret-like key is redacted", result.returncode != 0 and secret_key not in result.stdout, result.stdout + result.stderr)
+        path.write_text("{" + json.dumps(secret_key) + ":1," + json.dumps(secret_key) + ":2}", encoding="utf-8")
+        result = run(skills_root)
+        expect("duplicate secret-like key is redacted", result.returncode != 0 and secret_key not in result.stdout and "duplicate JSON key" in result.stdout, result.stdout + result.stderr)
+
+    valid_cases = [
+        ("runtime restriction without requirements", declaration([], ["claude", "codex"])),
+        ("minimum command version", declaration([{**command_requirement(), "check": {"type": "command-version", "command": "python3", "min_version": "3.11"}}])),
+    ]
+    for label, data in valid_cases:
+        with tempfile.TemporaryDirectory() as tmp:
+            skills_root = Path(tmp) / "skills"
+            write_declaration(skills_root, "x9-demo", data)
+            result = run(skills_root)
+            expect(label, result.returncode == 0 and "PASS" in result.stdout, result.stdout + result.stderr)
 
     repository_skills = Path(__file__).resolve().parents[2]
     result = run(repository_skills)

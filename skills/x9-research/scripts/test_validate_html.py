@@ -148,5 +148,44 @@ class ValidateHtmlTests(unittest.TestCase):
         )
 
 
+    def test_rejects_nonlocal_css_dependencies(self):
+        cases = [
+            valid_html().replace("</style>", "body { background: url(//example.invalid/x.png); }</style>"),
+            valid_html().replace("</style>", "body { background: url(x.png); }</style>"),
+            valid_html().replace("<body>", '<body style="background:url(https://example.invalid/x.png)">'),
+            valid_html().replace("</style>", r"body { background: u\72l(//example.invalid/x.png); }</style>"),
+        ]
+        for candidate in cases:
+            with self.subTest(candidate=candidate):
+                self.html.write_text(candidate, encoding="utf-8")
+                self.assertTrue(any("network dependency" in error for error in self.errors()))
+
+
+    def test_requires_reference_definition_urls(self):
+        for definition in (
+            "[primary]: https://example.com/primary",
+            "[primary]: <https://example.com/primary>",
+            "[primary]:\n  https://example.com/primary",
+        ):
+            with self.subTest(definition=definition):
+                self.markdown.write_text("[Claim][primary]\n\n" + definition + "\n", encoding="utf-8")
+                self.assertTrue(any("https://example.com/primary" in error for error in self.errors()))
+                self.html.write_text(valid_html().replace(SOURCE.replace("&", "&amp;"), "https://example.com/primary"), encoding="utf-8")
+                self.assertEqual(self.errors(), [])
+                self.html.write_text(valid_html(), encoding="utf-8")
+
+
+    def test_rejects_script_without_script_element(self):
+        cases = [
+            valid_html().replace("<body>", '<body onload="document.body.dataset.audit=1">'),
+            valid_html().replace("</main>", '<a href="javascript:void(0)">Extra</a></main>'),
+            valid_html().replace("</main>", '<a href="java&#10;script:void(0)">Extra</a></main>'),
+        ]
+        for candidate in cases:
+            with self.subTest(candidate=candidate):
+                self.html.write_text(candidate, encoding="utf-8")
+                self.assertTrue(any("event handler" in e or "JavaScript URL" in e for e in self.errors()))
+
+
 if __name__ == "__main__":
     unittest.main()

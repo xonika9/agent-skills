@@ -36,7 +36,6 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 - Flexible judgment stays in outcome-oriented prose.
 - Fragile repeated transformations use deterministic scripts.
-- Before writing a numbered step, name the invariant that makes a wrong order impossible and write that invariant instead. A step survives only where a wrong order cannot be undone: irreversible sequences, approval gates, deterministic transformations, recovery from a known-bad state. A sequence present in the request is not evidence that the order is load-bearing.
 
 ## 4. Authority and preservation `[j+b]`
 
@@ -48,8 +47,6 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 ## 5. Context cost and freshness `[s+j]`
 
 - Every paragraph carries non-obvious behavior; details live in linked references.
-- One rule lives in one place. A rule restated in a second file, in `Done`, or in a runtime adapter is a defect rather than emphasis; the second occurrence becomes a link to the owner.
-- No two rules across the skill and its references may be impossible to satisfy at once.
 - Volatile models, flags, schemas, tool versions, rankings, and performance claims use live discovery before they become load-bearing. A freshness date is not a substitute for current validation.
 - No junk, placeholders, secrets, or temporary experiment state in the skill.
 

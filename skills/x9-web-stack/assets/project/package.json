@@ -2,6 +2,7 @@
   "name": "__APP_NAME__",
   "private": true,
   "type": "module",
+  "trustedDependencies": [],
   "packageManager": "bun@__BUN_VERSION__",
   "workspaces": {
     "packages": [

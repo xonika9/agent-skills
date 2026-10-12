@@ -46,7 +46,7 @@ Read both READMEs completely and trace every public skill, installation route, c
 
 Keep `README.md` as the canonical English presentation and `README.ru.md` materially equivalent. Plan corrections before proposing the version; after confirmation, update the English structure and facts first, then synchronize the Russian localization. Preserve verified commands, identifiers, links, and claims. Do not document this private release skill in either README.
 
-Load the installed `humanizer-ru` skill for the final Russian text. Apply its documentation-level editing rules without changing meaning or manufacturing facts, then run its bundled scanner against the complete `README.ru.md`, even when the file did not require a release-specific edit. Resolve the skill and scanner from the live runtime rather than a personal absolute path. If optional packages are missing, use an ephemeral environment instead of changing global Python state. Treat scanner findings as evidence to review, not permission to damage technical accuracy for a score.
+Follow the [Russian documentation contract](references/checks.md#russian-documentation) for final editing and scanner verification.
 
 ## Synchronize global instruction files
 

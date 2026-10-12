@@ -32,11 +32,11 @@ STATUS_LABELS = tuple(STATUS_ALLOWED_VALUES)
 MERMAID_START = re.compile(
     r"^\s*(?:flowchart|graph|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|"
     r"erDiagram|C4Context|C4Container|C4Component|architecture-beta)\b",
-    re.MULTILINE,
 )
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 UNSAFE_ELEMENTS = {
     "applet", "audio", "base", "button", "datalist", "details", "dialog", "embed", "form",
+    "svg", "math", "image", "animate", "set", "foreignobject", "feimage",
     "frame", "frameset", "iframe", "img", "input", "object", "option", "optgroup", "select",
     "summary", "textarea", "video",
 }
@@ -214,9 +214,11 @@ class ReportParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.counts: Counter[str] = Counter()
+        self.viewports: list[tuple[dict[str, str], bool]] = []
         self.stack: list[str] = []
         self.errors: list[str] = []
         self.ids: list[str] = []
+        self.nodes: list[tuple[str, dict[str, str]]] = []
         self.id_nodes: list[tuple[str, str]] = []
         self.section_stack: list[str] = []
         self.headings: list[tuple[int, str]] = []
@@ -246,6 +248,8 @@ class ReportParser(HTMLParser):
         self.repo_depth = 0
         self.repo_bad_tags: list[str] = []
         self.repo_evidence_count = 0
+        self.attribute_stack: list[tuple[str, dict[str, str]]] = []
+        self.fallback_ancestors: list[tuple[str, dict[str, str]]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         tag = tag.lower()
@@ -254,10 +258,12 @@ class ReportParser(HTMLParser):
             self.errors.append(f"duplicate attributes on <{tag}>: {', '.join(duplicates)}")
         values = {name.lower(): value or "" for name, value in attrs}
         self.counts[tag] += 1
+        self.nodes.append((tag, values))
         if self.repo_depth and tag not in {"pre", "code"}:
             self.repo_bad_tags.append(tag)
         if tag not in VOID:
             self.stack.append(tag)
+            self.attribute_stack.append((tag, values))
         if tag == "style":
             self.in_style += 1
             if values.get("media", "").strip().lower() not in {"", "all", "screen"}:
@@ -266,6 +272,8 @@ class ReportParser(HTMLParser):
                 self.errors.append("style blocks must use CSS")
         if tag in UNSAFE_ELEMENTS:
             self.errors.append(f"active or embedded element <{tag}> is not allowed")
+        if tag == "meta" and values.get("name", "").strip().lower() == "viewport":
+            self.viewports.append((values, "head" in self.stack))
         if tag == "meta" and values.get("http-equiv", "").strip().lower() == "refresh":
             self.errors.append("meta http-equiv=refresh is not allowed")
         for name, value in values.items():
@@ -280,6 +288,13 @@ class ReportParser(HTMLParser):
         classes = class_set(values)
         if "report-grid" in classes:
             self.report_grids.append((tag, values))
+        if tag == "template":
+            self.errors.append("inert template content is not allowed")
+        if classes & FALLBACK_CLASSES:
+            self.fallback_ancestors.extend(self.attribute_stack)
+            for ancestor_tag, ancestor in self.attribute_stack:
+                if "hidden" in ancestor or "hidden" in class_set(ancestor) or re.search(r"(?:display\s*:\s*none|visibility\s*:\s*hidden)", ancestor.get("style", ""), re.I):
+                    self.errors.append(f"fallback ancestor <{ancestor_tag}> must remain visible")
         if classes & FALLBACK_CLASSES and ("hidden" in classes or "hidden" in values):
             self.errors.append("fallback content must not use the hidden class or attribute")
         if classes & FALLBACK_CLASSES and re.search(r"(?:display\s*:\s*none|visibility\s*:\s*hidden)", values.get("style", ""), re.IGNORECASE):
@@ -382,6 +397,7 @@ class ReportParser(HTMLParser):
             self.errors.append(f"closing tag </{tag}> does not match <{self.stack[-1]}>")
         else:
             self.stack.pop()
+            self.attribute_stack.pop()
         if tag == "style" and self.in_style:
             self.in_style -= 1
         if tag == "script" and self.script_stack:
@@ -436,7 +452,27 @@ class ReportParser(HTMLParser):
                 figure["fallback"][-1].append(data)
 
 
-def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inline_styles: list[str]) -> list[str]:
+def fallback_visibility_errors(css: str, ancestors: list[tuple[str, dict[str, str]]]) -> list[str]:
+    errors: list[str] = []
+    def visit(source: str) -> None:
+        for selector, body in css_blocks(source):
+            if selector.startswith("@"):
+                if re.search(r"(?:^|[;{])\s*(?:display|visibility)\s*:\s*(?:none|hidden)\b", body, re.I):
+                    visit(body)
+                continue
+            hidden = any(name in {"display", "visibility"} and re.fullmatch(r"(?:none|hidden)(?:\s*!\s*important)?", value, re.I) for name, value in css_declarations(body))
+            if hidden:
+                for part in selector.split(","):
+                    if any(selector_specificity(part.strip(), tag, attrs) is not None for tag, attrs in ancestors):
+                        errors.append("fallback content or its ancestor must not be hidden by CSS")
+    try:
+        visit(css)
+    except ValueError:
+        errors.append("hiding selectors must use simple compound selectors")
+    return errors
+
+
+def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inline_styles: list[str], fallback_ancestors: list[tuple[str, dict[str, str]]]) -> list[str]:
     errors: list[str] = []
     all_css = css + "\n" + "\n".join(inline_styles)
     if "\\" in all_css:
@@ -449,6 +485,7 @@ def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inlin
             r"(?:display\s*:\s*none|visibility\s*:\s*hidden)", declarations, re.IGNORECASE
         ):
             errors.append("fallback content must not be hidden by CSS")
+    errors.extend(fallback_visibility_errors(compact, fallback_ancestors))
     if not has_narrow_report_grid_rule(compact, nodes):
         errors.append("report-grid must resolve to one column through the supported narrow CSS rules")
     for declarations in inline_styles:
@@ -457,12 +494,85 @@ def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inlin
                 errors.append("grid layout declarations must be in style blocks, not style attributes")
         except ValueError:
             errors.append("malformed inline CSS declaration")
-    if not re.search(r"\.comparison-table[^}]*\{[^}]*display\s*:\s*(?:block|grid)", compact, re.IGNORECASE | re.DOTALL):
-        errors.append("missing comparison reflow rule")
-    if not re.search(r"\.diagram-container[^}]*\{[^}]*overflow-x\s*:\s*auto", compact, re.IGNORECASE | re.DOTALL):
-        errors.append(".diagram-container must provide horizontal diagram scrolling")
-    if re.search(r"(?:body|html|main)[^{]*\{[^}]*overflow(?:-x)?\s*:\s*(?:auto|scroll)", compact, re.IGNORECASE | re.DOTALL):
-        errors.append("page-level scrolling must not be used for diagrams")
+    return errors
+
+
+def responsive_resource_errors(css: str, nodes: list[tuple[str, dict[str, str]]]) -> list[str]:
+    """Resolve comparison display and horizontal overflow at the narrow checkpoint."""
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    winners: dict[tuple[int, str], tuple[tuple[int, int, int, int, int], str]] = {}
+    narrow_tables: set[int] = set()
+    order = 0
+    def visit(source: str, media: bool = False) -> None:
+        nonlocal order
+        for selector, body in css_blocks(source):
+            if selector.startswith("@"):
+                if not re.search(r"(?:^|[;{])\s*(?:display|overflow(?:-[xy])?|all)\s*:", body, re.I):
+                    continue
+                match = re.fullmatch(r"@media\s+(?:screen\s+and\s+)?\(\s*max-width\s*:\s*(\d+(?:\.\d+)?)px\s*\)", selector, re.I)
+                if media or not match or not 390 <= float(match[1]) < 1280:
+                    raise ValueError("unsupported reflow/overflow media condition")
+                visit(body, True)
+                continue
+            if "{" in body or "}" in body:
+                raise ValueError("nested reflow/overflow rules are unsupported")
+            for name, value in css_declarations(body):
+                if name == "all":
+                    for part in selector.split(","):
+                        for tag, attrs in nodes:
+                            if class_set(attrs) & {"comparison-table", "diagram-container"} and selector_specificity(part.strip(), tag, attrs) is not None:
+                                raise ValueError("all resets on reflow/diagram elements are unsupported")
+                if name not in {"display", "overflow", "overflow-x", "overflow-y"}:
+                    continue
+                order += 1
+                important = bool(re.search(r"!\s*important\s*$", value, re.I))
+                value = re.sub(r"!\s*important\s*$", "", value, flags=re.I).strip().lower()
+                properties = {name: value}
+                if name == "overflow":
+                    axes = value.split()
+                    if len(axes) not in (1, 2):
+                        raise ValueError("unsupported overflow shorthand")
+                    properties = {"overflow-x": axes[0], "overflow-y": axes[-1]}
+                if any(prop.startswith("overflow-") and val not in {"visible", "hidden", "clip", "auto", "scroll"} for prop, val in properties.items()):
+                    raise ValueError("overflow values must use supported concrete keywords")
+                for part in selector.split(","):
+                    for index, (tag, attrs) in enumerate(nodes):
+                        specificity = selector_specificity(part.strip(), tag, attrs)
+                        if specificity is None:
+                            continue
+                        priority = (int(important), *specificity, order)
+                        for prop, resolved in properties.items():
+                            key = index, prop
+                            if key not in winners or priority >= winners[key][0]:
+                                winners[key] = priority, resolved
+                        if media and name == "display" and value in {"block", "grid"} and "comparison-table" in re.findall(r"\.([\w-]+)", part):
+                            narrow_tables.add(index)
+    try:
+        visit(css)
+    except ValueError as exc:
+        return [str(exc)]
+    errors = []
+    for tag, attrs in nodes:
+        for name, _ in css_declarations(attrs.get("style", "")):
+            if name in {"overflow", "overflow-x", "overflow-y"} or (name == "display" and "comparison-table" in class_set(attrs)):
+                errors.append("reflow/overflow declarations must be in style blocks")
+            if name == "all" and class_set(attrs) & {"comparison-table", "diagram-container"}:
+                errors.append("inline all resets on reflow/diagram elements are unsupported")
+    tables = [i for i, (_, attrs) in enumerate(nodes) if "comparison-table" in class_set(attrs)]
+    containers = [i for i, (_, attrs) in enumerate(nodes) if "diagram-container" in class_set(attrs)]
+    if not tables or any(i not in narrow_tables or winners.get((i, "display"), (None, ""))[1] not in {"block", "grid"} for i in tables):
+        errors.append("comparison-table must resolve to block/grid through narrow media rules")
+    computed_x = {}
+    for index in range(len(nodes)):
+        x = winners.get((index, "overflow-x"), (None, "visible"))[1]
+        y = winners.get((index, "overflow-y"), (None, "visible"))[1]
+        if x in {"visible", "clip"} and y not in {"visible", "clip"}:
+            x = "auto" if x == "visible" else "hidden"
+        computed_x[index] = x
+    if not containers or any(computed_x[i] != "auto" for i in containers):
+        errors.append("diagram-container must resolve to horizontal auto scrolling")
+    if any(value in {"auto", "scroll"} and index not in containers for index, value in computed_x.items()):
+        errors.append("only diagram-container may provide horizontal scrolling")
     return errors
 
 
@@ -489,6 +599,8 @@ def validate(path: Path) -> list[str]:
     for tag in ("html", "head", "body"):
         if parser.counts[tag] != 1:
             errors.append(f"expected exactly one <{tag}>, found {parser.counts[tag]}")
+    if len(parser.viewports) != 1 or not parser.viewports[0][1] or parser.viewports[0][0].get("content", "").strip() != "width=device-width, initial-scale=1":
+        errors.append("head must contain exactly one contract viewport meta element")
     if parser.counts["main"] != 1:
         errors.append(f"expected exactly one <main>, found {parser.counts['main']}")
     if parser.counts["h1"] != 1:
@@ -529,6 +641,7 @@ def validate(path: Path) -> list[str]:
     elif not any(table["caption"] and table["col_headers"] and table["row_headers"] for table in comparison_tables):
         errors.append("comparison table needs caption, column headers, and row headers")
 
+    errors.extend(responsive_resource_errors("\n".join(parser.styles), parser.nodes))
     if parser.repo_bad_tags:
         errors.append("repository evidence contains unescaped HTML: " + ", ".join(sorted(set(parser.repo_bad_tags))))
     for figure in parser.figures:
@@ -600,7 +713,7 @@ def validate(path: Path) -> list[str]:
     ]
     if any(re.search(r"(?:@|/)latest(?:[/?#]|$)", url, re.IGNORECASE) for url in script_urls):
         errors.append("latest aliases are not allowed")
-    errors.extend(css_contract_errors("\n".join(parser.styles), parser.report_grids, parser.inline_styles))
+    errors.extend(css_contract_errors("\n".join(parser.styles), parser.report_grids, parser.inline_styles, parser.fallback_ancestors))
     return errors
 
 

@@ -14,10 +14,7 @@ The [machine-readable onboarding contract](references/onboarding.json) lists ext
 
 1. Define the real question and the claims the answer depends on. Ask only when an unresolved ambiguity would change what is researched.
 2. Choose search breadth by the claim: open the owning primary source directly for a specific authoritative fact; broaden the search when the question, source ownership, coverage, or disagreement remains unresolved.
-3. Match evidence to claim type:
-   - A direct fact from its authoritative registry, specification, filing, or law may need one primary source.
-   - Contested, inferential, surprising, or high-stakes claims need independent corroboration and an active search for disconfirmation.
-   - Social sentiment requires deliberately sampled primary posts across relevant queries, dates, and views, plus a clear sampling limitation.
+3. Match evidence to claim type using [the evidence thresholds](references/methodology.md#evidence-thresholds); social sampling is owned by [source selection](references/sources.md#social-search).
 4. Resolve source conflicts explicitly; do not average incompatible claims.
 5. Answer with conclusion first, evidence near each claim, freshness, and calibrated confidence.
 

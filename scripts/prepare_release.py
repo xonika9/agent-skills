@@ -43,6 +43,7 @@ RELEASE_RELEVANT_FILES = {
     ".claude/skills/release/references/checks.md",
     ".claude/skills/release/references/version-confirmation.md",
     ".claude/skills/release/scripts/check_global_files.py",
+    ".claude/skills/release/scripts/check_skill_links.py",
 }
 
 
@@ -76,7 +77,8 @@ def unreleased_section(changelog: str) -> str:
 
 def has_unreleased_entries(changelog: str) -> bool:
     unreleased = unreleased_section(changelog)
-    return any(section_body(unreleased, heading) for heading in REQUIRED_SECTIONS)
+    bodies = [section_body(unreleased, heading) for heading in REQUIRED_SECTIONS]
+    return any(bodies)
 
 
 def is_release_relevant(path: str) -> bool:
@@ -84,8 +86,9 @@ def is_release_relevant(path: str) -> bool:
 
 
 def validate_development_changelog(changelog: str, changed_paths: list[str]) -> None:
+    has_entries = has_unreleased_entries(changelog)
     relevant = sorted(path for path in changed_paths if is_release_relevant(path))
-    if relevant and not has_unreleased_entries(changelog):
+    if relevant and not has_entries:
         paths = "\n".join(f"- {path}" for path in relevant)
         raise SystemExit(
             "Release-relevant files changed since the current version tag, "

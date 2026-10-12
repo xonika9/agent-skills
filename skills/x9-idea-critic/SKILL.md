@@ -63,7 +63,7 @@ Every adapter must confirm that the selected model and effort controls are avail
 
 - Retry a failed route once only when the failure is transient and the retry changes something concrete.
 - Treat a missing subscription, authentication, or exhausted quota as an unavailable route, not a transient failure. Continue the other selected provider without asking the user to subscribe or repeating the available provider as a stand-in.
-- Judge completeness against the selected mode. A successful requested route is complete; in default mode one missing route is degraded, and in `full` any missing provider/lens pair is degraded.
+- Judge completeness against the selected mode. A successful requested route is complete. In default mode, a critique from the one available provider is a complete result; name the unavailable provider in the short limitation. In `full`, any missing provider/lens pair is degraded.
 - If every requested route fails or the orchestrator cannot assemble a sufficient evidence packet, the result is blocked and not proven; do not manufacture a recommendation from prior beliefs.
 - Treat critic responses as private working material. Do not paste them, summarize them route by route, or preserve their structure in the user-facing answer.
 - Test each objection against the evidence packet. Discard repetition, unsupported speculation, generic advice, and points that would not change the decision, proposal, or next action.

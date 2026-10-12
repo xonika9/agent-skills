@@ -18,6 +18,7 @@ Follow `x9-browser-session` before browser work; it owns controller selection, t
 
 ## Social search
 
+- Deliberately sample primary posts across relevant queries, dates, and views, and state the sampling limitation.
 - State platform, time window, query terms, and sorting method.
 - Sample both supporting and opposing posts when testing a contested claim.
 - Distinguish reach or repetition from independent agreement.

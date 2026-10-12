@@ -576,20 +576,59 @@ def _css_rules(style_text: str) -> list[tuple[str | None, str | None, dict[str, 
 
 
 def _declarations(body: str) -> dict[str, str]:
-    """Declarations of one rule or style attribute; `marker` expands to start, mid, and end."""
+    """Keep declaration importance and expand marker shorthand without losing winners."""
     result: dict[str, str] = {}
     for declaration in body.split(";"):
         name, separator, value = declaration.partition(":")
         if not separator:
             continue
-        name = name.strip().lower()
-        value = re.sub(r"\s*!important\s*$", "", value.strip(), flags=re.IGNORECASE)
-        if name == "marker":
-            for part in ("marker-start", "marker-mid", "marker-end"):
-                result[part] = value
-        else:
-            result[name] = value
+        name, value = name.strip().lower(), value.strip()
+        properties = ("marker-start", "marker-mid", "marker-end") if name == "marker" else (name,)
+        important = bool(re.search(r"!\s*important\s*$", value, re.I))
+        for prop in properties:
+            previous = result.get(prop, "")
+            if re.search(r"!\s*important\s*$", previous, re.I) and not important:
+                continue
+            result[prop] = value
     return result
+
+
+def _resolved_property(
+    element: ET.Element,
+    prop: str,
+    parents: dict[ET.Element, ET.Element],
+    rules: list[tuple[str | None, str | None, dict[str, str]]],
+) -> str | None:
+    """Resolve the supported inherited SVG property by importance, origin and specificity."""
+    current: ET.Element | None = element
+    while current is not None:
+        value = current.get(prop)
+        classes = (current.get("class") or "").split()
+        best = (0, 0, 0, 0, -1) if value is not None else None
+        for order, (tag, class_name, declarations) in enumerate(rules):
+            if prop not in declarations:
+                continue
+            if tag and tag != _svg_name(current):
+                continue
+            if class_name and class_name not in classes:
+                continue
+            candidate = declarations[prop]
+            importance = int(bool(re.search(r"!\s*important\s*$", candidate, re.I)))
+            rank = (importance, 0, int(bool(class_name)), int(bool(tag)), order)
+            if best is None or rank > best:
+                best = rank
+                value = re.sub(r"!\s*important\s*$", "", candidate, flags=re.I).strip()
+        inline = _declarations(current.get("style") or "")
+        if prop in inline:
+            candidate = inline[prop]
+            importance = int(bool(re.search(r"!\s*important\s*$", candidate, re.I)))
+            rank = (importance, 1, 0, 0, 0)
+            if best is None or rank > best:
+                value = re.sub(r"!\s*important\s*$", "", candidate, flags=re.I).strip()
+        if value is not None and value.strip().lower() != "inherit":
+            return value.strip()
+        current = parents.get(current)
+    return None
 
 
 def _resolved_marker(
@@ -598,32 +637,8 @@ def _resolved_marker(
     parents: dict[ET.Element, ET.Element],
     rules: list[tuple[str | None, str | None, dict[str, str]]],
 ) -> bool:
-    """True when the marker property resolves to something other than `none`.
-
-    Precedence per element: attribute, then class rules, then inline style; the
-    property is inherited from the nearest ancestor that declares it."""
-    current: ET.Element | None = element
-    while current is not None:
-        value = current.get(prop)
-        classes = (current.get("class") or "").split()
-        best: tuple[int, int, int] | None = None
-        for order, (tag, class_name, declarations) in enumerate(rules):
-            if prop not in declarations:
-                continue
-            if tag and tag != _svg_name(current):
-                continue
-            if class_name and class_name not in classes:
-                continue
-            rank = (1 if class_name else 0, 1 if tag else 0, order)
-            if best is None or rank > best:
-                best, value = rank, declarations[prop]
-        inline = _declarations(current.get("style") or "")
-        if prop in inline:
-            value = inline[prop]
-        if value is not None and value.strip().lower() != "inherit":
-            return value.strip().lower() not in ("", "none")
-        current = parents.get(current)
-    return False
+    value = _resolved_property(element, prop, parents, rules)
+    return value is not None and value.lower() not in ("", "none")
 
 
 def _declared_size(declarations: str) -> float | None:
@@ -712,7 +727,12 @@ def _screen_doctype(data: str | bytes) -> list[str]:
     def entity_decl(name: str, *_: object) -> None:
         raise ValueError(f"<!ENTITY {name}> declarations are not allowed")
 
+    def processing_instruction(target: str, _data: str) -> None:
+        if target.lower() == "xml-stylesheet":
+            errors.append("xml-stylesheet processing instructions are not allowed; use internal <style>")
+
     parser = expat.ParserCreate()
+    parser.ProcessingInstructionHandler = processing_instruction
     parser.StartDoctypeDeclHandler = start_doctype
     parser.EntityDeclHandler = entity_decl
     try:

@@ -17,8 +17,9 @@ const app = createApp({
   publicOrigin: env.PUBLIC_ORIGIN,
 });
 
-// Keep this at or above the bodyLimit in app.ts so oversized bodies still get
-// a problem+json response.
+// Keep this above the bodyLimit in app.ts so oversized bodies up to this cap
+// still get a problem+json response. Bodies above this cap get Bun's bare 413
+// before the app runs: the documented exception to problem details (rule E1).
 const server = Bun.serve({ port: env.PORT, fetch: app.fetch, maxRequestBodySize: 2 * 1024 * 1024 });
 log.info("listening", { port: server.port });
 

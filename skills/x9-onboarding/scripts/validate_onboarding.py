@@ -21,6 +21,7 @@ LEVELS = {"required", "optional"}
 CHECK_TYPES = {
     "skill-present",
     "command-present",
+    "command-version",
     "runtime-component",
     "runtime-feature",
     "manual",
@@ -35,13 +36,15 @@ GUIDANCE_BY_KIND = {
     "user-action": "complete-user-action",
 }
 CHECK_BY_KIND = {
-    "skill": "skill-present",
-    "command": "command-present",
-    "agent": "runtime-component",
-    "mcp": "runtime-component",
-    "runtime-feature": "runtime-feature",
-    "user-action": "manual",
+    "skill": {"skill-present"},
+    "command": {"command-present", "command-version"},
+    "agent": {"runtime-component"},
+    "mcp": {"runtime-component"},
+    "runtime-feature": {"runtime-feature"},
+    "user-action": {"manual"},
 }
+# Commands whose `--version` output adapters may read; each is safe to launch that way.
+VERSION_COMMANDS = {"python3"}
 
 TOP_LEVEL_FIELDS = {"version", "supported_runtimes", "requirements"}
 REQUIREMENT_FIELDS = {
@@ -57,6 +60,7 @@ OPTIONAL_REQUIREMENT_FIELDS = {"group"}
 CHECK_FIELDS = {
     "skill-present": {"type", "target_skill"},
     "command-present": {"type", "command"},
+    "command-version": {"type", "command", "min_version"},
     "runtime-component": {"type", "component_id"},
     "runtime-feature": {"type", "feature_id"},
     "manual": {"type"},
@@ -64,6 +68,7 @@ CHECK_FIELDS = {
 IDENTIFIER_RE = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 TARGET_SKILL_RE = re.compile(r"^x9(?:-[a-z0-9]+)+$")
 COMMAND_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+-]*$")
+MIN_VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+){0,2}$")
 COMPONENT_ID_RE = re.compile(r"^[a-z][a-z0-9]*(?:[.:-][a-z0-9]+)*$")
 SECRET_NAME_RE = re.compile(
     r"(?i)(?:api[_-]?key|authorization|credential|cookie|password|secret|token)"
@@ -78,6 +83,19 @@ PATH_RE = re.compile(r"(?:^/|^~(?:/|$)|(?:^|\s)\.\.?/|\\)")
 SHELL_RE = re.compile(r"[|&;`$<>*{}]")
 
 
+KNOWN_SCHEMA_FIELDS = (
+    TOP_LEVEL_FIELDS | REQUIREMENT_FIELDS | OPTIONAL_REQUIREMENT_FIELDS
+    | set().union(*CHECK_FIELDS.values())
+)
+
+
+def safe_field_name(value: Any) -> str:
+    """Only schema-owned public field names may enter diagnostic paths."""
+    if isinstance(value, str) and value in KNOWN_SCHEMA_FIELDS:
+        return value
+    return "<unsafe-field>"
+
+
 class DuplicateKeyError(ValueError):
     """Raised when JSON contains duplicate object keys."""
 
@@ -86,7 +104,7 @@ def no_duplicate_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
-            raise DuplicateKeyError(f"duplicate JSON key: {key}")
+            raise DuplicateKeyError(f"duplicate JSON key: {safe_field_name(key)}")
         result[key] = value
     return result
 
@@ -112,7 +130,8 @@ def scan_unsafe(value: Any, path: str, errors: list[str]) -> None:
         if isinstance(current, dict):
             children = []
             for key, child in current.items():
-                key_path = f"{current_path}.{key}" if current_path else key
+                safe_key = safe_field_name(key)
+                key_path = f"{current_path}.{safe_key}" if current_path else safe_key
                 if not isinstance(key, str):
                     error(errors, key_path, "field name must be a string")
                 elif SECRET_NAME_RE.search(key):
@@ -160,7 +179,8 @@ def validate_fields(
 ) -> None:
     required = allowed if required is None else required
     for field in sorted(set(value) - allowed):
-        error(errors, f"{path}.{field}" if path else field, "unknown field")
+        safe_field = safe_field_name(field)
+        error(errors, f"{path}.{safe_field}" if path else safe_field, "unknown field")
     for field in sorted(required - set(value)):
         error(errors, f"{path}.{field}" if path else field, "required field is missing")
 
@@ -209,6 +229,13 @@ def validate_check(value: Any, path: str, errors: list[str]) -> str | None:
         command = require_string(check.get("command"), f"{path}.command", errors)
         if command is not None and not COMMAND_RE.fullmatch(command):
             error(errors, f"{path}.command", "must be one command name without a path or arguments")
+    elif check_type == "command-version":
+        command = require_string(check.get("command"), f"{path}.command", errors)
+        if command is not None and command not in VERSION_COMMANDS:
+            error(errors, f"{path}.command", "version checks support only: " + ", ".join(sorted(VERSION_COMMANDS)))
+        min_version = require_string(check.get("min_version"), f"{path}.min_version", errors)
+        if min_version is not None and not MIN_VERSION_RE.fullmatch(min_version):
+            error(errors, f"{path}.min_version", "must be a dotted numeric version such as 3.11")
     elif check_type == "runtime-component":
         component_id = require_string(check.get("component_id"), f"{path}.component_id", errors)
         if component_id is not None and not COMPONENT_ID_RE.fullmatch(component_id):
@@ -284,8 +311,9 @@ def validate_requirement(
         error(errors, f"{path}.guidance_id", "must use lowercase hyphen-case")
 
     check_type = validate_check(requirement.get("check"), f"{path}.check", errors)
-    if kind in CHECK_BY_KIND and check_type is not None and check_type != CHECK_BY_KIND[kind]:
-        error(errors, f"{path}.check.type", f"must be {CHECK_BY_KIND[kind]} for kind {kind}")
+    if kind in CHECK_BY_KIND and check_type is not None and check_type not in CHECK_BY_KIND[kind]:
+        allowed = " or ".join(sorted(CHECK_BY_KIND[kind]))
+        error(errors, f"{path}.check.type", f"must be {allowed} for kind {kind}")
     if kind in GUIDANCE_BY_KIND and guidance_id is not None and guidance_id != GUIDANCE_BY_KIND[kind]:
         error(errors, f"{path}.guidance_id", f"must be {GUIDANCE_BY_KIND[kind]} for kind {kind}")
     if check_type == "skill-present" and isinstance(requirement.get("check"), dict):
@@ -325,10 +353,8 @@ def validate_declaration(path: Path, skills_root: Path) -> list[str]:
     )
     requirements = declaration.get("requirements")
     if not isinstance(requirements, list):
-        error(errors, "requirements", "must be a non-empty array")
+        error(errors, "requirements", "must be an array")
         return errors
-    if not requirements:
-        error(errors, "requirements", "must not be empty")
     seen_ids: set[str] = set()
     for index, requirement in enumerate(requirements):
         validate_requirement(

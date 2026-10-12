@@ -68,8 +68,8 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Subagent routing
 
-- Set an explicit `model` on every direct `Agent` call and on any other subagent tool that exposes a `model` field, including recursive spawns. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
-- Route by what the worker returns, and set `effort` explicitly together with the model:
+- Check the live subagent interface before selecting controls. On non-fork `Agent` calls that expose both fields, set explicit `model` and `effort` values together. Apply the same rule to another subagent tool only for the controls it actually exposes. A fork inherits the parent model and does not provide independent model routing; use a non-fork worker when this policy requires another model or effort. If the required controls are unavailable, report that limit rather than claiming the selected values took effect. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
+- Route non-fork workers by what they return:
   - `opus` at `high` — analysis or research of unfamiliar code, products, or sources; diagnosis; planning; reviews; user-facing work; orchestration.
   - `opus` at `medium` — implementation from a settled plan or a clearly bounded change.
   - `sonnet` at `high` — only bounded search and fact extraction that return located facts.

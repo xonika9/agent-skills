@@ -1,7 +1,7 @@
 ---
 name: x9-onboarding
 description: Use after installing or updating `x9-*` skills to check their readiness and compare the current harness with the bundled x9 configuration profile — «проверь готовность x9-скиллов», «настрой Codex как у автора», "check installed x9 skills", "apply the recommended harness settings". Do not use for general environment diagnosis, account authorization, or unrelated configuration editing.
-compatibility: Supports OpenCode, Claude Code, and Codex through runtime adapters. Other runtimes report PARTIAL coverage and BLOCKED readiness because no safe adapter is available.
+compatibility: Supports OpenCode, Claude Code, and Codex through runtime adapters; its scripts need Python 3.11 or newer. Other runtimes report PARTIAL coverage and BLOCKED readiness because no safe adapter is available.
 ---
 
 # X9 onboarding

@@ -1,7 +1,7 @@
 ---
 name: x9-context-files-generator
 description: Use when creating, auditing, or updating repository-level AGENTS.md, CLAUDE.md, or README.md — «создай AGENTS.md», «обнови README», «настрой контекст репозитория», "generate repository context files". Do not use for global personal instructions, skills, the development-rules block owned by x9-web-stack, the vault block owned by x9-personal-vault, or ordinary documentation unrelated to onboarding agents or humans.
-compatibility: Full creation, audit, or update of agent-facing repository instructions requires x9-agent-instructions. README-only work does not.
+compatibility: Requires x9-agent-instructions, which owns the quality of agent-facing instruction prose.
 ---
 
 # Repository context files
@@ -28,9 +28,9 @@ Infer the action from the whole request, not only trigger words.
 2. Classify content by audience:
    - Agent file: commands, dangerous gotchas, local constraints, non-inferable conventions, and verification contracts.
    - README: purpose, setup, normal usage, and links to deeper material.
-3. Keep one canonical owner for each fact. A short audience-specific summary is allowed when it changes behavior; link to the owner instead of copying full detail.
+3. Apply the applicable audience contract below for ownership and summaries.
 4. For agent files, apply the canonical ownership, normalization, preservation, and verification contract in [references/agents-md.md](references/agents-md.md).
-5. Treat an existing `README.md` as merge-only unless the user explicitly requests replacement; show a diff for substantive rewrites. Agent-file preservation belongs to the linked agent-file contract.
+5. For README work, apply [references/readme.md](references/readme.md); it owns preservation and verification for that audience.
 6. Judge agent-file content with the derivability test in that contract.
 7. Use English for machine-facing instructions by default; follow repository/user language when human maintenance or domain literals make that clearer.
 8. Run commands you present only when they are safe, local, and within the requested repository scope. Read-only inspection and ordinary local validation are allowed by default. Destructive, external, costly, deployment, migration, production-data, account-mutating, or credential-changing commands require explicit user authority; otherwise preserve the command and label it unverified with the reason.

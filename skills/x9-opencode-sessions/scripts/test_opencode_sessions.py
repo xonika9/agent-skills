@@ -146,6 +146,20 @@ class OpenCodeSessionsTests(unittest.TestCase):
             {"id": "ses_2", "status": "running"},
         ]})
 
+    def test_single_record_reads_reject_mismatched_identity(self) -> None:
+        fixtures = (
+            (["show", "ses_1"], {"data": {"id": "ses_other"}}),
+            (["message", "ses_1", "msg_1"], {"data": {"id": "msg_other", "type": "user"}}),
+            (["message", "ses_1", "msg_1"], {"data": {"id": "msg_1", "sessionID": "ses_other", "type": "user"}}),
+        )
+        for args, payload in fixtures:
+            with self.subTest(operation=args[0]), patch.object(
+                opencode_sessions.subprocess, "run", return_value=Result(json.dumps(payload))
+            ):
+                code, output = self.run_main(args)
+            self.assertEqual(code, 2)
+            self.assertEqual(output, {"operation": args[0], "status": "blocked", "error": "identity-mismatch"})
+
     def test_single_record_operations_normalize_object_data(self) -> None:
         fixtures = (
             (["show", "ses_1"], {"data": {"id": "ses_1", "title": "Billing"}}, {"session": {"id": "ses_1", "title": "Billing"}}),
@@ -275,6 +289,17 @@ class OpenCodeSessionsTests(unittest.TestCase):
                 opencode_sessions.Path, "home", return_value=opencode_sessions.Path(home)
             ):
                 self.assertEqual(opencode_sessions.opencode_cli(), cli)
+
+    def test_prompt_storage_failure_is_blocked_without_dispatch(self) -> None:
+        state_path = opencode_sessions.Path(self.state_directory.name) / "file"
+        state_path.write_text("fixture", encoding="utf-8")
+        with patch.dict(os.environ, {"X9_OPENCODE_SESSIONS_STATE_DIR": str(state_path)}), patch.object(
+            opencode_sessions.subprocess, "run"
+        ) as runner:
+            code, output = self.run_main(["prompt", "ses_1", "hello", "--message-id", "msg_1"])
+        self.assertEqual(code, 2)
+        self.assertEqual(output, {"operation": "prompt", "status": "blocked", "error": "preview-storage-unavailable"})
+        runner.assert_not_called()
 
     def test_prompt_is_preview_without_apply(self) -> None:
         with patch.object(opencode_sessions.subprocess, "run") as runner:

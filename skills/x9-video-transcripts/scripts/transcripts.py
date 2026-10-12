@@ -292,15 +292,44 @@ def run(paths: list[Path], out: Path | None, lang: str, force: bool, model: Path
     if not items:
         print(json.dumps({"status": "no_media", "error": "no audio or video files found"}, ensure_ascii=False))
         return 2
+    source_paths = {output_key(source.resolve()): source for source, _root in items}
+    source_inodes: dict[tuple[int, int], Path] = {}
+    for source, _root in items:
+        source_stat = source.stat()
+        source_inodes[(source_stat.st_dev, source_stat.st_ino)] = source
     planned: dict[str, Path] = {}
     summary: dict = {"files": len(items), "done": 0, "skipped": 0, "failed": [], "collisions": [],
                      "no_speech": [], "audio_seconds": 0.0}
     started = time.time()
     last_whisper_error = None
     for n, (source, root) in enumerate(items, 1):
+        previous_whisper_error, last_whisper_error = last_whisper_error, None
         base = output_base(source, root, out)
         label = f"[{n}/{len(items)}] {source}"
         key = output_key(base)
+        destinations = [Path(str(base) + suffix + tail)
+                        for suffix in (SRT_SUFFIX, TXT_SUFFIX) for tail in ("", ".part")]
+        overwritten_source = None
+        try:
+            for dest in destinations:
+                overwritten_source = source_paths.get(output_key(dest.resolve()))
+                if overwritten_source is None:
+                    try:
+                        dest_stat = dest.stat()
+                    except FileNotFoundError:
+                        continue
+                    overwritten_source = source_inodes.get((dest_stat.st_dev, dest_stat.st_ino))
+                if overwritten_source is not None:
+                    break
+        except (OSError, RuntimeError) as e:
+            summary["failed"].append({"file": str(source), "error": f"cannot check output safety: {e}"})
+            print(f"{label}: FAILED cannot check output safety", file=sys.stderr)
+            continue
+        if overwritten_source is not None:
+            summary["collisions"].append({"file": str(source), "same_output_as": str(overwritten_source),
+                                          "error": "output would overwrite an input source"})
+            print(f"{label}: output would overwrite source {overwritten_source}", file=sys.stderr)
+            continue
         if key in planned:
             summary["collisions"].append({"file": str(source), "same_output_as": str(planned[key])})
             print(f"{label}: output name collides with {planned[key]}", file=sys.stderr)
@@ -333,7 +362,7 @@ def run(paths: list[Path], out: Path | None, lang: str, force: bool, model: Path
         except WhisperError as e:
             summary["failed"].append({"file": str(source), "error": str(e)})
             print(f"{label}: FAILED {e}", file=sys.stderr)
-            if str(e) == last_whisper_error:
+            if str(e) == previous_whisper_error:
                 summary["status"] = "aborted"
                 summary["not_attempted"] = [str(s) for s, _r in items[n:]]
                 summary["error"] = "the same whisper-cli error repeated on consecutive files"

@@ -25,7 +25,8 @@ THREAD = "01a11ac5-b216-7f52-97b8-4d5fa1683b73"
 def png_bytes(width: int, height: int, color_type: int = 0) -> bytes:
     def chunk(kind: bytes, data: bytes) -> bytes:
         return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
-    raw = b"".join(b"\x00" + b"\x00" * width for _ in range(height))
+    channels = {0: 1, 2: 3, 3: 1, 4: 2, 6: 4}[color_type]
+    raw = b"".join(b"\x00" + b"\x00" * width * channels for _ in range(height))
     return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, color_type, 0, 0, 0))
             + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
 
@@ -53,6 +54,8 @@ elif mode == "recover":
     folder = Path(os.environ["CODEX_HOME"]) / "generated_images" / {THREAD!r}
     folder.mkdir(parents=True)
     (folder / "exec-1.png").write_bytes(png)
+elif mode == "truncated":
+    Path(out).write_bytes(png[:26])
 elif mode == "nonpng":
     Path(out).write_text("not an image")
 elif mode == "network":
@@ -111,6 +114,11 @@ def main() -> None:
         assert code == 0 and "(verbatim)" in result["last_message"], result
         assert result["final_prompt"] == "a red square, landscape 3:2", "verbatim reports the prompt it sent"
 
+        exact = tmp / "exact.txt"
+        exact.write_bytes(b"  a red square\r\n\r\n")
+        code, result = run(tmp, "copy", tmp / "exact.png", "--verbatim", "--brief-file", str(exact))
+        assert code == 0 and result["final_prompt"] == "  a red square\r\n\r\n", result
+
         code, result = run(tmp, "alpha", tmp / "alpha.png")
         assert code == 0 and result["has_alpha"] is True, result
 
@@ -121,6 +129,9 @@ def main() -> None:
         assert code == 0 and result["source"].startswith("recovered:"), result
 
         code, result = run(tmp, "nonpng", tmp / "c.png")
+        assert code == 1 and result["status"] == "failed" and "not a PNG" in result["error"], result
+
+        code, result = run(tmp, "truncated", tmp / "truncated.png")
         assert code == 1 and result["status"] == "failed" and "not a PNG" in result["error"], result
 
         code, result = run(tmp, "network", tmp / "d.png")
@@ -137,8 +148,17 @@ def main() -> None:
         code, result = run(tmp, "copy", tmp / "q.png", proxy=proxy)
         assert code == 1 and result["status"] == "proxy_unreachable", result
         assert not (tmp / "q.png").exists(), "no run may start behind a dead proxy"
+        credentialed = proxy.replace("http://", "http://synthetic-user:synthetic-password@")
+        code, result = run(tmp, "copy", tmp / "secret-proxy.png", proxy=credentialed)
+        assert code == 1 and result["status"] == "proxy_unreachable", result
+        assert "synthetic-password" not in json.dumps(result), result
+        assert "synthetic-user" not in json.dumps(result), result
         code, result = run(tmp, "copy", tmp / "r.png", proxy="socks5h://127.0.0.1:1")
         assert code == 1 and result["status"] == "proxy_unreachable", result
+        code, result = run(tmp, "copy", tmp / "bad-proxy.png", proxy="http://localhost:bad")
+        assert code == 1 and result["status"] == "proxy_unreachable", result
+        code, result = run(tmp, "copy", tmp / "missing-brief.png", "--brief-file", str(tmp / "missing.txt"))
+        assert code == 1 and result["status"] == "usage_error", result
         code, result = run(tmp, "copy", tmp / "s.png")
         assert code == 0 and "proxy=[]" in result["last_message"], "no proxy unless configured"
 
@@ -181,6 +201,14 @@ def main() -> None:
 
         code, result = run(tmp, "copy", tmp / "f.png", "--root", str(tmp / "elsewhere"))
         assert code == 1 and result["status"] == "usage_error", result
+
+        # A recently created existing PNG is not evidence that this run wrote it.
+        recent = tmp / "recent.png"
+        recent.write_bytes(png_bytes(5, 5))
+        before = recent.read_bytes()
+        code, result = run(tmp, "network", recent, "--overwrite")
+        assert code == 1 and result["status"] == "network_error", result
+        assert recent.read_bytes() == before
 
         # A stale PNG at --out must not count as a new result.
         (tmp / "g.png").write_bytes(png_bytes(5, 5))

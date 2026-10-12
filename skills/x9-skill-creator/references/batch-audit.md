@@ -119,15 +119,9 @@ Do not return analysis, summaries, validator logs, or report contents in worker 
 
 ## Orchestrator QA and consolidated report
 
-After every worker report exists, the orchestrator must follow the batch QA procedure in [audit reporting](audit-reporting.md):
+Apply the canonical [batch QA and handoff](audit-reporting.md#batch-handoff) after every worker report exists. In addition, verify the assigned report language in each report; retry a non-compliant report instead of translating it during consolidation.
 
-1. Read every complete worker report rather than relying on the Verdict block or severity counts.
-2. Verify that every report records the assigned `Report language: <tag>` and uses that language for its prose and localized labels; retry a non-compliant report instead of translating it during consolidation.
-3. Open the cited source for every finding and confirm that the evidence and impact support the proposed severity.
-4. Compare the claim with the skill's explicit intent, current maintainer decisions, repository policy, and selected evidence tier.
-5. Merge duplicate findings. Filter unsupported, non-operational, out-of-scope, or intent-contradicting recommendations; never filter solely because severity is Minor.
-6. Recompute each target status from retained findings.
-7. Write one consolidated report to `docs/skill-audits/<local-date-yyyy-mm-dd>/summary.md`. Preserve an existing file by choosing a non-colliding name unless the user authorized replacement.
+Write the consolidated report to `docs/skill-audits/<local-date-yyyy-mm-dd>/summary.md`. Preserve an existing destination by choosing a non-colliding name unless replacement was authorized.
 
 The consolidated report contains:
 
@@ -142,16 +136,4 @@ The consolidated report contains:
 
 ## Final response
 
-After all targets are accounted for and QA is complete, return:
-
-1. The complete table below, with one row per retained Blocker, Important, and Minor finding and one accounting row for every clean skill:
-
-```text
-| Skill | Status | Severity | Area | Finding | Evidence / impact | Recommendation | Decision | Full report |
-```
-
-2. `Why these changes help`, with one concise explanation for every retained finding; omit it when there are no retained findings.
-3. A concise `Needs your decision` section for rows marked `User decision`; include the recommended default and concrete alternatives. Write `None` when there are no such rows.
-4. The selected evidence tier, instruction-rubric coverage, validation coverage, deferred or unavailable behavioral evidence, and a link to the consolidated report.
-
-Do not expose only statuses or decision-required findings. Do not copy filtered findings into the chat table. Do not imply that proposed fixes were applied; apply them only after explicit user approval.
+Return the canonical [batch handoff](audit-reporting.md#batch-handoff), with a link to the consolidated report. Include all retained findings and account for targets without retained findings through the table contract owned there.

@@ -136,7 +136,10 @@ def all_files(root: Path):
 
 
 def parse_frontmatter(data: bytes):
-    text = data.decode("utf-8-sig")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return None, None, "SKILL.md must be valid UTF-8"
     lines = text.splitlines(keepends=True)
     if not lines or lines[0].strip() != "---":
         return None, None, "frontmatter must start on line 1 with ---"
@@ -298,10 +301,10 @@ def validate(root: Path, runtimes=("portable",)):
         else:
             for key, value in metadata.items():
                 if not isinstance(key, str) or (
-                    key != "internal" and not isinstance(value, str)
+                    ("portable" in runtimes or key != "internal") and not isinstance(value, str)
                 ):
                     errors.append("frontmatter: metadata keys and values must be strings")
-                elif key == "internal" and type(value) is not bool:
+                elif key == "internal" and "portable" not in runtimes and type(value) is not bool:
                     errors.append("frontmatter: metadata.internal must be boolean")
 
     hooks = fm.get("hooks")

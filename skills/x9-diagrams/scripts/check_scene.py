@@ -79,7 +79,7 @@ ARROWHEADS = {
     "cardinality_zero_or_one",
     "cardinality_zero_or_many",
 }
-CURRENT_FONT_FAMILIES = {1, 2, 3, 5, 6}
+CURRENT_FONT_FAMILIES = {1, 2, 3, 5, 6, 7, 8, 9, 10}
 BASIC_ELEMENT_TYPES = {"rectangle", "diamond", "ellipse", "text", "line", "arrow"}
 LITERAL_CONTROL_ESCAPES = {
     "\\n": "LF (U+000A)",

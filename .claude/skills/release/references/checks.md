@@ -1,8 +1,9 @@
 # Release checks
 
-Run from the repository root:
+Run the block as a standalone Bash script from the repository root. A failed command stops the gate before later successful commands can hide its exit status:
 
 ```bash
+set -e
 for skill in skills/*; do
   python3 skills/x9-skill-creator/scripts/validate.py \
     --runtime portable --runtime claude --runtime codex "$skill"
@@ -18,7 +19,10 @@ python3 skills/x9-onboarding/scripts/validate_profiles.py
 python3 skills/x9-opencode-sessions/scripts/test_opencode_sessions.py
 python3 skills/x9-agent-instructions/scripts/test_check_globals.py
 python3 skills/x9-diagrams/scripts/test_check_scene.py
+python3 skills/x9-diagrams/scripts/test_check_svg.py
+python3 skills/x9-diagrams/scripts/test_summarize_source.py
 python3 skills/x9-okf-docs/scripts/test_okf.py
+python3 skills/x9-personal-vault/scripts/test_apply_plan.py
 python3 skills/x9-research/scripts/test_validate_html.py
 python3 skills/x9-architecture-scout/scripts/test_validate_report.py
 python3 .claude/skills/release/scripts/check_global_files.py
@@ -37,6 +41,8 @@ git diff --check
 ```
 
 Confirm that root `CLAUDE.md` contains exactly `@AGENTS.md` plus a final newline.
+
+## Russian documentation
 
 Resolve the installed `humanizer-ru` skill and its bundled `scripts/scan.py` from the live runtime, apply the skill to the final Russian documentation at documentation-level intensity, and run:
 

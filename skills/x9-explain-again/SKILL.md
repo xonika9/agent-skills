@@ -5,13 +5,13 @@ description: Use only when the user explicitly says they did not understand the 
 
 # Explain again
 
-Repair understanding of one fragment of the immediately previous substantive assistant answer. This is a model-invoked skill in Claude Code and Codex; `portable` means structural compatibility only, not verified invocation behavior.
+Repair understanding of one fragment of the immediately previous substantive assistant answer. This is a model-invoked skill in Claude Code and Codex, as its [onboarding declaration](references/onboarding.json) records; `portable` means structural compatibility only, not verified invocation behavior.
 
 ## Trigger boundary
 
-Use this skill only when the user's message is explicit confusion about the immediately preceding substantive answer in the same thread. That answer is an assistant response to the user, excluding tool output, status updates, system messages, and imported older chats.
+The prior substantive answer is an assistant response to the user, excluding tool output, status updates, system messages, and imported older chats.
 
-Do not treat a general request to explain a topic as a reference to a prior answer. Explaining a provided article or source remains a source-explanation task. Creating a durable visual teaching artifact belongs to `ce-explain`; creating a visual scheme belongs to `x9-diagrams`.
+Creating a durable visual teaching artifact belongs to `ce-explain`; creating a visual scheme belongs to `x9-diagrams`.
 
 ## Response
 

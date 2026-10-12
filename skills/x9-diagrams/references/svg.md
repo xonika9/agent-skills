@@ -36,7 +36,7 @@ This route draws the same schematic views as the other formats; [the trigger bou
 
 - `<title>` comes first and names the subject; `<desc>` is one sentence about content, not geometry. Prefix their IDs with the file slug.
 - The four layers appear once each, in this order, as direct children of the root. The order is the paint order: boundaries stay behind everything, connectors pass behind nodes, and connector labels stay on top.
-- The file is self-contained and inert: no `<script>`, event-handler attributes, `<foreignObject>`, animation elements, `@import`, CSS escapes, or `href`/`url()` that does not point to a local `#id`. A `<!DOCTYPE>` may name the public SVG DTD but carries no internal subset or entity declarations.
+- The file is self-contained and inert: no `xml-stylesheet` processing instructions, `<script>`, event-handler attributes, `<foreignObject>`, animation elements, `@import`, CSS escapes, or `href`/`url()` that does not point to a local `#id`. A `<!DOCTYPE>` may name the public SVG DTD but carries no internal subset or entity declarations.
 - Semantic groups contain plain shapes and text only: no nested `<svg>` or `<use>` inside the layers, because checks and summaries cannot follow their geometry.
 - IDs are unique across the file.
 

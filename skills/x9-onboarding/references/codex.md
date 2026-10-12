@@ -7,7 +7,8 @@ filesystem discovery as runtime evidence.
 For `skill-present`, accept only a live catalog entry whose resolved physical path remains
 under the package `skills` root. For `command-present`, a safe shell discovery such as
 `command -v` may establish presence without launching the command; retain only its name
-and present/absent result. Check `agent`, `mcp`, `active-skill-catalog`, and
+and present/absent result. For `command-version`, follow the
+[declaration contract](declarations.md#typed-checks). Check `agent`, `mcp`, `active-skill-catalog`, and
 `native-subagents` exclusively through an available live catalog or schema. Classify
 unavailable interfaces, private-data boundaries, and restart evidence with the
 [core status model](../SKILL.md#status-model). Dependency checks do not inspect raw

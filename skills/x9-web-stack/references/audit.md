@@ -36,4 +36,4 @@ Run the project's own lint, typecheck, and tests when they are local and side-ef
 
 ## Applying fixes
 
-Apply only the findings the user selects. After the change, run the project's verify command or the closest available checks and report the result per finding. A fix that turns out larger than reported, or touches data or deployment, goes back to the user before it continues.
+Apply only the findings the user selects. After the change, run the project's verify command or the closest available checks and report the result per finding. A fix goes back to the user only when it materially expands the selected scope, reveals a new material risk, or would perform a data or deployment action that the user has not already authorized.

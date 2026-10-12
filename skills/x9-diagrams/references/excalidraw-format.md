@@ -25,8 +25,12 @@ Native text elements serialize `fontFamily` as a number. The current [`FONT_FAMI
 | historical reserved slot | `4` |
 | Excalifont | `5` |
 | Nunito | `6` |
+| Lilita One | `7` |
+| Comic Shanns | `8` |
+| Liberation Sans | `9` |
+| Assistant | `10` |
 
-For new mixed Russian and Latin content, prefer Excalifont `5` for short display text and Nunito `6` for prose, identifiers, and connector labels; a simple scene may need only one family. Preserve another supported family when revising an existing diagram unless restyling is in scope. The checker accepts current families `1`, `2`, `3`, `5`, and `6` and rejects the reserved slot `4`.
+For new mixed Russian and Latin content, prefer Excalifont `5` for short display text and Nunito `6` for prose, identifiers, and connector labels; a simple scene may need only one family. Preserve another supported family when revising an existing diagram unless restyling is in scope. The checker accepts current families `1`, `2`, `3`, and `5` through `10`, and rejects the reserved slot `4`.
 
 The official [Excalifont font source](https://github.com/excalidraw/excalidraw/blob/1acf66edabc2ac5bbd4aed0714aed7dca7cc2aab/packages/excalidraw/fonts/Excalifont/index.ts) includes a Cyrillic range, and the [Nunito source](https://github.com/excalidraw/excalidraw/blob/1acf66edabc2ac5bbd4aed0714aed7dca7cc2aab/packages/excalidraw/fonts/Nunito/index.ts) registers Cyrillic and Cyrillic Extended faces. This makes both suitable for mixed Russian and Latin content, subject to checking the actual render for fallback or metric changes.
 

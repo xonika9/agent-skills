@@ -77,7 +77,8 @@ export function createApp(deps: Deps) {
     if (error.status >= 500) {
       deps.log.error("request failed", {
         requestId: c.var.requestId,
-        error: err instanceof Error ? err.stack : String(err),
+        code: error.code,
+        status: error.status,
       });
     }
     return c.json(toProblem(error, c.var.requestId), error.status, {

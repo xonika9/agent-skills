@@ -71,6 +71,15 @@ def test_changed_paths_include_both_sides_of_move() -> None:
         assert "assets/new.png" in changed
 
 
+def test_all_unreleased_sections_are_required() -> None:
+    without_unreleased = "## 1.0.0 - 2026-01-01\n"
+    expect_failure(without_unreleased, [])
+    for heading in ("Highlights", "Install / update", "Compatibility", "Breaking changes"):
+        incomplete = WITH_ENTRY.replace(f"### {heading}\n", "")
+        expect_failure(incomplete, [])
+        expect_failure(incomplete, ["skills/example/SKILL.md"])
+
+
 def main() -> None:
     assert not prepare_release.has_unreleased_entries(EMPTY)
     assert prepare_release.has_unreleased_entries(WITH_ENTRY)
@@ -80,6 +89,7 @@ def main() -> None:
     assert prepare_release.is_release_relevant(".github/workflows/validate.yml")
     assert prepare_release.is_release_relevant(".claude/skills/release/SKILL.md")
     assert prepare_release.is_release_relevant(".claude/skills/release/references/version-confirmation.md")
+    assert prepare_release.is_release_relevant(".claude/skills/release/scripts/check_skill_links.py")
     assert not prepare_release.is_release_relevant("scripts/test_check_package.py")
     assert not prepare_release.is_release_relevant(".claude/skills/release/references/notes.md")
 
@@ -89,6 +99,8 @@ def main() -> None:
         ["skills/x9-research/SKILL.md"],
     )
     expect_failure(EMPTY, ["scripts/check_public.py"])
+    expect_failure(EMPTY, [".claude/skills/release/scripts/check_skill_links.py"])
+    test_all_unreleased_sections_are_required()
     test_changed_paths_include_both_sides_of_move()
     print("PASS: changelog coverage regression scenarios")
 

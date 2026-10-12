@@ -47,7 +47,7 @@ Rules tagged **(convention)** state one reasonable choice among several. On anot
 
 ## Errors
 
-- **E1 Problem details (convention).** Principle: errors use RFC 9457 `application/problem+json` with a stable `code`, field `errors`, and `requestId`. Unknown routes answer in the same format. Enforced: code (`onError`, `notFound`, `rejectInvalid`).
+- **E1 Problem details (convention).** Principle: errors use RFC 9457 `application/problem+json` with a stable `code`, field `errors`, and `requestId`. Unknown routes answer in the same format. Exception: a body above the server's transport cap (`maxRequestBodySize`) is refused by Bun before the app runs and gets a bare `413` without this body. Enforced: code (`onError`, `notFound`, `rejectInvalid`).
 - **E2 One code registry.** Principle: error codes live in one registry, namespaced by module (`orders.not_found`); a code never changes meaning. Enforced: prose.
 - **E3 Every code has a message.** Principle: the client maps every code to a message, and the build fails when one is missing; field errors appear on the form. Template: `Record<ErrorCode, string>`. Enforced: typecheck.
 - **E4 Bounded retry.** Principle: retry only network errors and 5xx. Enforced: code (`shouldRetry`).

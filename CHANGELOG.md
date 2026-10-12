@@ -4,6 +4,12 @@
 
 ### Highlights
 
+- Skill authoring, runtime routing, research, diagrams, architecture reports, and release checks now catch the audited contract failures; shared instruction rules point to their owner, invalid declaration diagnostics reveal only public schema field names, and an explicit browser choice takes precedence over default routes.
+- Vault and OKF operations preserve changed user files and supported metadata during writes, recovery, and undo; transcript generation rejects source collisions, including hardlinks and temporary outputs.
+- `x9-onboarding` declarations can require a minimum `python3` version and can restrict a skill to its supported runtimes without inventing a requirement. Onboarding now declares its own Python 3.11 requirement, `x9-appsec`, `x9-decision-map`, `x9-explain-again`, `x9-task-graph`, and `x9-test-quality` are declared for Claude Code and Codex only, and `x9-context-files-generator` and `x9-skill-creator` count `x9-agent-instructions` as required.
+- `x9-idea-critic` treats a critique from the one available provider as a complete result and names the missing provider briefly; a Claude answer without model telemetry is kept instead of failing the route.
+- Every `x9-architecture-scout` report now includes at least one diagram, matching its validator; `x9-okf-docs` consistently removes retired OKF fields from documents whose content it edits, unless the repository's Local rules keep them.
+- The web template enforces supported import boundaries, validates local test-database targets, handles request failures consistently, and resumes partial setup while preserving existing files and catalog entries and refusing linked write destinations or catalog version conflicts.
 - `x9-diagrams` gains composition guidance for architecture changes and manual sequence views, document/slide/print size presets, and a worked SVG comparison; whole-view previews preserve their delivery mode, and requested print output is checked at its physical size.
 - The Claude Code global file now routes each delegated worker by model and reasoning effort together: Opus at high effort for analysis, diagnosis, planning, and reviews; Opus at medium effort for implementation; Sonnet at high effort only for bounded search and fact extraction. A model that a skill assigns to a role it defines now takes precedence, as in the Codex and OpenCode files, so skills such as code review keep their mid-tier reviewers.
 - `x9-diagrams` can deliver a diagram as a self-contained SVG file for articles, slides, and READMEs, with an optional HTML preview; a bundled checker catches broken references, unsafe content, and layout collisions before the browser render is inspected.
@@ -12,17 +18,21 @@
 
 ### Install / update
 
+- Update the skill package and the published Claude Code global file to receive the corrected guidance and checks. New web projects receive the corrected template; existing projects need the relevant template changes applied explicitly. No new paid service or model download is required.
 - Update the Claude Code global instruction file to receive the new routing rule; model-pinned custom agents are no longer needed for routing.
 - Update the skill package to receive the `x9-diagrams` changes.
 
 ### Compatibility
 
+- Filesystem checks reject observed identity or parent changes, but do not make a multi-file operation atomic or eliminate concurrent path-swap races. Older vault journals remain readable; copies without recorded identity and metadata are kept for manual review during undo.
+- The web test guard accepts only localhost or 127.0.0.1 databases ending in _test; IPv6 loopback URLs are refused because the tested postgres.js parser does not preserve that endpoint. Browser rendering, live databases, and model execution require their own runtime verification.
+- In OpenCode, onboarding reports the five Claude Code/Codex-only skills as blocked. It reports `x9-onboarding` as needing setup when `python3` is older than 3.11, such as the stock macOS interpreter, and `x9-context-files-generator` or `x9-skill-creator` as needing setup without `x9-agent-instructions`. The web template's oversized-body limit is documented: bodies above the server cap get a bare `413` without the problem-details body.
 - More delegated work runs on Opus, which uses more of its usage allowance.
 - SVG rendering needs a browser engine; without one, an SVG result is reported as `DEGRADED`. Excalidraw geometry warnings do not fail the check unless `--strict-geometry` is passed.
 
 ### Breaking changes
 
-None.
+- Invalid skills, reports, SVG/HTML inputs, package metadata, excluded runtime links, and unsafe recovery destinations that previously passed validation are now refused. Existing user content is preserved.
 
 ## 3.13.0 - 2026-10-12
 

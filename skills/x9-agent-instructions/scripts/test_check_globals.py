@@ -50,7 +50,9 @@ class SkillContractTests(unittest.TestCase):
         cls.context_skill = CONTEXT_SKILL_FILE.read_text(encoding="utf-8")
 
     def test_review_is_report_first_and_approval_continues(self):
-        self.assertIn("The first pass is report-only", self.skill)
+        self.assertIn("For an inspection-only request, the first pass is report-only", self.skill)
+        self.assertIn("An explicit request to fix or update the prompt authorizes", self.skill)
+        self.assertIn("without asking for the same permission again", self.skill)
         self.assertIn("After the user explicitly approves", self.skill)
         self.assertIn("without requesting another approval", self.skill)
 

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "supported_runtimes": ["opencode", "claude", "codex"],
+  "requirements": [
+    {
+      "id": "python-runtime",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Validating declarations and configuration profiles with Python 3.11 or newer.",
+      "check": {"type": "command-version", "command": "python3", "min_version": "3.11"},
+      "guidance_id": "install-command"
+    }
+  ]
+}

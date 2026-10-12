@@ -49,15 +49,22 @@ class Scope:
         self.policy_path = policy_path
         self.names = {name_key(item) for item in DEFAULT_EXCLUDES}
         self.paths = set()
+        self.explicit_names = set()
         for item in excludes:
             key = rel_key(item)
             if not key:
                 continue
-            (self.paths if "/" in item.replace("\\", "/") else self.names).add(key)
+            if "/" in item.replace("\\", "/"):
+                self.paths.add(key)
+            else:
+                self.names.add(key)
+                self.explicit_names.add(key)
 
     def excluded_dir(self, rel_parts):
         key = "/".join(name_key(part) for part in rel_parts)
         if any(key == path or key.startswith(path + "/") for path in self.paths):
+            return True
+        if name_key(rel_parts[-1]) in self.explicit_names:
             return True
         on_include = any(
             key == path or key.startswith(path + "/") or path.startswith(key + "/") for path in self.includes

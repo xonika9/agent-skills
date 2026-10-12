@@ -342,6 +342,8 @@ def command_show(args: argparse.Namespace) -> int:
     data, _, error = envelope(payload, session_record)
     if error:
         return print_failure("show", error)
+    if data["id"] != args.session_id:
+        return print_failure("show", "identity-mismatch")
     json_output({"session": normalize_session(data)})
     return 0
 
@@ -385,6 +387,11 @@ def command_message(args: argparse.Namespace) -> int:
     data, _, error = envelope(payload, message_record)
     if error:
         return print_failure("message", error)
+    if (
+        data["id"] != args.message_id
+        or data.get("sessionID", args.session_id) != args.session_id
+    ):
+        return print_failure("message", "identity-mismatch")
     json_output({"message": normalize_message(data)})
     return 0
 
@@ -402,7 +409,11 @@ def command_prompt(args: argparse.Namespace) -> int:
         "would_dispatch": True,
     }
     if not args.apply:
-        if not create_preview(message_id, args.session_id, args.text):
+        try:
+            created = create_preview(message_id, args.session_id, args.text)
+        except OSError:
+            return print_failure("prompt", "preview-storage-unavailable")
+        if not created:
             return print_failure("prompt", "preview-id-already-exists")
         json_output(preview)
         return 0

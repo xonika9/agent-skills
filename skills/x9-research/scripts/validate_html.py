@@ -22,7 +22,22 @@ PLACEHOLDER = re.compile(
 CHAT_CITATION = re.compile(
     r"(?:turn\d+(?:search|fetch|view|open)\d+|cite[^]+|【\d+†[^】]+】)"
 )
-NETWORK_CSS = re.compile(r"(?:@import\s+|url\(\s*[\"']?https?://)", re.IGNORECASE)
+CSS_ESCAPE = re.compile(r"\\(?:([0-9a-fA-F]{1,6})[ \t\r\n\f]?|([^\r\n\f])|[\r\n\f]+)")
+CSS_URL = re.compile(r"url\s*\(\s*([\"']?)(.*?)\1\s*\)", re.IGNORECASE | re.DOTALL)
+
+
+def css_has_dependency(css: str) -> bool:
+    def decode(match: re.Match[str]) -> str:
+        if match.group(1):
+            point = int(match.group(1), 16)
+            return chr(point) if 0 < point <= 0x10FFFF else "\ufffd"
+        return match.group(2) or ""
+
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
+    css = CSS_ESCAPE.sub(decode, css)
+    if re.search(r"@import\b", css, re.IGNORECASE):
+        return True
+    return any(not match.group(2).strip().startswith("#") for match in CSS_URL.finditer(css))
 FORBIDDEN_RUNTIME_TAGS = {
     "script",
     "img",
@@ -77,6 +92,7 @@ class ReportParser(HTMLParser):
         self.runtime_dependencies: list[str] = []
         self.style_depth = 0
         self.style_chunks: list[str] = []
+        self.inline_style_chunks: list[str] = []
         self.text_chunks: list[str] = []
 
     def handle_starttag(
@@ -124,6 +140,8 @@ class ReportParser(HTMLParser):
     ) -> None:
         tag = tag.lower()
         values = {name.lower(): value or "" for name, value in attrs}
+        if values.get("style"):
+            self.inline_style_chunks.append(values["style"])
         self.tags.add(tag)
         self.tag_counts[tag] = self.tag_counts.get(tag, 0) + 1
 
@@ -156,6 +174,14 @@ class ReportParser(HTMLParser):
             if href.startswith("#"):
                 self.internal_hrefs.append(href)
 
+        for name, value in values.items():
+            if name.startswith("on"):
+                self.runtime_dependencies.append(f"event handler {name}")
+            if name in {"href", "src", "action", "formaction", "xlink:href"}:
+                normalized = value.translate(dict.fromkeys(map(ord, "\t\r\n"))).lstrip().lower()
+                if normalized.startswith("javascript:"):
+                    self.runtime_dependencies.append(f"JavaScript URL in {name}")
+
         if tag in FORBIDDEN_RUNTIME_TAGS:
             self.runtime_dependencies.append(f"<{tag}>")
         if tag == "link" and (
@@ -166,12 +192,17 @@ class ReportParser(HTMLParser):
 
 def markdown_urls(markdown: str) -> set[str]:
     urls = {unescape(url) for url in MARKDOWN_AUTOLINK.findall(markdown)}
+    positions = [match.end() for match in re.finditer(
+        r"(?m)^[ \t]{0,3}\[[^\]\n]+\]:[ \t]*(?:\n[ \t]*)?", markdown
+    )]
     cursor = 0
     while True:
         marker = markdown.find("](", cursor)
         if marker < 0:
             break
-        position = marker + 2
+        positions.append(marker + 2)
+        cursor = marker + 2
+    for position in positions:
         while position < len(markdown) and markdown[position].isspace():
             position += 1
 
@@ -181,7 +212,6 @@ def markdown_urls(markdown: str) -> set[str]:
                 candidate = markdown[position + 1 : end]
                 if candidate.startswith(("http://", "https://")):
                     urls.add(unescape(candidate))
-            cursor = max(position + 1, end + 1)
             continue
 
         start = position
@@ -203,7 +233,6 @@ def markdown_urls(markdown: str) -> set[str]:
         candidate = markdown[start:position].replace(r"\(", "(").replace(r"\)", ")")
         if candidate.startswith(("http://", "https://")):
             urls.add(unescape(candidate))
-        cursor = max(position + 1, marker + 2)
     return urls
 
 
@@ -295,7 +324,7 @@ def validate_pair(
         errors.append("inline CSS must include a responsive max-width media query")
     if not re.search(r"@media\s+print\b", css, re.IGNORECASE):
         errors.append("inline CSS must include print rules")
-    if NETWORK_CSS.search(css):
+    if any(css_has_dependency(chunk) for chunk in [css, *parser.inline_style_chunks]):
         errors.append("inline CSS contains an external network dependency")
 
     if PLACEHOLDER.search("\n".join(parser.text_chunks)):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check x9 OKF metadata: type and description required, title and tags well-formed."""
+"""Check x9 OKF metadata: type, title, description, and tags are required."""
 
 from __future__ import annotations
 
