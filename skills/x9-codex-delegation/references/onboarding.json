@@ -5,7 +5,6 @@
     {
       "id": "native-agent-route",
       "group": "delegation-route",
-      "runtimes": ["claude"],
       "kind": "agent",
       "level": "required",
       "needed_for": "Delegating through the native Codex agent.",
@@ -15,7 +14,6 @@
     {
       "id": "command-line-route",
       "group": "delegation-route",
-      "runtimes": ["claude"],
       "kind": "command",
       "level": "required",
       "needed_for": "Delegating through the command line fallback.",
@@ -24,7 +22,6 @@
     },
     {
       "id": "browser-session",
-      "runtimes": ["claude"],
       "kind": "skill",
       "level": "optional",
       "needed_for": "Delegating logged in browser work.",

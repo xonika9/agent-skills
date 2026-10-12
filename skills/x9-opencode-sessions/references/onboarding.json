@@ -4,7 +4,6 @@
   "requirements": [
     {
       "id": "python-runtime",
-      "runtimes": ["opencode"],
       "kind": "command",
       "level": "required",
       "needed_for": "Running the session API wrapper.",
@@ -13,7 +12,6 @@
     },
     {
       "id": "opencode-cli",
-      "runtimes": ["opencode"],
       "kind": "command",
       "level": "required",
       "needed_for": "Accessing OpenCode sessions.",
@@ -22,7 +20,6 @@
     },
     {
       "id": "sessions-api-access",
-      "runtimes": ["opencode"],
       "kind": "user-action",
       "level": "required",
       "needed_for": "Confirming access to the Sessions API.",

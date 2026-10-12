@@ -46,17 +46,17 @@ CHECK_BY_KIND = {
 # Commands whose `--version` output adapters may read; each is safe to launch that way.
 VERSION_COMMANDS = {"python3"}
 
-TOP_LEVEL_FIELDS = {"version", "supported_runtimes", "requirements"}
+TOP_LEVEL_FIELDS = {"version", "requirements"}
 REQUIREMENT_FIELDS = {
     "id",
-    "runtimes",
     "kind",
     "level",
     "needed_for",
     "check",
     "guidance_id",
 }
-OPTIONAL_REQUIREMENT_FIELDS = {"group"}
+OPTIONAL_REQUIREMENT_FIELDS = {"group", "runtimes"}
+OPTIONAL_TOP_LEVEL_FIELDS = {"supported_runtimes"}
 CHECK_FIELDS = {
     "skill-present": {"type", "target_skill"},
     "command-present": {"type", "command"},
@@ -84,7 +84,7 @@ SHELL_RE = re.compile(r"[|&;`$<>*{}]")
 
 
 KNOWN_SCHEMA_FIELDS = (
-    TOP_LEVEL_FIELDS | REQUIREMENT_FIELDS | OPTIONAL_REQUIREMENT_FIELDS
+    TOP_LEVEL_FIELDS | OPTIONAL_TOP_LEVEL_FIELDS | REQUIREMENT_FIELDS | OPTIONAL_REQUIREMENT_FIELDS
     | set().union(*CHECK_FIELDS.values())
 )
 
@@ -251,7 +251,7 @@ def validate_requirement(
     value: Any,
     path: str,
     skills_root: Path,
-    supported_runtimes: set[str] | None,
+    supported_runtimes: set[str],
     seen_ids: set[str],
     errors: list[str],
 ) -> None:
@@ -275,21 +275,19 @@ def validate_requirement(
         else:
             seen_ids.add(identifier)
 
-    runtimes = requirement.get("runtimes")
-    validate_runtimes(runtimes, f"{path}.runtimes", errors)
-    if isinstance(runtimes, list):
-        for index, runtime in enumerate(runtimes):
-            if (
-                isinstance(runtime, str)
-                and runtime in RUNTIMES
-                and supported_runtimes is not None
-                and runtime not in supported_runtimes
-            ):
-                error(
-                    errors,
-                    f"{path}.runtimes[{index}]",
-                    "runtime is not declared in supported_runtimes",
-                )
+    if "runtimes" in requirement:
+        runtimes = requirement["runtimes"]
+        declared = validate_runtimes(runtimes, f"{path}.runtimes", errors)
+        if isinstance(runtimes, list):
+            for index, runtime in enumerate(runtimes):
+                if isinstance(runtime, str) and runtime in RUNTIMES and runtime not in supported_runtimes:
+                    error(
+                        errors,
+                        f"{path}.runtimes[{index}]",
+                        "runtime is not declared in supported_runtimes",
+                    )
+        if declared is not None and declared == supported_runtimes:
+            error(errors, f"{path}.runtimes", "omit runtimes when the requirement applies to every supported runtime")
 
     kind = require_string(requirement.get("kind"), f"{path}.kind", errors)
     if kind is not None and kind not in KINDS:
@@ -342,19 +340,26 @@ def validate_declaration(path: Path, skills_root: Path) -> list[str]:
     declaration = require_object(data, "declaration", errors)
     if declaration is None:
         return errors
-    validate_fields(declaration, TOP_LEVEL_FIELDS, "", errors)
+    validate_fields(declaration, TOP_LEVEL_FIELDS | OPTIONAL_TOP_LEVEL_FIELDS, "", errors, TOP_LEVEL_FIELDS)
     version = declaration.get("version")
     if type(version) is not int:
         error(errors, "version", "must be the integer 1")
     elif version != 1:
         error(errors, "version", "must be 1")
-    supported_runtimes = validate_runtimes(
-        declaration.get("supported_runtimes"), "supported_runtimes", errors
-    )
+    restricted = "supported_runtimes" in declaration
+    supported_runtimes = set(RUNTIMES)
+    if restricted:
+        declared = validate_runtimes(declaration["supported_runtimes"], "supported_runtimes", errors)
+        if declared == RUNTIMES:
+            error(errors, "supported_runtimes", "omit supported_runtimes when the skill runs in every runtime")
+        elif declared is not None:
+            supported_runtimes = declared
     requirements = declaration.get("requirements")
     if not isinstance(requirements, list):
         error(errors, "requirements", "must be an array")
         return errors
+    if not requirements and not restricted:
+        error(errors, "requirements", "a declaration without requirements must restrict supported_runtimes; otherwise delete the file")
     seen_ids: set[str] = set()
     for index, requirement in enumerate(requirements):
         validate_requirement(

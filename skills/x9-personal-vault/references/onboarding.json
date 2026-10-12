@@ -1,73 +1,36 @@
 {
   "version": 1,
-  "supported_runtimes": [
-    "opencode",
-    "claude",
-    "codex"
-  ],
   "requirements": [
     {
       "id": "python-runtime",
-      "runtimes": [
-        "opencode",
-        "claude",
-        "codex"
-      ],
       "kind": "command",
       "level": "required",
       "needed_for": "Applying file moves and copies with verification and undo.",
-      "check": {
-        "type": "command-present",
-        "command": "python3"
-      },
+      "check": {"type": "command-present", "command": "python3"},
       "guidance_id": "install-command"
     },
     {
       "id": "okf-companion",
-      "runtimes": [
-        "opencode",
-        "claude",
-        "codex"
-      ],
       "kind": "skill",
       "level": "required",
       "needed_for": "Writing and validating the OKF metadata of vault notes.",
-      "check": {
-        "type": "skill-present",
-        "target_skill": "x9-okf-docs"
-      },
+      "check": {"type": "skill-present", "target_skill": "x9-okf-docs"},
       "guidance_id": "install-skill"
     },
     {
       "id": "obsidian-companion",
-      "runtimes": [
-        "opencode",
-        "claude",
-        "codex"
-      ],
       "kind": "skill",
       "level": "optional",
       "needed_for": "Link-preserving moves and Bases views when the vault is used in Obsidian.",
-      "check": {
-        "type": "skill-present",
-        "target_skill": "x9-obsidian"
-      },
+      "check": {"type": "skill-present", "target_skill": "x9-obsidian"},
       "guidance_id": "install-skill"
     },
     {
       "id": "agent-instructions-rubric",
-      "runtimes": [
-        "opencode",
-        "claude",
-        "codex"
-      ],
       "kind": "skill",
       "level": "optional",
       "needed_for": "Reviewing the vault rules written into AGENTS.md.",
-      "check": {
-        "type": "skill-present",
-        "target_skill": "x9-agent-instructions"
-      },
+      "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
       "guidance_id": "install-skill"
     }
   ]

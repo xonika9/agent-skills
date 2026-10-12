@@ -6,9 +6,7 @@ compatibility: Bootstrap requires python3, bun, and git; Docker for the dev data
 
 # Web stack
 
-This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its portable claim is structural Agent Skills compatibility only.
-
-It owns a vetted template for TypeScript web applications — the stack, the project structure, and the development rules — and three ways to apply it. The template lives in this skill: [stack and structure](references/stack.md), [rules](references/rules.md), [library notes](references/library-notes.md), and the verified project scaffold in `assets/project`.
+This skill owns a vetted template for TypeScript web applications — the stack, the project structure, and the development rules — and three ways to apply it. The template lives in this skill: [stack and structure](references/stack.md), [rules](references/rules.md), [library notes](references/library-notes.md), and the verified project scaffold in `assets/project`.
 
 ## Select the action
 

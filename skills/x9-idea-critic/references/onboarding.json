@@ -1,6 +1,5 @@
 {
   "version": 1,
-  "supported_runtimes": ["opencode", "claude", "codex"],
   "requirements": [
     {
       "id": "claude-claude-cli",

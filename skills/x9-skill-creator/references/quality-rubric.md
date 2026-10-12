@@ -26,7 +26,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 ## 2. Runtime and placement `[j+b]`
 
-- Name supported runtimes and canonical placement.
+- Name canonical placement. A skill runs in every Agent Skills runtime by default, so its body and `compatibility` never list supported runtimes. Record only a restriction by design, and state it in `description`, because runtimes decide loading from metadata; where the package keeps a machine-readable runtime declaration, record restrictions and dependencies there.
 - Before frontmatter, classify the skill separately in each claimed runtime as `model-invoked` or `user-only`; record cross-skill consumption separately from that classification. A `user-only` claim needs a real invocation path in that runtime.
 - Keep shared method in the core; isolate volatile metadata, tool, model, CLI, and browser facts in runtime adapters with live-discovery rules.
 - Do not treat a runtime-specific invocation mechanism as portable metadata or as evidence for another runtime.

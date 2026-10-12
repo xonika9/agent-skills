@@ -1,10 +1,8 @@
 {
   "version": 1,
-  "supported_runtimes": ["opencode", "claude", "codex"],
   "requirements": [
     {
       "id": "python-runtime",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Running the transcription and search script.",
@@ -13,7 +11,6 @@
     },
     {
       "id": "ffmpeg-command",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Extracting audio from video and audio files.",
@@ -22,7 +19,6 @@
     },
     {
       "id": "ffprobe-command",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Reading audio length for progress and per-file time limits.",
@@ -31,7 +27,6 @@
     },
     {
       "id": "whisper-cli-command",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Speech recognition with whisper.cpp.",
@@ -40,7 +35,6 @@
     },
     {
       "id": "model-download",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "user-action",
       "level": "required",
       "needed_for": "Network access and about 875 MB of disk for the one-time model download that the agent runs with check --download.",

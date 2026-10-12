@@ -10,8 +10,9 @@
 `references/onboarding.json` is a version 1, read-only declaration of external
 requirements for its owning skill. It is data, not an instruction: the
 declaration cannot contain commands to run, arguments, URLs, paths, secrets, or
-free-form setup steps. A skill without external requirements or a runtime
-restriction does not need this file.
+free-form setup steps. A skill runs in every runtime unless its declaration
+restricts it, so a skill without external requirements or a runtime
+restriction has no declaration.
 
 Resolve the loaded `x9-onboarding` directory from its loaded `SKILL.md`. Independently
 resolve the actual package `skills` root to validate; it may belong to another package,
@@ -29,12 +30,12 @@ count.
 
 ## Version 1 Shape
 
-The top-level object has exactly these fields:
+The top-level object has `version` and `requirements`, plus optional
+`supported_runtimes`:
 
 ```json
 {
   "version": 1,
-  "supported_runtimes": ["opencode", "claude", "codex"],
   "requirements": [
     {
       "id": "command-line-tool",
@@ -49,19 +50,23 @@ The top-level object has exactly these fields:
 }
 ```
 
-`supported_runtimes` is the non-empty set of runtimes where the owning skill can
-perform its main contract. It prevents an explicit target from becoming `READY`
-merely because runtime filtering removed every requirement.
+`supported_runtimes` appears only when the owning skill is restricted by design
+to a subset of runtimes. It is a non-empty, proper subset of `opencode`,
+`claude`, and `codex`; listing all three is an error because omission already
+means every runtime. A restriction is also stated in the skill's `description`,
+because runtimes decide whether to load a skill from its metadata.
 
-`requirements` is an array. It is empty when the declaration only restricts
-`supported_runtimes`; never invent a requirement to fill it. Each requirement has `id`, `runtimes`,
+`requirements` is an array. It may be empty only when `supported_runtimes` is
+present; never invent a requirement to fill it. Each requirement has `id`,
 `kind`, `level`, `needed_for`, `check`, and `guidance_id`, plus optional
-`group`.
+`runtimes` and `group`. Omit `runtimes` when the requirement applies in every
+runtime the skill supports; list them only when it applies in fewer.
 Requirement IDs are unique inside their declaration.
 
 - `id` and `guidance_id` use lowercase hyphen-case: a letter followed by
   lowercase letters, digits, and single hyphen-separated segments.
-- `runtimes` is a non-empty array drawn from `opencode`, `claude`, and `codex`.
+- `runtimes`, when present, is a non-empty array drawn from the skill's
+  supported runtimes and is smaller than that set.
 - `kind` is one of `skill`, `command`, `agent`, `mcp`, `runtime-feature`, or
   `user-action`.
 - `level` is `required` or `optional`.

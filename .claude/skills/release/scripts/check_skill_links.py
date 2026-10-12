@@ -6,14 +6,29 @@ Run locally from the repository, or on another machine by piping this file to
 """
 
 import argparse
+import json
 import os
 from pathlib import Path
 
 
 AGENTS_DIR = Path.home() / ".agents/skills"
 CLAUDE_DIR = Path.home() / ".claude/skills"
-# Skills that must not be exposed to Claude Code, with the reason.
-CLAUDE_EXCLUDED = {"x9-opencode-sessions": "OpenCode V2 only"}
+
+
+def claude_excluded(root: Path, names: list[str]) -> dict[str, str]:
+    """Skills whose onboarding declaration restricts them to runtimes other than Claude Code."""
+    excluded = {}
+    for name in names:
+        declaration = root / name / "references" / "onboarding.json"
+        if not declaration.is_file():
+            continue
+        try:
+            supported = json.loads(declaration.read_text(encoding="utf-8")).get("supported_runtimes")
+        except (OSError, json.JSONDecodeError) as error:
+            raise SystemExit(f"FAIL: cannot read {declaration}: {error}")
+        if isinstance(supported, list) and "claude" not in supported:
+            excluded[name] = "declared for " + ", ".join(supported)
+    return excluded
 
 
 def repo_skills_root() -> Path:
@@ -54,11 +69,12 @@ def main() -> None:
     else:
         root = repo_skills_root()
     names = sorted(args.names or (p.name for p in root.iterdir() if (p / "SKILL.md").is_file()))
+    excluded_from_claude = claude_excluded(root, names)
 
     expected = {
         AGENTS_DIR: {name: root / name for name in names},
         CLAUDE_DIR: {
-            name: AGENTS_DIR / name for name in names if name not in CLAUDE_EXCLUDED
+            name: AGENTS_DIR / name for name in names if name not in excluded_from_claude
         },
     }
     problems, created = [], []
@@ -82,9 +98,9 @@ def main() -> None:
                 problems.append(f"{entry}: missing")
 
         for entry in sorted(directory.glob("x9-*")):
-            if directory == CLAUDE_DIR and entry.name in CLAUDE_EXCLUDED:
+            if directory == CLAUDE_DIR and entry.name in excluded_from_claude:
                 problems.append(
-                    f"{entry}: excluded from Claude Code ({CLAUDE_EXCLUDED[entry.name]})"
+                    f"{entry}: excluded from Claude Code ({excluded_from_claude[entry.name]})"
                 )
                 continue
             if entry.name in targets or not entry.is_symlink():
@@ -101,7 +117,7 @@ def main() -> None:
         for problem in problems:
             print(f"- {problem}")
         raise SystemExit(1)
-    print(f"PASS: {len(names)} skills linked from {AGENTS_DIR} and {CLAUDE_DIR} (Claude Code excludes: {', '.join(CLAUDE_EXCLUDED)})")
+    print(f"PASS: {len(names)} skills linked from {AGENTS_DIR} and {CLAUDE_DIR} (Claude Code excludes: {', '.join(excluded_from_claude)})")
 
 
 if __name__ == "__main__":

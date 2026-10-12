@@ -6,8 +6,8 @@
 
 - Skill authoring, runtime routing, research, diagrams, architecture reports, and release checks now catch the audited contract failures; shared instruction rules point to their owner, invalid declaration diagnostics reveal only public schema field names, and an explicit browser choice takes precedence over default routes.
 - Vault and OKF operations preserve changed user files and supported metadata during writes, recovery, and undo; transcript generation rejects source collisions, including hardlinks and temporary outputs.
-- `x9-onboarding` declarations can require a minimum `python3` version and can restrict a skill to its supported runtimes without inventing a requirement. Onboarding now declares its own Python 3.11 requirement, and `x9-context-files-generator` and `x9-skill-creator` count `x9-agent-instructions` as required.
-- Skills that named only Claude Code and Codex — `x9-appsec`, `x9-architecture-scout`, `x9-decision-map`, `x9-explain-again`, `x9-personal-vault`, `x9-task-graph`, `x9-test-quality`, `x9-wb-product-search`, and `x9-web-stack` — now name OpenCode as well, and their readiness declarations include it. Only `x9-codex-delegation`, `x9-codex-imagegen`, and `x9-opencode-sessions` remain tied to specific runtimes by design.
+- `x9-onboarding` declarations can require a minimum `python3` version. A declaration lists runtimes only where they differ: a missing skill-level list means every runtime, and a missing list on a requirement means every runtime the skill supports. Onboarding now declares its own Python 3.11 requirement, and `x9-context-files-generator` and `x9-skill-creator` count `x9-agent-instructions` as required.
+- Every skill now runs in every Agent Skills runtime by default and is checked in OpenCode, Claude Code, and Codex. Skills no longer list supported runtimes in their text; that list appears only in the readiness declaration and description of the three skills tied to specific runtimes by design: `x9-codex-delegation`, `x9-codex-imagegen`, and `x9-opencode-sessions`. Skills that previously named only Claude Code and Codex, such as `x9-appsec`, `x9-web-stack`, and `x9-wb-product-search`, are no longer limited to them.
 - `x9-idea-critic` treats a critique from the one available provider as a complete result and names the missing provider briefly; a Claude answer without model telemetry is kept instead of failing the route.
 - Every `x9-architecture-scout` report now includes at least one diagram, matching its validator; `x9-okf-docs` consistently removes retired OKF fields from documents whose content it edits, unless the repository's Local rules keep them.
 - The web template enforces supported import boundaries, validates local test-database targets, handles request failures consistently, and resumes partial setup while preserving existing files and catalog entries and refusing linked write destinations or catalog version conflicts.
@@ -34,6 +34,7 @@
 ### Breaking changes
 
 - Invalid skills, reports, SVG/HTML inputs, package metadata, excluded runtime links, and unsafe recovery destinations that previously passed validation are now refused. Existing user content is preserved.
+- Onboarding declarations that list all three runtimes, or repeat the skill's runtimes on a requirement, are now refused; delete those lists. The package check also refuses supported-runtime lists in a skill's text.
 
 ## 3.13.0 - 2026-10-12
 

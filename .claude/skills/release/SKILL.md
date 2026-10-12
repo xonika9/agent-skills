@@ -58,7 +58,7 @@ Release authority permits reading the installed global files and updating their 
 
 ## Check personal skill links
 
-A public skill without personal links stays invisible to the maintainer's local runtimes. On the Mac and on the Fedora machine reachable through the SSH alias `x9-fedora`, every skill under `skills/` must be linked from `~/.agents/skills`, and from `~/.claude/skills` unless `scripts/check_skill_links.py` excludes it for Claude Code. When a new skill cannot run in Claude Code, add it to that exclusion with its reason instead of tolerating the failure.
+A public skill without personal links stays invisible to the maintainer's local runtimes. On the Mac and on the Fedora machine reachable through the SSH alias `x9-fedora`, every skill under `skills/` must be linked from `~/.agents/skills`, and from `~/.claude/skills` unless its `references/onboarding.json` restricts it to other runtimes; `scripts/check_skill_links.py` derives that exclusion from the declaration. When a new skill cannot run in Claude Code, declare the restriction there instead of tolerating the failure.
 
 Release authority covers running the checker with `--fix`: it only adds missing links in each machine's established style and never replaces an existing entry. A wrong, broken, or stale entry, a skill not yet synced to Fedora, or an unreachable host keeps the gate `BLOCKED` until the maintainer resolves it.
 

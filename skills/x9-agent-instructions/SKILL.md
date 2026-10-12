@@ -5,8 +5,6 @@ description: Write or review prompts, task briefs, and agent-instruction files â
 
 # Agent instructions
 
-This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its portable claim is structural Agent Skills compatibility only, not proven invocation behavior.
-
 Judge behavioral guidance for the actual receiving model and runtime, including delegated workers; the author's model is not evidence of the executor's behavior.
 
 Repository onboarding files belong to `x9-context-files-generator`, skill authoring to `x9-skill-creator`, and actual Codex delegation in Claude Code to `x9-codex-delegation`. The first two may load this skill as a subordinate instruction-quality rubric.

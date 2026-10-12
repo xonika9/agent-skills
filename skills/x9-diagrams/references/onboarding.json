@@ -1,10 +1,8 @@
 {
   "version": 1,
-  "supported_runtimes": ["opencode", "claude", "codex"],
   "requirements": [
     {
       "id": "python-runtime",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "optional",
       "needed_for": "Checking Excalidraw scenes and SVG files, and summarizing diagram sources.",
@@ -13,7 +11,6 @@
     },
     {
       "id": "excalidraw-renderer",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Rendering Excalidraw scenes.",
@@ -22,7 +19,6 @@
     },
     {
       "id": "mermaid-renderer",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Rendering Mermaid diagrams.",
@@ -31,7 +27,6 @@
     },
     {
       "id": "svg-renderer",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Rendering SVG diagrams in a browser engine.",
@@ -40,7 +35,6 @@
     },
     {
       "id": "drawio-editor",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Opening draw.io diagrams.",

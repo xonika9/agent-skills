@@ -69,7 +69,7 @@ Clone or fork the repository only when you want to maintain your own variants. Y
 
 ## Compatibility
 
-The skills use the open Agent Skills format and are packaged for Claude Code and Codex. Most also work in other compatible agents. Runtime-specific exceptions are stated in the catalog and inside each skill.
+The skills use the open Agent Skills format and work in any compatible agent; every skill is checked in OpenCode, Claude Code, and Codex, and Claude Code and Codex also get native plugin packages. Three skills are tied to specific agents by design, as their catalog entries say: `x9-codex-delegation` runs only in Claude Code, `x9-codex-imagegen` serves agents other than Codex, and `x9-opencode-sessions` runs only in OpenCode V2.
 
 ## Where to start
 

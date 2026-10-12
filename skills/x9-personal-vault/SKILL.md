@@ -5,7 +5,7 @@ description: Use when organizing one person's scattered notes and documents into
 
 # Personal vault
 
-This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its portable claim is structural Agent Skills compatibility only, not proven invocation behavior. Its file script supports macOS and Linux.
+The file script supports macOS and Linux.
 
 It turns a folder, plus any other folders the user names, into a personal vault built on [the vault model](references/model.md), and leaves the daily rules inside the vault. Ordinary agent sessions then keep the vault in order without this skill; the skill is needed again only when the structure changes.
 

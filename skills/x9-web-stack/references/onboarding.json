@@ -1,10 +1,8 @@
 {
   "version": 1,
-  "supported_runtimes": ["opencode", "claude", "codex"],
   "requirements": [
     {
       "id": "python-runtime",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Running the project bootstrap script.",
@@ -13,7 +11,6 @@
     },
     {
       "id": "bun-runtime",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Bootstrapping and verifying projects on the stack.",
@@ -22,7 +19,6 @@
     },
     {
       "id": "git-command",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "required",
       "needed_for": "Checking the bootstrapped project's working tree before the first commit.",
@@ -31,7 +27,6 @@
     },
     {
       "id": "docker-runtime",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "optional",
       "needed_for": "Running the dev database and building containers.",
@@ -40,7 +35,6 @@
     },
     {
       "id": "context-files-skill",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "skill",
       "level": "optional",
       "needed_for": "Creating AGENTS.md, CLAUDE.md, and README around the rules block.",
@@ -49,7 +43,6 @@
     },
     {
       "id": "agent-instructions-rubric",
-      "runtimes": ["opencode", "claude", "codex"],
       "kind": "skill",
       "level": "optional",
       "needed_for": "Writing the AGENTS.md rules block.",

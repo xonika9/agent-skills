@@ -4,7 +4,6 @@
   "requirements": [
     {
       "id": "codex-command",
-      "runtimes": ["opencode", "claude"],
       "kind": "command",
       "level": "required",
       "needed_for": "Running image generation through codex exec.",
@@ -13,7 +12,6 @@
     },
     {
       "id": "python-runtime",
-      "runtimes": ["opencode", "claude"],
       "kind": "command",
       "level": "required",
       "needed_for": "Running the generation script.",
@@ -22,7 +20,6 @@
     },
     {
       "id": "chatgpt-login",
-      "runtimes": ["opencode", "claude"],
       "kind": "user-action",
       "level": "required",
       "needed_for": "Using the built-in image tool, which requires Codex signed in with a ChatGPT account.",
@@ -31,7 +28,6 @@
     },
     {
       "id": "idle-safe-route",
-      "runtimes": ["opencode", "claude"],
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Generating complex images on a network that drops idle connections, through an HTTP proxy whose route keeps them open.",

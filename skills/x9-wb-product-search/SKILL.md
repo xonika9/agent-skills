@@ -8,8 +8,7 @@ description: >
 
 # x9-wb-product-search — подбор товаров на Wildberries
 
-Работает в OpenCode, Claude Code и Codex. Относительные пути разрешаются от каталога
-установленного skill.
+Относительные пути разрешаются от каталога установленного skill.
 
 Машиночитаемый контракт внешних предпосылок: [references/onboarding.json](references/onboarding.json).
 

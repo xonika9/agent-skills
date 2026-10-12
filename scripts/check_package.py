@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the shared Claude Code and Codex plugin package metadata."""
+"""Validate the shared plugin package metadata and the skills' runtime claims."""
 
 from __future__ import annotations
 
@@ -27,6 +27,14 @@ SHARED_MANIFEST_FIELDS = (
 )
 SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
+RUNTIME_NAMES = {"opencode": "OpenCode", "claude": "Claude Code", "codex": "Codex"}
+# Skills run in every runtime by default; support is never listed in SKILL.md prose.
+RUNTIME_CLAIM = re.compile(
+    r"model-invoked\b[^.\n]*\bin\b|portable claim|\bsupports (?:OpenCode|Claude Code|Codex)\b|"
+    r"^\s*(?:works|runs|работает)\s+(?:only\s+|только\s+)?(?:in|в)\s+(?:OpenCode|Claude Code|Codex)\b",
+    re.IGNORECASE | re.MULTILINE,
+)
+FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n(.*)\Z", re.DOTALL)
 
 
 def fail(message: str) -> None:
@@ -127,6 +135,45 @@ def validate_codex_interface(codex: dict) -> None:
         validate_png_asset(asset, f"Codex interface.{field}")
 
 
+def runtime_claim_errors(name: str, skill_text: str, declaration: dict | None) -> list[str]:
+    """Runtime support lives in references/onboarding.json, not in SKILL.md prose."""
+    match = FRONTMATTER.match(skill_text)
+    if not match:
+        return [f"{name}: SKILL.md has no frontmatter"]
+    frontmatter, body = match.groups()
+    fields = dict(re.findall(r"^(description|compatibility):[ \t]*(.*)$", frontmatter, re.MULTILINE))
+    errors = []
+    for source, text in (("compatibility", fields.get("compatibility", "")), ("body", body)):
+        claim = RUNTIME_CLAIM.search(text)
+        if claim:
+            errors.append(
+                f"{name}: SKILL.md {source} lists supported runtimes ({claim.group(0).strip()!r}); "
+                "skills run everywhere by default and record a restriction in references/onboarding.json"
+            )
+    supported = (declaration or {}).get("supported_runtimes")
+    if isinstance(supported, list):
+        description = fields.get("description", "")
+        for runtime in supported:
+            label = RUNTIME_NAMES.get(runtime, str(runtime))
+            if label not in description:
+                errors.append(f"{name}: restricted to {', '.join(supported)} but the description does not name {label}")
+    return errors
+
+
+def validate_runtime_claims() -> None:
+    errors = []
+    for skill in sorted((ROOT / "skills").iterdir()):
+        skill_file = skill / "SKILL.md"
+        if not skill_file.is_file():
+            continue
+        declaration_file = skill / "references" / "onboarding.json"
+        declaration = None
+        if declaration_file.is_file():
+            declaration = load_json(str(declaration_file.relative_to(ROOT)))
+        errors.extend(runtime_claim_errors(skill.name, skill_file.read_text(encoding="utf-8"), declaration))
+    require(not errors, "runtime claims:\n- " + "\n- ".join(errors))
+
+
 def main() -> None:
     claude = load_json(".claude-plugin/plugin.json")
     codex = load_json(".codex-plugin/plugin.json")
@@ -139,6 +186,7 @@ def main() -> None:
 
     validate_shared_metadata(claude, codex)
     require((ROOT / "skills").is_dir(), "skills/ is missing")
+    validate_runtime_claims()
 
     require(claude_marketplace.get("name") == MARKETPLACE_NAME, "Claude marketplace name differs")
     claude_plugins = claude_marketplace.get("plugins")
@@ -157,7 +205,7 @@ def main() -> None:
     require(codex["interface"]["category"] == CODEX_CATEGORY, f"Codex interface category must be {CODEX_CATEGORY}")
     require(entry.get("category") == codex["interface"]["category"], "Codex marketplace category differs")
 
-    print("PASS: Claude Code and Codex plugin metadata agree")
+    print("PASS: Claude Code and Codex plugin metadata agree; skill runtime claims follow the declarations")
 
 
 if __name__ == "__main__":

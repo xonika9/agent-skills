@@ -17,7 +17,7 @@ Read [the contract](references/okf-format.md) before writing any metadata.
 
 ## Runtime
 
-The package-owned `skills/x9-okf-docs` directory is canonical. The skill is model-invoked in OpenCode, Claude Code, and Codex. Writing a header by hand needs no tools. The scripts need Python 3.9 or newer and Ruby with Psych, which stock macOS provides; resolve their paths from this loaded skill directory and run `scripts/check_dependencies.py` before the first script in a session. The [onboarding declaration](references/onboarding.json) lists these prerequisites.
+The package-owned `skills/x9-okf-docs` directory is canonical. Writing a header by hand needs no tools. The scripts need Python 3.9 or newer and Ruby with Psych, which stock macOS provides; resolve their paths from this loaded skill directory and run `scripts/check_dependencies.py` before the first script in a session. The [onboarding declaration](references/onboarding.json) lists these prerequisites.
 
 ## Completion
 

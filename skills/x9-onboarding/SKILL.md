@@ -1,14 +1,12 @@
 ---
 name: x9-onboarding
 description: Use after installing or updating `x9-*` skills to check their readiness and compare the current harness with the bundled x9 configuration profile — «проверь готовность x9-скиллов», «настрой Codex как у автора», "check installed x9 skills", "apply the recommended harness settings". Do not use for general environment diagnosis, account authorization, or unrelated configuration editing.
-compatibility: Supports OpenCode, Claude Code, and Codex through runtime adapters; its scripts need Python 3.11 or newer. Other runtimes report PARTIAL coverage and BLOCKED readiness because no safe adapter is available.
+compatibility: The scripts need Python 3.11 or newer. A runtime without a bundled adapter reports PARTIAL coverage and BLOCKED readiness because no safe adapter is available.
 ---
 
 # X9 onboarding
 
-This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its
-portable claim is structural Agent Skills compatibility only, not proven invocation
-behavior. It owns both installed-skill readiness and the opt-in x9 harness profile; it
+This package-owned skill owns both installed-skill readiness and the opt-in x9 harness profile; it
 does not install dependencies, authorize accounts, or edit global agent instructions.
 
 Check only the user-named `x9-*` skills, or use the current runtime's active skill
@@ -20,13 +18,14 @@ explicit target nor a safe active catalog is available, report scope as `PARTIAL
 `BLOCKED` and ask for skill names rather than scanning directories.
 
 Read [the declaration contract](references/declarations.md) for trusted
-`references/onboarding.json` data. A missing declaration means that skill has no
-declared external requirements or runtime restriction: report `COMPLETE` and `READY`;
-never infer a requirement from prose. An unreadable or invalid declaration is `PARTIAL`
+`references/onboarding.json` data. A missing declaration means that skill runs in every
+runtime and has no external requirements: report `COMPLETE` and `READY`; never infer a
+requirement or restriction from prose. An unreadable or invalid declaration is `PARTIAL`
 and `BLOCKED`; report only its package-relative source and contract failure, not its
-contents. If the current runtime is absent from `supported_runtimes`, report `COMPLETE`
-and `BLOCKED` before requirement filtering. Otherwise filter a declaration to the
-current runtime before checking it.
+contents. If the declaration lists `supported_runtimes` without the current runtime,
+report `COMPLETE` and `BLOCKED` before requirement filtering. Otherwise check every
+requirement without `runtimes` and every requirement whose `runtimes` include the current
+runtime.
 
 Use the current runtime adapter for live facts and configuration ownership:
 [OpenCode](references/opencode.md), [Claude Code](references/claude-code.md), or

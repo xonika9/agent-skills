@@ -30,15 +30,10 @@ def write_declaration(skills_root: Path, skill_name: str, declaration: object) -
 def declaration(
     requirements: list[object], supported_runtimes: list[str] | None = None
 ) -> dict[str, object]:
-    return {
-        "version": 1,
-        "supported_runtimes": (
-            ["opencode", "claude", "codex"]
-            if supported_runtimes is None
-            else supported_runtimes
-        ),
-        "requirements": requirements,
-    }
+    data: dict[str, object] = {"version": 1, "requirements": requirements}
+    if supported_runtimes is not None:
+        data["supported_runtimes"] = supported_runtimes
+    return data
 
 
 def command_requirement() -> dict[str, object]:
@@ -149,7 +144,7 @@ def main() -> None:
         write_declaration(
             skills_root,
             "x9-subset",
-            declaration([command_requirement()], ["opencode"]),
+            declaration([command_requirement()], ["opencode", "codex"]),
         )
         result = run(skills_root)
         expect(
@@ -206,6 +201,9 @@ def main() -> None:
     add("single member alternative group", lambda data: data["requirements"][0].update({"group": "only-route"}), "requirements[0].group")
     add("optional alternative member", lambda data: data.update({"requirements": [{**command_requirement(), "group": "route"}, {**command_requirement(), "id": "second-command", "group": "route", "level": "optional"}]}), "requirements[1].level")
     add("mismatched alternative runtimes", lambda data: data.update({"requirements": [{**command_requirement(), "group": "route"}, {**command_requirement(), "id": "second-command", "group": "route", "runtimes": ["codex"]}]}), "requirements[1].runtimes")
+    add("full supported runtime list", lambda data: data.update({"supported_runtimes": ["opencode", "claude", "codex"]}), "supported_runtimes")
+    add("requirement runtimes repeat supported set", lambda data: data.update({"supported_runtimes": ["opencode"]}), "requirements[0].runtimes")
+    add("empty declaration without restriction", lambda data: data.update({"requirements": []}), "requirements")
     add("version check for unlisted command", lambda data: data["requirements"][0].update({"check": {"type": "command-version", "command": "toolctl", "min_version": "1.0"}}), "requirements[0].check.command")
     add("version check with malformed minimum", lambda data: data["requirements"][0].update({"check": {"type": "command-version", "command": "python3", "min_version": "3.11+"}}), "requirements[0].check.min_version")
     add("version check misses minimum", lambda data: data["requirements"][0].update({"check": {"type": "command-version", "command": "python3"}}), "requirements[0].check.min_version")
@@ -363,6 +361,7 @@ def main() -> None:
 
     valid_cases = [
         ("runtime restriction without requirements", declaration([], ["claude", "codex"])),
+        ("requirement for every runtime", declaration([{key: value for key, value in command_requirement().items() if key != "runtimes"}])),
         ("minimum command version", declaration([{**command_requirement(), "check": {"type": "command-version", "command": "python3", "min_version": "3.11"}}])),
     ]
     for label, data in valid_cases:

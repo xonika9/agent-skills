@@ -80,12 +80,34 @@ def test_declared_png_geometry() -> None:
         check_package.validate_png_asset(asset, "icon")
 
 
+def skill(description: str, body: str, compatibility: str = "") -> str:
+    extra = f"compatibility: {compatibility}\n" if compatibility else ""
+    return f"---\nname: x9-demo\ndescription: {description}\n{extra}---\n\n# Demo\n\n{body}\n"
+
+
+def test_runtime_claims() -> None:
+    errors = check_package.runtime_claim_errors
+    assert errors("x9-demo", skill("Use for demos.", "Do the work."), None) == []
+    for body in (
+        "This skill is model-invoked in Claude Code and Codex.",
+        "Its portable claim is structural compatibility only.",
+        "Работает в Claude Code и Codex.",
+    ):
+        assert errors("x9-demo", skill("Use for demos.", body), None), body
+    assert errors("x9-demo", skill("Use for demos.", "Do it.", "Supports OpenCode and Codex."), None)
+    assert errors("x9-demo", skill("Use for demos.", "In Codex, use the native worker."), None) == []
+    restricted = {"version": 1, "supported_runtimes": ["claude"], "requirements": []}
+    assert errors("x9-demo", skill("Claude Code only. Use for demos.", "Do it."), restricted) == []
+    assert errors("x9-demo", skill("Use for demos.", "Do it."), restricted)
+
+
 def main() -> None:
     check_package.validate_shared_metadata(manifest(), manifest())
     for field in manifest():
         expect_mismatch(field)
     test_capabilities_contract()
     test_declared_png_geometry()
+    test_runtime_claims()
     print("PASS: shared plugin metadata regression scenarios")
 
 

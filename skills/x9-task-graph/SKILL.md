@@ -5,7 +5,7 @@ description: Use when an approved, implementation-ready plan must become a depen
 
 # Task graph
 
-Turn an approved implementation plan into a complete, reviewable draft of connected vertical work items. This skill is model-invoked in OpenCode, Claude Code, and Codex; its portable claim is structural Agent Skills compatibility only. Evidence tier: static.
+Turn an approved implementation plan into a complete, reviewable draft of connected vertical work items. Evidence tier: static.
 
 ## Accept only a settled plan
 

@@ -5,7 +5,7 @@ description: Use when finding, auditing, or safely editing content in an Obsidia
 
 # Obsidian
 
-Operate on the intended vault while preserving its links, structure, and local conventions. This package-owned skill is model-invoked in Claude Code, Codex, and OpenCode. Portable compatibility means Agent Skills structure; invocation and app behavior need separate runtime evidence. The [onboarding declaration](references/onboarding.json) describes optional app access and required local access.
+Operate on the intended vault while preserving its links, structure, and local conventions. The [onboarding declaration](references/onboarding.json) describes optional app access and required local access.
 
 ## Target and authority
 
