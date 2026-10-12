@@ -6,7 +6,7 @@
       "kind": "command",
       "level": "required",
       "needed_for": "Adopting, checking, and cleaning OKF metadata with Python 3.9 or newer.",
-      "check": {"type": "command-present", "command": "python3"},
+      "check": {"type": "command-version", "command": "python3", "min_version": "3.9"},
       "guidance_id": "install-command"
     },
     {
@@ -21,7 +21,7 @@
       "id": "ruby-psych-module",
       "kind": "user-action",
       "level": "required",
-      "needed_for": "Confirming the Python version and Ruby Psych with the skill's dependency check.",
+      "needed_for": "Confirming that Ruby Psych loads, with the skill's dependency check.",
       "check": {"type": "manual"},
       "guidance_id": "complete-user-action"
     },
