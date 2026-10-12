@@ -4,24 +4,36 @@
 
 ### Highlights
 
-- Skill authoring, runtime routing, research, diagrams, architecture reports, and release checks now catch the audited contract failures; shared instruction rules point to their owner, invalid declaration diagnostics reveal only public schema field names, and an explicit browser choice takes precedence over default routes.
-- Vault and OKF operations preserve changed user files and supported metadata during writes, recovery, and undo; transcript generation rejects source collisions, including hardlinks and temporary outputs. Vaults on exFAT and FAT drives work, undo succeeds after the source folder was removed or when the vault is reached through a linked path, a failed OKF rollback names the files to check by hand, and notes keep their Finder created and modified dates when OKF writes their header.
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 4.0.0 - 2026-10-12
+
+### Highlights
+
+- Skill authoring, research, architecture reports, and release checks enforce their documented contracts. Explicit prompt-fix requests apply authorized local edits without another approval round; inspection-only reviews remain report-first. Browser routing respects an explicit controller choice, shared rules point to their owner, and declaration diagnostics reveal only public schema field names.
+- OpenCode session reads reject mismatched session or message identities, and unavailable preview storage blocks dispatch explicitly. Tracker publication uses a distinct idempotency key for each mutation and preserves reconciled successes across retries. Wildberries recommendations and independent checks respect an explicit request to omit reviews and state that evidence boundary.
+- Codex image generation preserves verbatim prompt whitespace, hides proxy credentials from diagnostics, rejects malformed PNG output, and distinguishes newly generated results from existing images.
+- Vault and OKF operations preserve changed user files and supported metadata during writes, recovery, and undo; transcript generation rejects source collisions, including hardlinks and temporary outputs. Vaults on exFAT and FAT drives work, undo succeeds after the source folder was removed or when the vault is reached through a linked path, a failed OKF rollback names the files to check by hand, and notes keep their Finder created and modified dates when OKF writes their header. Explicit file exclusions take precedence over folder inclusion.
 - `x9-onboarding` declarations can require a minimum `python3` version. A declaration lists runtimes only where they differ: a missing skill-level list means every runtime, and a missing list on a requirement means every runtime the skill supports. Onboarding now declares its own Python 3.11 requirement, `x9-okf-docs` declares Python 3.9 the same way instead of a manual check, and `x9-context-files-generator` and `x9-skill-creator` count `x9-agent-instructions` as required.
 - Every skill now runs in every Agent Skills runtime by default and is checked in OpenCode, Claude Code, and Codex. Skills no longer list supported runtimes in their text; that list appears only in the readiness declaration and description of the three skills tied to specific runtimes by design: `x9-codex-delegation`, `x9-codex-imagegen`, and `x9-opencode-sessions`. Skills that previously named only Claude Code and Codex, such as `x9-appsec`, `x9-web-stack`, and `x9-wb-product-search`, are no longer limited to them.
 - `x9-idea-critic` treats a critique from the one available provider as a complete result and names the missing provider briefly; a Claude answer without model telemetry is kept instead of failing the route.
-- Every `x9-architecture-scout` report now includes at least one diagram, matching its validator; `x9-okf-docs` consistently removes retired OKF fields from documents whose content it edits, unless the repository's Local rules keep them.
-- The web template enforces supported import boundaries, validates local test-database targets, handles request failures consistently, and resumes partial setup while preserving existing files and catalog entries and refusing linked write destinations or catalog version conflicts.
+- Every `x9-architecture-scout` report now includes at least one diagram, matching its validator; `x9-okf-docs` consistently removes retired OKF fields from documents whose content it edits, unless the repository's Local rules keep them. Readiness now requires `x9-diagrams` for architecture reports and declares `x9-context-files-generator` for authorized vault instruction-file normalization.
+- The web template enforces supported import boundaries, validates local test-database targets, handles request failures consistently, and resumes partial setup while preserving existing files and catalog entries and refusing linked write destinations or catalog version conflicts. Amounts outside the database integer range fail request validation, server logs omit exception text, and client retries cover only network failures and `5xx` responses.
 - `x9-diagrams` gains composition guidance for architecture changes and manual sequence views, document/slide/print size presets, and a worked SVG comparison; whole-view previews preserve their delivery mode, and requested print output is checked at its physical size.
 - The Claude Code global file now routes each delegated worker by model and reasoning effort together: Opus at high effort for analysis, diagnosis, planning, and reviews; Opus at medium effort for implementation; Sonnet at high effort only for bounded search and fact extraction. A model that a skill assigns to a role it defines now takes precedence, as in the Codex and OpenCode files, so skills such as code review keep their mid-tier reviewers.
 - `x9-diagrams` can deliver a diagram as a self-contained SVG file for articles, slides, and READMEs, with an optional HTML preview; a bundled checker catches broken references, unsafe content, and layout collisions before the browser render is inspected.
 - `x9-diagrams` now holds diagrams to a numeric complexity budget and one or two focal accents, states its plan and cuts before drawing, and offers patterns for trust boundaries, lifecycles, and bottlenecks.
-- Diagram conversions start from a compact summary of an Excalidraw, draw.io, or SVG source and end with a ledger of what was merged, simplified, or dropped; the Excalidraw checker also warns about connectors crossing unrelated shapes, shared attach points, and colliding labels.
+- Diagram conversions start from a compact summary of an Excalidraw, draw.io, or SVG source and end with a ledger of what was merged, simplified, or dropped; the Excalidraw checker also warns about connectors crossing unrelated shapes, shared attach points, and colliding labels, while retaining current native Excalidraw fonts 7–10.
 
 ### Install / update
 
-- Update the skill package and the published Claude Code global file to receive the corrected guidance and checks. New web projects receive the corrected template; existing projects need the relevant template changes applied explicitly. No new paid service or model download is required.
-- Update the Claude Code global instruction file to receive the new routing rule; model-pinned custom agents are no longer needed for routing.
-- Update the skill package to receive the `x9-diagrams` changes.
+- Update through your existing installation route. Custom onboarding declarations must omit full three-runtime lists and requirement lists that repeat their skill's runtime scope. Keep supported-runtime restrictions only in the declaration and remove Boolean `metadata.internal` from portable skills.
+- Update the Claude Code global file for the revised model-and-effort routing; model-pinned custom agents are no longer needed. Install `x9-diagrams` with architecture scout, and `x9-context-files-generator` when normalizing existing vault instruction files.
+- New web projects receive the corrected template; existing projects need the relevant template changes applied explicitly. No new paid service or model download is required.
 
 ### Compatibility
 
@@ -33,7 +45,7 @@
 
 ### Breaking changes
 
-- Invalid skills, reports, SVG/HTML inputs, package metadata, excluded runtime links, and unsafe recovery destinations that previously passed validation are now refused. Existing user content is preserved.
+- Skills, reports, HTML inputs, package metadata, excluded runtime links, and unsafe recovery destinations that previously bypassed their documented checks are now refused. Portable validation rejects Boolean `metadata.internal`; runtime-specific validation still permits it. Existing user content is preserved.
 - Onboarding declarations that list all three runtimes, or repeat the skill's runtimes on a requirement, are now refused; delete those lists. The package check also refuses supported-runtime lists in a skill's text.
 
 ## 3.13.0 - 2026-10-12

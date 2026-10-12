@@ -12,7 +12,7 @@
     {
       "id": "diagrams-skill",
       "kind": "skill",
-      "level": "optional",
+      "level": "required",
       "needed_for": "Creating architecture diagrams.",
       "check": {"type": "skill-present", "target_skill": "x9-diagrams"},
       "guidance_id": "install-skill"

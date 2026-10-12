@@ -107,6 +107,8 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 
 Installing a skill adds its files, but a usable workflow can still depend on a CLI, a user-controlled account, or a runtime component. This skill checks trusted local setup declarations after installation or an update, reports check coverage separately from readiness, and gives a manual checklist for what remains.
 
+The checker needs Python 3.11 or newer and can check a declared minimum command version. A skill supports every runtime unless its declaration restricts it; requirements inherit that scope unless they declare a narrower one. Declarations must omit redundant runtime lists. See the [declaration contract](skills/x9-onboarding/references/declarations.md) when maintaining your own skills.
+
 It also compares the current harness's user configuration with sanitized, opinionated x9 profiles for OpenCode, Claude Code, and Codex. The first pass only reports current and recommended values, support evidence, and the practical effect of each difference. After explicit approval it merges only the shown settings, preserves unrelated private values and comments, and keeps a local backup. It never copies credentials, personal paths, SSH data, project state, or local hooks into the public profile. Other runtimes receive `PARTIAL` coverage and `BLOCKED` readiness rather than a guess.
 
 ### Web application development
@@ -144,6 +146,8 @@ It works with any language and test runner, takes commands from the project itse
 Gathers one person's scattered notes and documents into a single vault: an inbox where you drop notes and files for the agent to sort, one topic folder per matter, from health or a video blog to a single tax question, grouped by a property rather than by folder, streams of same-shaped work such as videos that move through stages inside their topic, and an archive. Topics are named as you would say them, without dates. The agent first looks through the folder and any other folders you name, asks only what it could not tell, and shows one plan listing every move. Nothing changes until you approve it. Copies are verified by checksum, editing projects and media can stay on an external disk behind a link, originals are removed only after a separate confirmation, and everything except that confirmed removal can be undone from the run's journal.
 
 The daily rules go into the vault's `AGENTS.md`, so ordinary OpenCode, Claude Code, and Codex sessions file a video idea, a doctor's visit, or a new topic in the right place without invoking the skill. Every note outside the inbox, raw material, archive, memory, and templates carries OKF metadata through [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md), including notes brought in from old folders, whose text stays unchanged, so an agent can tell what a file holds without opening it. When you start the agent in a parent folder that also holds other material, the vault keeps its own `AGENTS.md` and the parent gets a short pointer to it. The skill is needed again for structural changes and checks. Obsidian and Git are optional.
+
+When you authorize normalization of an existing `CLAUDE.md`, the skill uses `x9-context-files-generator` to preserve its unique rules before leaving an import-only file. Install that companion for this operation. Otherwise, the existing content stays alongside the `AGENTS.md` import.
 
 #### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
 
@@ -201,7 +205,7 @@ It is for choices that materially change direction, scope, or the plan. It is no
 
 This is the skill for “write me a prompt for this task.” Describe the outcome in your own words, including through speech-to-text, and it turns that input into a bounded brief with the goal, constraints, evidence, authority, deliverable, and completion bar.
 
-It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included. The first pass is report-only: every retained change gets a short explanation of the practical benefit and any material trade-off, followed by the smallest complete proposed diff. It edits only after explicit approval. For a known list of deliverables, the completion bar must cover every item or state each exclusion; branch-specific context belongs behind a pointer that names when it applies. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
+It also reviews prompts and agent instructions you already have — any file that holds them, global `AGENTS.md` and `CLAUDE.md` included. An inspection-only request produces a report: every retained change gets a short explanation of the practical benefit and any material trade-off, followed by the smallest complete proposed diff. An explicit fix or update request authorizes the scoped local edits without another approval round. For a known list of deliverables, the completion bar must cover every item or state each exclusion; branch-specific context belongs behind a pointer that names when it applies. The underlying idea is simple: capable models need the task described in full and clear success criteria, not a script telling them which steps to take.
 
 Based on:
 
@@ -258,7 +262,7 @@ When a repository has competing architectural directions or unclear seams, this 
 
 Structural report validation is separate from browser rendering evidence, so unavailable inspection is stated as `DEGRADED` or `NOT_PROVEN`, not treated as a pass.
 
-It needs `python3` for report validation and `x9-diagrams` when creating diagrams. The external `codebase-design` skill enriches the method; without it, the baseline audit remains available with method status `DEGRADED`. If you require that exact method, its absence blocks the audit.
+Every report includes at least one architecture diagram, so both `python3` for validation and `x9-diagrams` are required. The external `codebase-design` skill enriches the method; without it, the baseline audit remains available with method status `DEGRADED`. If you require that exact method, its absence blocks the audit.
 
 ### Repositories and reusable workflows
 
@@ -274,7 +278,7 @@ For agent-facing prose, it loads `x9-agent-instructions` as a required companion
 
 Give it an already understood repeated process to package as an Agent Skill, or hand it an existing skill for an audit. When the idea is underspecified, it asks only the questions that change the design. It then builds or fixes the trigger contract, structure, references, runtime adapters, safety boundaries, and validation. If the process is a multi-stage autonomous loop, design that loop with `x9-loop-engineering` first.
 
-The method applies one cross-runtime quality contract to Claude Code and Codex skills. Structural validation uses explicit portable, Claude Code, and Codex profiles, so a passing check names the compatibility it actually proved. The skill supports both static audits and clean-context behavioral evaluation when the extra evidence is worth the cost.
+The method applies one quality contract to skills in any Agent Skills runtime. Structural validation uses explicit portable, Claude Code, and Codex profiles, so a passing check names the compatibility it actually proved. The skill supports both static audits and clean-context behavioral evaluation when the extra evidence is worth the cost.
 
 Before it writes frontmatter, the skill classifies each claimed runtime as model-invoked or user-only, records any cross-skill consumer separately, and checks whether the process has an independent owner. Claude-only invocation metadata does not become portable or Codex metadata just because the skill can be manually invoked there.
 
@@ -299,6 +303,8 @@ The skill is Claude Code only. It does not manage quotas by itself and does not 
 #### [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md)
 
 Agents find their way around a large Markdown collection faster when each document says in its header what it is. This skill keeps a short [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format) header on every document: a `type`, a `title`, a one-line `description`, and a few English `tags`, all four required. That is enough for an agent to choose a file without opening it, so the skill no longer writes authorship, verification, or expiry fields, and an ordinary edit needs no script. A new document gets its header as it is written; a document an agent works on is brought in line along the way, and the rest of the repository is left alone unless you ask for a full pass. Every repository receives the same marked block in `AGENTS.md`, copied word for word from one template with a short local part, so agents follow identical rules everywhere. A whole folder is adopted in one step from a reviewed list, and the scripts confirm that no document text, line ending, or BOM changed; they run on the Python and Ruby that come with macOS. A folder's exclusions live in one small file the scripts read, and old fields such as `generated` and `timestamp` are removed on request. An older OKF section in `AGENTS.md` is replaced by the block on the skill's first write.
+
+Documents whose content the agent edits also lose retired fields unless the repository's Local rules keep them; a full-folder cleanup still needs a separate request. The scripts need Python 3.9 or newer and preserve supported file metadata, including Finder created and modified dates on macOS.
 
 ## Global instruction files
 
@@ -330,6 +336,8 @@ npx skills update -g
 ```
 
 Plugin users can update through their agent's marketplace flow. Review [CHANGELOG.md](CHANGELOG.md) before adopting a new version if your workflows depend on runtime-specific behavior.
+
+For 4.0.0, custom onboarding declarations must remove full three-runtime lists and requirement lists that repeat the skill's scope. Supported-runtime lists belong only in the declaration; portable skills must also remove Boolean `metadata.internal`. Update the Claude Code global file if you want its revised worker routing: Opus for analysis and implementation, with Sonnet reserved for bounded search and fact extraction. This uses more of the Opus allowance.
 
 ## Contributing and security
 

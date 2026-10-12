@@ -26,6 +26,14 @@
       "guidance_id": "install-skill"
     },
     {
+      "id": "context-files-companion",
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Normalizing an existing CLAUDE.md when that change is authorized.",
+      "check": {"type": "skill-present", "target_skill": "x9-context-files-generator"},
+      "guidance_id": "install-skill"
+    },
+    {
       "id": "agent-instructions-rubric",
       "kind": "skill",
       "level": "optional",
