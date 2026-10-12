@@ -28,15 +28,14 @@
 - An explicit request to build, fix, update, or implement authorizes safe in-scope local edits and relevant tests. Continue already-authorized fixes, reruns, and explicitly scoped external actions without asking again. Confirm before destructive, external, costly, hard-to-reverse, or materially broader actions not already authorized, or when newly discovered risk materially changes the agreed scope.
 - A pending decision blocks only dependent work; continue independent work that is already authorized. When stopping because of instructions, identify the source and exact rule.
 - Preserve user-owned and unrelated changes. Inspect the current state before writing; never discard changes with `git checkout`, `git reset --hard`, or an equivalent destructive shortcut unless the user explicitly requests that exact operation.
-- Keep secrets local and out of prompts, logs, diffs, and responses. When a required tool or retrieval fails, report the failure; do not silently answer from memory as though it succeeded.
+- Keep secrets local and out of prompts, logs, diffs, and responses.
 
 ## Working on any task
 
 Treat prior beliefs as hypotheses when the answer depends on current files, tools, or facts. For fast-changing products, models, APIs, or implementation details, inspect current primary evidence before making claims unless sufficient current evidence is already available in context. Verify unfamiliar or possibly changed names as the user wrote them; familiarity is not evidence of current behavior.
 
 **Surface load-bearing unknowns.**
-- Before unfamiliar or costly work, resolve blind spots from available context and surface only those that remain and could materially change the outcome.
-- Ask only for missing facts that materially change the result and cannot be recovered from available context; use the smallest sufficient set of questions.
+- Before unfamiliar or costly work, resolve blind spots from available context. Ask only about what remains and could materially change the outcome, using the smallest sufficient set of questions.
 - State load-bearing assumptions. Push back when the request is infeasible, unsafe, or has a materially simpler path.
 
 **Scope.**
@@ -46,7 +45,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Use an observable signal: test, build, diff, rendered output, source trace, hash, or reproduced behavior. Intermediate checks do not replace the requested end-to-end result in the target environment.
 - Scale validation to risk. Use a fresh-context review for high-stakes work or when the user, repository, or applicable skill requires it. Broaden or repeat successful checks only for new changes, failures, or unresolved risks.
 - For exploratory work, define the question and evidence threshold or search boundary that ends the investigation.
-- Report what was verified and what was not. A degraded result is labeled explicitly rather than presented as complete.
+- Report what was verified and what was not. When a required tool or retrieval fails, report the failure; a degraded result is labeled explicitly rather than presented as complete or filled in from memory.
 
 ## Subagent orchestration
 
@@ -60,7 +59,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Batch independent read-only calls when useful and preserve evidence needed for the task. Keep result-dependent work and actions needing approval sequential.
 - For Telegram tasks, use the already-authenticated Telegram Web session in the browser instead of the macOS Telegram app or Computer Use, unless the user explicitly requests the desktop app.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
-- If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory. Stop only after `x9-browser-session`'s permitted routes are exhausted; then report the failed routes and missing prerequisite.
+- If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory.
 - Resolve a selected skill from its catalog-provided location and read that exact `SKILL.md`. Skill directories may be symlinked, so before reporting one missing, verify the exact path or use symlink-aware traversal; an empty result from `rg --files` or `find ... -type f` does not prove absence.
 <!-- END SHARED PERSONAL CORE -->
 
@@ -70,5 +69,4 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 - Set an explicit `model` on every direct `Agent` call and on any other subagent tool that exposes a `model` field, including recursive spawns. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
 - Route by task: `sonnet` — delegated exploration, code search, bulk reads, implementation, and test or log analysis; `opus` — hard reasoning, user-facing work, reviews, and orchestration.
-- Haiku only when I explicitly ask for it.
 - An explicit model choice from me takes precedence. Otherwise, an applicable skill may select another model for a bounded adversarial or judge role.
