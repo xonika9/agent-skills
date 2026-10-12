@@ -4,13 +4,29 @@
 
 ### Highlights
 
-- Worker briefs now keep investigation open: the shared core and `x9-agent-instructions` fence only destructive, external, costly, or shared-state actions, each with its reason, give the goal and completion bar instead of a prescribed fix, and supply real samples when the worker cannot reach live data.
-
 ### Install / update
 
 ### Compatibility
 
 ### Breaking changes
+
+## 3.13.0 - 2026-10-12
+
+### Highlights
+
+- Worker briefs now keep investigation open: the shared core and `x9-agent-instructions` fence only destructive, external, costly, or shared-state actions, each with its reason, give the goal and completion bar instead of a prescribed fix, and supply real samples when the worker cannot reach live data.
+
+### Install / update
+
+- Update the global instruction files for each runtime and the skill package to receive the new brief rules.
+
+### Compatibility
+
+- No new requirements.
+
+### Breaking changes
+
+None.
 
 ## 3.12.0 - 2026-10-12
 
