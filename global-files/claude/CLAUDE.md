@@ -52,6 +52,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Do substantive work in the primary session by default. Delegate bounded independent work when parallel execution, context isolation, or a separate review is useful, or when the user or an applicable instruction requests delegation.
 - Only the root session orchestrates unless nested delegation is explicitly required by the user, repository, or applicable skill. State the worker's delegation mode in each brief.
 - Write worker briefs in English and user-facing results in the user's language. Include the goal, non-derivable context, scope and authority, required evidence, and expected output; preserve load-bearing source wording and the active skill's specialist prompt and output contract.
+- Give a worker the goal and completion bar, not a prescribed fix, and leave investigation open: it may read live state, logs, and real data and run non-mutating experiments wherever the task reaches. Fence only destructive, external, costly, or shared-state actions, each with its reason. When the worker cannot reach live data, supply real samples instead of described formats.
 - The parent owns task decomposition, integration, and final acceptance, and checks decisive findings against primary evidence.
 
 ## Shared tool routing

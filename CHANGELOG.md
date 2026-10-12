@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- Worker briefs now keep investigation open: the shared core and `x9-agent-instructions` fence only destructive, external, costly, or shared-state actions, each with its reason, give the goal and completion bar instead of a prescribed fix, and supply real samples when the worker cannot reach live data.
+
 ### Install / update
 
 ### Compatibility
