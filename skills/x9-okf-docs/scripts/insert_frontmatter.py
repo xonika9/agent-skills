@@ -127,13 +127,13 @@ def verify_outputs(planned):
 
 
 def copy_metadata(source: Path, destination: Path) -> None:
-    """Carry mode, extended attributes such as Finder tags, and macOS ACLs; keep a fresh modification time."""
+    """Carry mode, Finder created and modified dates, extended attributes such as Finder tags, and macOS ACLs."""
     shutil.copymode(source, destination)
     if sys.platform == "darwin":
         libc = ctypes.CDLL(None, use_errno=True)
         libc.copyfile.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32]
-        # copyfile(3) COPYFILE_ACL | COPYFILE_XATTR, without COPYFILE_STAT times.
-        if libc.copyfile(os.fsencode(source), os.fsencode(destination), None, 0x1 | 0x4) != 0:
+        # copyfile(3) COPYFILE_ACL | COPYFILE_STAT | COPYFILE_XATTR; STAT keeps the dates.
+        if libc.copyfile(os.fsencode(source), os.fsencode(destination), None, 0x1 | 0x2 | 0x4) != 0:
             error = ctypes.get_errno()
             raise OSError(error, os.strerror(error), str(destination))
     elif hasattr(os, "listxattr"):
@@ -151,6 +151,9 @@ def copy_metadata(source: Path, destination: Path) -> None:
             except OSError as error:
                 if error.errno not in skip:
                     raise
+    if sys.platform != "darwin":
+        info = os.stat(source)
+        os.utime(destination, ns=(info.st_atime_ns, info.st_mtime_ns))
 
 
 def unlinked_parent(path: Path) -> None:

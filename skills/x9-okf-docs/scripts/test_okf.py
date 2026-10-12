@@ -124,9 +124,13 @@ def data_safety_checks():
                and "b.md" not in failure.split("not restored")[1])
 
         a.write_bytes(b"old a")
-        os.utime(a, (0, 0))
+        os.utime(a, (1577880000, 1577880000))
+        before = a.stat()
         writer.atomic_replace_many([("a.md", a, b"old a", b"new a")])
-        expect("a written file gets a fresh modification time", a.read_bytes() == b"new a" and a.stat().st_mtime > 0)
+        after = a.stat()
+        expect("a written file keeps its modified date", a.read_bytes() == b"new a" and after.st_mtime == before.st_mtime)
+        if hasattr(before, "st_birthtime"):
+            expect("a written file keeps its created date", after.st_birthtime == before.st_birthtime)
 
         a.write_bytes(b"old a")
         calls[0] = 0
