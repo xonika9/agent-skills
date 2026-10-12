@@ -72,7 +72,9 @@ Use a system font stack such as `system-ui, -apple-system, "Segoe UI", sans-seri
 
 ## HTML wrapper
 
-When the delivery is a page or an in-chat preview, write a minimal HTML document that embeds the SVG inline or via `<img src="diagram.svg">`. Inline markup must stay identical to the canonical file. Keep the SVG at its `viewBox` width inside a wrapper with `overflow-x: auto`, so a narrow screen scrolls the diagram instead of shrinking its text. A preview renders the delivered SVG; it does not prove anything about a different file.
+When the delivery is a page or an in-chat preview, write a minimal HTML document that embeds the SVG inline or via `<img src="diagram.svg">`. Inline markup must stay identical to the canonical file. For the shared method's scrollable-canvas mode, keep the SVG at its `viewBox` width inside a wrapper with `overflow-x: auto`. A grid or flex ancestor needs `min-width: 0` so the wrapper can actually scroll. For whole-view mode, compose for the destination width; do not let the wrapper introduce scrolling or silently shrink required text below its intended reading scale. A preview renders the delivered SVG; it does not prove anything about a different file.
+
+If print is a requested destination, release the wrapper's overflow and the SVG's minimum width in print CSS, after the screen sizing rules. Preserve aspect ratio and fit within the declared physical placement size from [delivery presets](delivery-presets.md). Inspect the actual print/PDF output for cropping and reading size; a screen render alone is not print evidence.
 
 ## Validation
 
@@ -84,4 +86,4 @@ python3 ../scripts/check_svg.py diagram.svg
 
 It exits `1` on contract errors and reports geometry problems as `WARN`; add `--strict-geometry` to fail on them and on any element whose geometry it could not check. Geometry warnings are estimates from declared coordinates, and text width is approximate.
 
-Then render the `.svg` in a browser engine, for example a headless browser screenshot or the host's HTML preview, at the delivery size. Inspect the rendered view for clipped or overflowing text, connector landing points, crossings, and hierarchy. A checker pass without a render is `DEGRADED`.
+Then render the `.svg` in a browser engine, for example a headless browser screenshot or the host's HTML preview, at the delivery size. When the browser controller exposes font readiness and element geometry, wait for fonts and measure the rendered text bounds against the node interior and its padding. Inspect the actual image as well: element bounds alone omit stroke and marker spill. Check clipped or overflowing text, connector landing points, crossings, and hierarchy in the declared delivery mode; for an HTML scrollable preview, also check that a narrow viewport can reach all diagram content without sideways page overflow. A checker pass without a render is `DEGRADED`.

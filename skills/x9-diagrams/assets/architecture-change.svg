@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="architecture-change-title architecture-change-desc">
+  <title id="architecture-change-title">Order processing before and after adding a queue</title>
+  <desc id="architecture-change-desc">A fictional order API enqueues jobs instead of dispatching them directly. The same worker changes from inline to queued processing; the request path and logical component positions remain stable.</desc>
+  <style>
+    .paper { fill: #ffffff; }
+    .mask { fill: #f8fafc; }
+    .panel { fill: #f8fafc; stroke: #d8dee8; stroke-width: 1; }
+    .node { fill: #ffffff; stroke: #526075; stroke-width: 1.5; }
+    .focus { fill: #fff4ed; stroke: #9a3412; stroke-width: 1.5; }
+    .edge { fill: none; stroke: #526075; stroke-width: 1.5; }
+    .name { fill: #172033; font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; }
+    .detail { fill: #526075; font-family: system-ui, sans-serif; font-size: 12px; }
+    .token { fill: #526075; font-family: ui-monospace, monospace; font-size: 12px; }
+    .heading { fill: #172033; font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; }
+  </style>
+  <defs>
+    <marker id="architecture-change-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M 0 0 L 8 3 L 0 6 Z" fill="#526075"/>
+    </marker>
+  </defs>
+  <rect class="paper" width="960" height="640"/>
+  <text class="heading" x="40" y="36">Order processing: adding a durable queue</text>
+  <g data-layer="boundaries">
+    <g data-boundary="before"><rect class="panel" x="40" y="76" width="248" height="492" rx="6"/><text class="heading" x="64" y="106">Before</text></g>
+    <g data-boundary="after"><rect class="panel" x="672" y="76" width="248" height="492" rx="6"/><text class="heading" x="696" y="106">After</text></g>
+  </g>
+  <g data-layer="edges">
+    <g data-edge="before-r1" data-from="before-client" data-to="before-api"><path class="edge" d="M 164 188 V 248" marker-end="url(#architecture-change-arrow)"/></g>
+    <g data-edge="before-r2" data-from="before-api" data-to="before-worker"><path class="edge" d="M 164 308 V 488" marker-end="url(#architecture-change-arrow)"/></g>
+    <g data-edge="after-r1" data-from="after-client" data-to="after-api"><path class="edge" d="M 796 188 V 248" marker-end="url(#architecture-change-arrow)"/></g>
+    <g data-edge="after-r2" data-from="after-api" data-to="after-queue"><path class="edge" d="M 796 308 V 368" marker-end="url(#architecture-change-arrow)"/></g>
+    <g data-edge="after-r3" data-from="after-queue" data-to="after-worker"><path class="edge" d="M 796 428 V 488" marker-end="url(#architecture-change-arrow)"/></g>
+  </g>
+  <g data-layer="nodes">
+    <g data-node="before-client" data-parent="before"><rect class="node" x="64" y="128" width="200" height="60" rx="5"/><text class="name" x="76" y="153">Client</text><text class="token" x="76" y="173">client · unchanged</text></g>
+    <g data-node="before-api" data-parent="before"><rect class="focus" x="64" y="248" width="200" height="60" rx="5"/><text class="name" x="76" y="273">API · changed</text><text class="token" x="76" y="293">api · dispatch</text></g>
+    <g data-node="before-worker" data-parent="before"><rect class="node" x="64" y="488" width="200" height="60" rx="5"/><text class="name" x="76" y="513">Worker · changed</text><text class="token" x="76" y="533">worker · inline</text></g>
+    <g data-node="after-client" data-parent="after"><rect class="node" x="696" y="128" width="200" height="60" rx="5"/><text class="name" x="708" y="153">Client</text><text class="token" x="708" y="173">client · unchanged</text></g>
+    <g data-node="after-api" data-parent="after"><rect class="focus" x="696" y="248" width="200" height="60" rx="5"/><text class="name" x="708" y="273">API · changed</text><text class="token" x="708" y="293">api · enqueue</text></g>
+    <g data-node="after-queue" data-parent="after"><rect class="node" x="696" y="368" width="200" height="60" rx="5"/><text class="name" x="708" y="393">+ Durable queue</text><text class="token" x="708" y="413">queue · added</text></g>
+    <g data-node="after-worker" data-parent="after"><rect class="node" x="696" y="488" width="200" height="60" rx="5"/><text class="name" x="708" y="513">Worker · changed</text><text class="token" x="708" y="533">worker · queued</text></g>
+  </g>
+  <g data-layer="labels">
+    <g data-label-for="before-r1"><rect class="mask" x="176" y="208" width="84" height="20"/><text class="detail" x="182" y="222">request</text></g>
+    <g data-label-for="before-r2"><rect class="mask" x="176" y="388" width="84" height="20"/><text class="detail" x="182" y="402">dispatch</text></g>
+    <g data-label-for="after-r1"><rect class="mask" x="808" y="208" width="84" height="20"/><text class="detail" x="814" y="222">request</text></g>
+    <g data-label-for="after-r2"><rect class="mask" x="808" y="328" width="84" height="20"/><text class="detail" x="814" y="342">enqueue</text></g>
+    <g data-label-for="after-r3"><rect class="mask" x="808" y="448" width="84" height="20"/><text class="detail" x="814" y="462">deliver</text></g>
+    <text class="heading" x="336" y="106">Changes</text>
+    <text class="name" x="336" y="158">1. API behavior</text>
+    <text class="token" x="336" y="182">api: dispatch → enqueue</text>
+    <text class="name" x="336" y="234">2. Worker behavior</text>
+    <text class="token" x="336" y="258">worker: inline → queued</text>
+    <text class="name" x="336" y="310">3. Added component</text>
+    <text class="token" x="336" y="334">+ queue: durable jobs</text>
+    <text class="name" x="336" y="386">4. Changed relationship</text>
+    <text class="token" x="336" y="410">r2: dispatch → enqueue</text>
+    <text class="token" x="336" y="432">api → worker becomes</text>
+    <text class="token" x="336" y="454">api → queue</text>
+    <text class="name" x="336" y="506">5. Added relationship</text>
+    <text class="token" x="336" y="530">+ r3: queue → worker</text>
+    <text class="detail" x="40" y="606">Illustrative system · 4 logical components · 7 drawn nodes · 5 drawn relationships</text>
+  </g>
+</svg>

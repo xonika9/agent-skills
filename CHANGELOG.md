@@ -4,6 +4,7 @@
 
 ### Highlights
 
+- `x9-diagrams` gains composition guidance for architecture changes and manual sequence views, document/slide/print size presets, and a worked SVG comparison; whole-view previews preserve their delivery mode, and requested print output is checked at its physical size.
 - The Claude Code global file now routes each delegated worker by model and reasoning effort together: Opus at high effort for analysis, diagnosis, planning, and reviews; Opus at medium effort for implementation; Sonnet at high effort only for bounded search and fact extraction. A model that a skill assigns to a role it defines now takes precedence, as in the Codex and OpenCode files, so skills such as code review keep their mid-tier reviewers.
 - `x9-diagrams` can deliver a diagram as a self-contained SVG file for articles, slides, and READMEs, with an optional HTML preview; a bundled checker catches broken references, unsafe content, and layout collisions before the browser render is inspected.
 - `x9-diagrams` now holds diagrams to a numeric complexity budget and one or two focal accents, states its plan and cuts before drawing, and offers patterns for trust boundaries, lifecycles, and bottlenecks.

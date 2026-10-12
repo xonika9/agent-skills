@@ -45,7 +45,10 @@ Choose topology from the relationship rather than the nouns:
 | Parent/child structure | Tree |
 | Events placed against time | Timeline |
 | Alternatives under common criteria | Matched comparison |
+| Structural change between two snapshots | Architecture change comparison |
 | One center with independent branches | Hub-and-spoke or mind map |
+
+For architecture change comparisons or manually composed sequence views, read only the matching section in [view grammar](view-grammar.md). It owns the view's required content and composition; the selected format adapter owns its notation and serialization.
 
 ### Behavior patterns
 
@@ -56,6 +59,8 @@ When behavior, not structure, carries the answer, one pattern specializes the ch
 - **Bottleneck** (data-flow view): distinct sources converging on one constrained point with its capacity stated in units (`8/hour`, `3 slots`), plus both admitted and deferred or rejected outcomes. Aggregate more than five sources into a named group. Pitfall: contention implied only by box size or color.
 
 ## Compose for the delivery viewport
+
+When the destination is a document, slide, or printed page, select a starting frame and text scale from [delivery presets](delivery-presets.md); explicit user dimensions and the actual destination take precedence.
 
 Use scale, grouping, and whitespace to reveal hierarchy. Primary peers share visual weight; secondary notes are quieter without becoming illegible; boundaries describe ownership or scope and must not compete with their children.
 
