@@ -7,7 +7,7 @@
       "runtimes": ["opencode", "claude", "codex"],
       "kind": "command",
       "level": "optional",
-      "needed_for": "Checking Excalidraw scenes.",
+      "needed_for": "Checking Excalidraw scenes and SVG files, and summarizing diagram sources.",
       "check": {"type": "command-present", "command": "python3"},
       "guidance_id": "install-command"
     },
@@ -26,6 +26,15 @@
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Rendering Mermaid diagrams.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "svg-renderer",
+      "runtimes": ["opencode", "claude", "codex"],
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Rendering SVG diagrams in a browser engine.",
       "check": {"type": "manual"},
       "guidance_id": "complete-user-action"
     },

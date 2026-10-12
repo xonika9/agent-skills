@@ -187,6 +187,8 @@ python3 ../scripts/check_scene.py diagram.excalidraw \
   --normalization-result diagram.normalized-again.excalidraw
 ```
 
+The checker also prints `WARN` lines for connectors crossing an unrelated shape, two arrows sharing one attach point, and connector or standalone labels colliding with shapes or each other. Warnings are estimates from stored geometry and do not fail the check; add `--strict-geometry` when they should. Resolve each one or confirm in the render that it is harmless.
+
 Use `--viewport-width` plus `--viewport-height` only for a whole-view delivery. For an explicitly scrollable canvas, use `--viewport-width` as a width diagnostic and inspect consecutive normal-zoom regions instead of failing the scene because its complete height does not fit.
 
-Use the actual content viewport of the rendered proof, not the nominal browser-window dimensions. Then open or faithfully render the scene. Without `--normalization-result`, the checker cannot prove target-version text stability; in either mode it cannot prove z-order appearance, connector paths, contrast, or composition.
+Use the actual content viewport of the rendered proof, not the nominal browser-window dimensions. Then open or faithfully render the scene. Without `--normalization-result`, the checker cannot prove target-version text stability; in either mode it cannot prove z-order appearance, exact connector paths, contrast, or composition.

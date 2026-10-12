@@ -4,11 +4,24 @@
 
 ### Highlights
 
+- The Claude Code global file now routes each delegated worker by model and reasoning effort together: Opus at high effort for analysis, diagnosis, planning, and reviews; Opus at medium effort for implementation; Sonnet at high effort only for bounded search and fact extraction. A model that a skill assigns to a role it defines now takes precedence, as in the Codex and OpenCode files, so skills such as code review keep their mid-tier reviewers.
+- `x9-diagrams` can deliver a diagram as a self-contained SVG file for articles, slides, and READMEs, with an optional HTML preview; a bundled checker catches broken references, unsafe content, and layout collisions before the browser render is inspected.
+- `x9-diagrams` now holds diagrams to a numeric complexity budget and one or two focal accents, states its plan and cuts before drawing, and offers patterns for trust boundaries, lifecycles, and bottlenecks.
+- Diagram conversions start from a compact summary of an Excalidraw, draw.io, or SVG source and end with a ledger of what was merged, simplified, or dropped; the Excalidraw checker also warns about connectors crossing unrelated shapes, shared attach points, and colliding labels.
+
 ### Install / update
+
+- Update the Claude Code global instruction file to receive the new routing rule; model-pinned custom agents are no longer needed for routing.
+- Update the skill package to receive the `x9-diagrams` changes.
 
 ### Compatibility
 
+- More delegated work runs on Opus, which uses more of its usage allowance.
+- SVG rendering needs a browser engine; without one, an SVG result is reported as `DEGRADED`. Excalidraw geometry warnings do not fail the check unless `--strict-geometry` is passed.
+
 ### Breaking changes
+
+None.
 
 ## 3.13.0 - 2026-10-12
 

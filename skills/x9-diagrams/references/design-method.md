@@ -1,6 +1,17 @@
 # Diagram design method
 
-Use this reference for decisions shared by Excalidraw, Mermaid, and draw.io. Format syntax and serialization live in [excalidraw-format.md](excalidraw-format.md), [mermaid.md](mermaid.md), and [drawio.md](drawio.md).
+Use this reference for decisions shared by Excalidraw, Mermaid, draw.io, and SVG. Format syntax and serialization live in [excalidraw-format.md](excalidraw-format.md), [mermaid.md](mermaid.md), [drawio.md](drawio.md), and [svg.md](svg.md).
+
+## Contents
+
+- [Start with one question and one path](#start-with-one-question-and-one-path)
+- [Compose for the delivery viewport](#compose-for-the-delivery-viewport)
+- [Make boundaries mean something](#make-boundaries-mean-something)
+- [Route relationships](#route-relationships)
+- [Limit visual vocabulary](#limit-visual-vocabulary)
+- [Respect the complexity budget](#respect-the-complexity-budget)
+- [Split before the diagram fails](#split-before-the-diagram-fails)
+- [Visual acceptance](#visual-acceptance)
 
 ## Start with one question and one path
 
@@ -12,7 +23,9 @@ Write the one-sentence question the diagram answers. Rank content as:
 2. secondary: useful explanation at normal reading or editing scale;
 3. detail: better placed in a focused view, note, or linked artifact.
 
-For a new diagram or an explicitly authorized redesign, remove or merge any node, connector, or label whose absence leaves that answer intact. Do not retain decoration merely to fill space.
+For a new diagram or an explicitly authorized redesign, remove or merge any node, connector, or label whose absence leaves that answer intact; two nodes that always appear together are one node. Do not retain decoration merely to fill space.
+
+Before drawing a new diagram, state in one short message the view, the format, the delivery mode, and anything the [complexity budget](#respect-the-complexity-budget) forces out. If a cut removes content the user asked for and the user is reachable, let them redirect before drawing; otherwise proceed and list the cuts beside the deliverable.
 
 For a revision, preserve the existing view type, dominant reading direction, canvas orientation, major topology, node identity, and meaningful boundaries. A request to review, fix, polish, or improve does not authorize changing them; only an explicit redesign request does.
 
@@ -34,13 +47,21 @@ Choose topology from the relationship rather than the nouns:
 | Alternatives under common criteria | Matched comparison |
 | One center with independent branches | Hub-and-spoke or mind map |
 
+### Behavior patterns
+
+When behavior, not structure, carries the answer, one pattern specializes the chosen view. Use one primary pattern per diagram; a second need means a second view.
+
+- **Trust boundary crossing** (architecture view): show the boundary, every permitted route across it with its control point, and the forbidden or blocked routes as visibly distinct lines with a label. Pitfalls: a boundary drawn without any crossing, or a blocked route shown only by color.
+- **Lifecycle** (state view): one subject's main phases on a single rail in reading order, waits and retries in a separate band, and each terminal outcome, such as cancelled and failed, as its own labeled state. Pitfalls: actor messages disguised as phases, or a retry loop without a labeled re-entry point.
+- **Bottleneck** (data-flow view): distinct sources converging on one constrained point with its capacity stated in units (`8/hour`, `3 slots`), plus both admitted and deferred or rejected outcomes. Aggregate more than five sources into a named group. Pitfall: contention implied only by box size or color.
+
 ## Compose for the delivery viewport
 
 Use scale, grouping, and whitespace to reveal hierarchy. Primary peers share visual weight; secondary notes are quieter without becoming illegible; boundaries describe ownership or scope and must not compete with their children.
 
 Keep labels short enough to scan. Separate a human-facing label from a technical identifier when both matter. Move paragraphs into nearby notes or focused views rather than turning every node into a document.
 
-Use hard line breaks only for semantic boundaries such as a heading/body split or separate list items. Width-driven wrapping belongs to the selected format's layout engine. If rendering produces orphaned one-word lines, leading separators, or broken compounds, shorten the label or enlarge the node instead of hand-tuning line breaks.
+Use hard line breaks only for semantic boundaries such as a heading/body split or separate list items. Width-driven wrapping belongs to the selected format's layout engine; a format without one, such as SVG, delegates line breaking to its adapter. If rendering produces orphaned one-word lines, leading separators, or broken compounds, shorten the label or enlarge the node instead of hand-tuning line breaks.
 
 Choose the delivery mode before laying out the canvas:
 
@@ -69,13 +90,26 @@ Solid, dashed, and dotted lines may distinguish primary, asynchronous or optiona
 
 ## Limit visual vocabulary
 
-Start with neutral text and connectors, one quiet boundary treatment, and a small set of semantic accents. Apply the same visual treatment to the same role. Use shape, label, or line style alongside color so the meaning survives grayscale and color-vision differences.
+Start with neutral text and connectors, one quiet boundary treatment, and a small set of semantic accents. Apply the same visual treatment to the same role. Reserve the focal accent for one or two elements: the answer to the question or the path the reader follows first. Needing more focal accents means the focus is still undecided. Use shape, label, or line style alongside color so the meaning survives grayscale and color-vision differences.
 
 Decoration must support the requested tone without obscuring structure. A legend earns space only when visual encoding cannot be inferred from labels.
 
+## Respect the complexity budget
+
+One whole-view diagram carries at most 9 primary nodes and 12 relationships. Views with their own grammar have tighter ceilings:
+
+| View | Ceiling |
+| --- | --- |
+| Sequence | 5 participants, 1 nested fragment level |
+| Swimlane | 5 lanes |
+| Tree or hierarchy | depth 4 |
+| Entity-relationship or class | 8 entities |
+
+Boundaries, connector labels, and notes do not count as nodes. Above a ceiling, aggregate peers into a named group; if that is not enough, [split](#split-before-the-diagram-fails) before laying out. A scrollable canvas applies the ceilings to each viewport-sized region. A conversion or review of an existing diagram keeps the source's content: report the overrun instead of cutting, unless the user asked for a simplified result.
+
 ## Split before the diagram fails
 
-Create an overview plus focused views when any of these remain after one layout revision:
+Create an overview plus focused views when the [complexity budget](#respect-the-complexity-budget) calls for a split, or when any of these remain after one layout revision:
 
 - the reading order cannot be described in one short sentence;
 - required text is illegible at delivery size;

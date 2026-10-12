@@ -94,7 +94,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You keep repeating the same multi-stage workflow by hand: design it with [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md).
 - You want to turn a process into a skill, or audit a skill you already have: use [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md).
 - You need a read-only view of a repository's architecture, trade-offs, and change hotspots: use [`x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md).
-- You need an editable diagram in Excalidraw, Mermaid, or draw.io: use [`x9-diagrams`](skills/x9-diagrams/SKILL.md).
+- You need an editable diagram in Excalidraw, Mermaid, draw.io, or SVG: use [`x9-diagrams`](skills/x9-diagrams/SKILL.md).
 - You work outside Codex but want a generated picture through your Codex subscription: use [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md).
 - You work in Claude Code but want Codex to take a bounded part of the job: use [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md).
 - Your Markdown documentation has grown into a knowledge base: adapt it with [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md).
@@ -222,9 +222,9 @@ It only applies when the earlier answer is available in the same thread. If the 
 
 #### [`x9-diagrams`](skills/x9-diagrams/SKILL.md)
 
-Choosing the diagram type and choosing its file format are different decisions. When the medium is open, this skill first checks whether a short paragraph or table would answer more directly. If a diagram is warranted, it identifies the relationship the visual must explain, then selects Excalidraw, Mermaid, or draw.io from the delivery constraints. The shared method controls the question, audience, reading direction, hierarchy, density, boundaries, labels, routing, and the point where one overloaded diagram should split.
+Choosing the diagram type and choosing its file format are different decisions. When the medium is open, this skill first checks whether a short paragraph or table would answer more directly. If a diagram is warranted, it identifies the relationship the visual must explain, then selects Excalidraw, Mermaid, draw.io, or SVG from the delivery constraints. The shared method controls the question, audience, reading direction, hierarchy, density, boundaries, labels, routing, and a numeric complexity budget: past it, the skill groups peers or splits the diagram into an overview and focused views instead of shrinking its text.
 
-Each route produces native editable source: `.excalidraw` JSON with checked bindings and current fonts, Mermaid text validated by the target renderer, or `.drawio` XML with pages, layers, containers, geometry, and resolvable connections. Structural validity and visual quality are separate gates, so completion requires a compatible render or editor inspection; unavailable native proof is reported as `DEGRADED`.
+Each route produces native editable source: `.excalidraw` JSON with checked bindings and current fonts, Mermaid text validated by the target renderer, `.drawio` XML with pages, layers, containers, geometry, and resolvable connections, or a self-contained `.svg` for articles, slides, and READMEs, with an HTML page when a preview is needed. Conversions start from a compact summary of the source and end with a ledger of everything merged, simplified, or dropped. Structural validity and visual quality are separate gates, so completion requires a compatible render or editor inspection; unavailable native proof is reported as `DEGRADED`.
 
 #### [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md)
 

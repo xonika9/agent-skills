@@ -101,6 +101,13 @@ NORMALIZATION_LINEAR_FIELDS = (
     "startBinding",
     "endBinding",
 )
+GEOMETRY_SHAPE_TYPES = {"rectangle", "ellipse", "diamond"}
+# Shapes and labels are shrunk by this many scene units before overlap tests,
+# so edges that merely touch are not reported.
+GEOMETRY_INSET = 2.0
+# Two bindings on one element are "the same attach point" when both
+# fixedPoint coordinates differ by at most this ratio.
+SHARED_ATTACH_TOLERANCE = 0.02
 
 
 def _number(value: Any) -> bool:
@@ -109,6 +116,11 @@ def _number(value: Any) -> bool:
         and not isinstance(value, bool)
         and math.isfinite(value)
     )
+
+
+def _lookup(by_id: dict[str, dict[str, Any]], key: Any) -> dict[str, Any] | None:
+    """Resolve an identifier; non-string (malformed) identifiers resolve to nothing."""
+    return by_id.get(key) if isinstance(key, str) else None
 
 
 def _normalization_values_match(left: Any, right: Any, tolerance: float) -> bool:
@@ -209,7 +221,7 @@ def _binding_errors(
 
     errors: list[str] = []
     target = binding.get("elementId")
-    target_element = by_id.get(target) if isinstance(target, str) else None
+    target_element = _lookup(by_id, target)
     if target_element is None or target_element.get("isDeleted"):
         errors.append(
             f"{prefix}.elementId does not resolve to an active element: {target!r}"
@@ -519,7 +531,7 @@ def validate_scene(
             if not isinstance(bound, dict):
                 errors.append(f"{element_id}.boundElements entries must be objects")
                 continue
-            target = by_id.get(bound.get("id"))
+            target = _lookup(by_id, bound.get("id"))
             if target is None or target.get("isDeleted"):
                 errors.append(
                     f"{element_id}.boundElements reference does not resolve: "
@@ -538,7 +550,7 @@ def validate_scene(
                 )
 
         if element.get("type") == "text" and element.get("containerId"):
-            container = by_id.get(element["containerId"])
+            container = _lookup(by_id, element["containerId"])
             if container and not any(
                 bound.get("id") == element_id and bound.get("type") == "text"
                 for bound in container.get("boundElements") or []
@@ -554,7 +566,7 @@ def validate_scene(
                 binding = element.get(f"{endpoint}Binding")
                 if not isinstance(binding, dict):
                     continue
-                target = by_id.get(binding.get("elementId"))
+                target = _lookup(by_id, binding.get("elementId"))
                 if target and not any(
                     bound.get("id") == element_id and bound.get("type") == "arrow"
                     for bound in target.get("boundElements") or []
@@ -635,6 +647,268 @@ def validate_scene(
             "cannot certify interaction stability"
         )
     return errors, notes
+
+
+def _box(element: dict[str, Any]) -> tuple[float, float, float, float] | None:
+    values = [element.get(field) for field in ("x", "y", "width", "height")]
+    if not all(_number(value) for value in values):
+        return None
+    x, y, width, height = values
+    return (x, y, x + width, y + height)
+
+
+def _shrink(
+    box: tuple[float, float, float, float], inset: float
+) -> tuple[float, float, float, float] | None:
+    left, top, right, bottom = (
+        box[0] + inset,
+        box[1] + inset,
+        box[2] - inset,
+        box[3] - inset,
+    )
+    if left >= right or top >= bottom:
+        return None
+    return (left, top, right, bottom)
+
+
+def _boxes_overlap(
+    a: tuple[float, float, float, float], b: tuple[float, float, float, float]
+) -> bool:
+    return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
+
+
+def _box_contains(
+    outer: tuple[float, float, float, float],
+    inner: tuple[float, float, float, float],
+    slack: float = 0.0,
+) -> bool:
+    return (
+        outer[0] <= inner[0] + slack
+        and outer[1] <= inner[1] + slack
+        and outer[2] >= inner[2] - slack
+        and outer[3] >= inner[3] - slack
+    )
+
+
+def _segment_enters_box(
+    start: tuple[float, float],
+    end: tuple[float, float],
+    box: tuple[float, float, float, float],
+) -> bool:
+    """True when the segment crosses the open interior of the box."""
+    dx = end[0] - start[0]
+    dy = end[1] - start[1]
+    t_enter, t_exit = 0.0, 1.0
+    for p, q in (
+        (-dx, start[0] - box[0]),
+        (dx, box[2] - start[0]),
+        (-dy, start[1] - box[1]),
+        (dy, box[3] - start[1]),
+    ):
+        if p == 0:
+            if q <= 0:
+                return False
+            continue
+        t = q / p
+        if p < 0:
+            t_enter = max(t_enter, t)
+        else:
+            t_exit = min(t_exit, t)
+        if t_enter > t_exit:
+            return False
+    return t_enter < t_exit
+
+
+def _absolute_polyline(element: dict[str, Any]) -> list[tuple[float, float]] | None:
+    points = element.get("points")
+    if (
+        not _number(element.get("x"))
+        or not _number(element.get("y"))
+        or not isinstance(points, list)
+        or len(points) < 2
+        or not all(
+            isinstance(point, list)
+            and len(point) == 2
+            and all(_number(value) for value in point)
+            for point in points
+        )
+    ):
+        return None
+    return [(element["x"] + point[0], element["y"] + point[1]) for point in points]
+
+
+def geometry_warnings(data: Any) -> tuple[list[str], list[str]]:
+    """Return (warnings, notes) about composition problems in a basic scene.
+
+    Malformed input yields no geometry findings; validate_scene reports it.
+    """
+    warnings: list[str] = []
+    notes: list[str] = []
+    if not isinstance(data, dict) or not isinstance(data.get("elements"), list):
+        return warnings, notes
+
+    by_id: dict[str, dict[str, Any]] = {}
+    for element in data["elements"]:
+        if isinstance(element, dict) and isinstance(element.get("id"), str):
+            by_id.setdefault(element["id"], element)
+
+    active: list[dict[str, Any]] = []
+    for element in data["elements"]:
+        if (
+            not isinstance(element, dict)
+            or element.get("isDeleted")
+            or not isinstance(element.get("id"), str)
+            or element.get("type") not in BASIC_ELEMENT_TYPES
+        ):
+            continue
+        angle = element.get("angle", 0)
+        if not _number(angle):
+            continue
+        if angle != 0:
+            notes.append(
+                f"geometry not checked for rotated element {element['id']} "
+                f"(angle {angle:g})"
+            )
+            continue
+        active.append(element)
+
+    def is_active(element_id: Any) -> dict[str, Any] | None:
+        target = by_id.get(element_id) if isinstance(element_id, str) else None
+        return target if target is not None and not target.get("isDeleted") else None
+
+    shapes = [
+        (element, box)
+        for element in active
+        if element["type"] in GEOMETRY_SHAPE_TYPES
+        and (box := _box(element)) is not None
+    ]
+
+    # Connector through an unrelated shape.
+    for element in active:
+        if element["type"] not in {"arrow", "line"}:
+            continue
+        polyline = _absolute_polyline(element)
+        if polyline is None:
+            continue
+        bound_ids: set[str] = set()
+        bound_boxes: list[tuple[float, float, float, float]] = []
+        for endpoint in ("start", "end"):
+            binding = element.get(f"{endpoint}Binding")
+            if not isinstance(binding, dict):
+                continue
+            target = is_active(binding.get("elementId"))
+            if target is None:
+                continue
+            bound_ids.add(target["id"])
+            target_box = _box(target)
+            if target_box is not None:
+                bound_boxes.append(target_box)
+        for shape, box in shapes:
+            if shape["id"] in bound_ids:
+                continue
+            if any(_box_contains(box, bound_box) for bound_box in bound_boxes):
+                continue
+            inner = _shrink(box, GEOMETRY_INSET)
+            if inner is None:
+                continue
+            if any(
+                _segment_enters_box(a, b, inner)
+                for a, b in zip(polyline, polyline[1:])
+            ):
+                warnings.append(
+                    f"{element['type']} {element['id']} passes through "
+                    f"unrelated {shape['type']} {shape['id']}"
+                )
+
+    # Shared attach point.
+    attachments: dict[str, list[tuple[str, str, float, float]]] = {}
+    for element in active:
+        if element["type"] != "arrow":
+            continue
+        for endpoint in ("start", "end"):
+            binding = element.get(f"{endpoint}Binding")
+            if not isinstance(binding, dict):
+                continue
+            point = binding.get("fixedPoint")
+            if (
+                is_active(binding.get("elementId")) is None
+                or not isinstance(point, list)
+                or len(point) != 2
+                or not all(_number(value) for value in point)
+            ):
+                continue
+            attachments.setdefault(binding["elementId"], []).append(
+                (element["id"], endpoint, point[0], point[1])
+            )
+    for target_id, entries in attachments.items():
+        for index, (id_a, end_a, ax, ay) in enumerate(entries):
+            for id_b, end_b, bx, by in entries[index + 1:]:
+                if id_a == id_b:
+                    continue
+                if (
+                    abs(ax - bx) <= SHARED_ATTACH_TOLERANCE
+                    and abs(ay - by) <= SHARED_ATTACH_TOLERANCE
+                ):
+                    warnings.append(
+                        f"arrows {id_a}.{end_a} and {id_b}.{end_b} share the "
+                        f"attach point [{ax:g}, {ay:g}] on {target_id}"
+                    )
+
+    # Label collision.
+    connector_labels: list[tuple[dict[str, Any], tuple[float, ...]]] = []
+    free_labels: list[tuple[dict[str, Any], tuple[float, ...]]] = []
+    for element in active:
+        if element["type"] != "text":
+            continue
+        box = _box(element)
+        if box is None:
+            continue
+        container_id = element.get("containerId")
+        if container_id is None:
+            free_labels.append((element, box))
+        else:
+            container = is_active(container_id)
+            if container is not None and container.get("type") == "arrow":
+                connector_labels.append((element, box))
+    all_labels = connector_labels + free_labels
+    for label, box in all_labels:
+        inner = _shrink(box, GEOMETRY_INSET)
+        if inner is None:
+            continue
+        kind = "connector label" if label.get("containerId") else "text"
+        for shape, shape_box in shapes:
+            shape_inner = _shrink(shape_box, GEOMETRY_INSET)
+            if (
+                shape_inner is None
+                or not _boxes_overlap(inner, shape_inner)
+                or _box_contains(shape_box, box, GEOMETRY_INSET)
+            ):
+                continue
+            warnings.append(
+                f"{kind} {label['id']} overlaps {shape['type']} {shape['id']}"
+            )
+    for index, (label_a, box_a) in enumerate(all_labels):
+        inner_a = _shrink(box_a, GEOMETRY_INSET)
+        if inner_a is None:
+            continue
+        for label_b, box_b in all_labels[index + 1:]:
+            inner_b = _shrink(box_b, GEOMETRY_INSET)
+            if not inner_b or not _boxes_overlap(inner_a, inner_b):
+                continue
+            a_connector = bool(label_a.get("containerId"))
+            b_connector = bool(label_b.get("containerId"))
+            if a_connector and b_connector:
+                message = f"connector labels {label_a['id']} and {label_b['id']} overlap"
+            elif not a_connector and not b_connector:
+                message = f"texts {label_a['id']} and {label_b['id']} overlap"
+            else:
+                message = (
+                    f"connector label {label_a['id']} and text {label_b['id']} overlap"
+                    if a_connector
+                    else f"connector label {label_b['id']} and text {label_a['id']} overlap"
+                )
+            warnings.append(message)
+    return warnings, notes
 
 
 def active_bound_text_ids(data: Any) -> list[str]:
@@ -726,6 +1000,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
             "not valid as final completion evidence"
         ),
     )
+    parser.add_argument(
+        "--strict-geometry",
+        action="store_true",
+        help="treat geometry warnings as errors (default: print WARN lines only)",
+    )
     args = parser.parse_args(argv)
     if args.viewport_height is not None and args.viewport_width is None:
         parser.error("--viewport-height requires --viewport-width")
@@ -755,7 +1034,7 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError:
         print(f"ERROR: file not found: {args.scene}", file=sys.stderr)
         return 2
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+    except (OSError, ValueError, RecursionError) as error:
         print(f"ERROR: cannot parse {args.scene}: {error}", file=sys.stderr)
         return 2
 
@@ -791,7 +1070,7 @@ def main(argv: list[str] | None = None) -> int:
                 file=sys.stderr,
             )
             return 2
-        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        except (OSError, ValueError, RecursionError) as error:
             print(
                 f"ERROR: cannot parse {args.normalization_result}: {error}",
                 file=sys.stderr,
@@ -813,8 +1092,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         errors.extend(stability_errors)
         notes.extend(stability_notes)
+    warnings, geometry_notes = geometry_warnings(data)
+    notes.extend(geometry_notes)
+    if args.strict_geometry:
+        errors.extend(f"geometry: {warning}" for warning in warnings)
     for note in notes:
         print(f"NOTE: {note}")
+    if not args.strict_geometry:
+        for warning in warnings:
+            print(f"WARN: {warning}")
     if errors:
         for error in errors:
             print(f"ERROR: {error}", file=sys.stderr)

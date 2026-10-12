@@ -69,5 +69,9 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 ### Subagent routing
 
 - Set an explicit `model` on every direct `Agent` call and on any other subagent tool that exposes a `model` field, including recursive spawns. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
-- Route by task: `sonnet` — delegated exploration, code search, bulk reads, implementation, and test or log analysis; `opus` — hard reasoning, user-facing work, reviews, and orchestration.
-- An explicit model choice from me takes precedence. Otherwise, an applicable skill may select another model for a bounded adversarial or judge role.
+- Route by what the worker returns, and set `effort` explicitly together with the model:
+  - `opus` at `high` — analysis or research of unfamiliar code, products, or sources; diagnosis; planning; reviews; user-facing work; orchestration.
+  - `opus` at `medium` — implementation from a settled plan or a clearly bounded change.
+  - `sonnet` at `high` — only bounded search and fact extraction that return located facts.
+  When a task combines fact gathering with judgment, use `opus` at `high`.
+- An explicit model or effort choice from me takes precedence. Otherwise, a model that an applicable skill assigns to a role it defines takes precedence over this routing; the routing above governs every worker whose model the skill leaves to the orchestrator.

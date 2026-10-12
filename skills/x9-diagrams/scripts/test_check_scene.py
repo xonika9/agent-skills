@@ -11,7 +11,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from check_scene import compare_normalization_stability, main, parse_args, validate_scene
+from check_scene import (
+    compare_normalization_stability,
+    geometry_warnings,
+    main,
+    parse_args,
+    validate_scene,
+)
 
 
 def common(element_id: str, element_type: str, x: int, y: int, width: int, height: int):
@@ -116,6 +122,41 @@ def scene() -> dict:
     }
 
 
+def label(element_id: str, container_id, x: int, y: int, width: int = 60, height: int = 25):
+    element = common(element_id, "text", x, y, width, height)
+    element.update(
+        {
+            "fontSize": 20,
+            "fontFamily": 5,
+            "text": "txt",
+            "originalText": "txt",
+            "textAlign": "center",
+            "verticalAlign": "middle",
+            "containerId": container_id,
+            "autoResize": True,
+            "lineHeight": 1.25,
+        }
+    )
+    return element
+
+
+def add_flow_label(candidate: dict, element_id: str, x: int, y: int) -> dict:
+    text = label(element_id, "flow", x, y)
+    flow = next(item for item in candidate["elements"] if item["id"] == "flow")
+    flow["boundElements"] = (flow["boundElements"] or []) + [
+        {"id": element_id, "type": "text"}
+    ]
+    candidate["elements"].append(text)
+    return text
+
+
+def run_cli(*arguments: str) -> tuple[int, str, str]:
+    stdout, stderr = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        code = main(list(arguments))
+    return code, stdout.getvalue(), stderr.getvalue()
+
+
 class ValidateSceneTests(unittest.TestCase):
     def test_valid_current_scene(self):
         errors, notes = validate_scene(
@@ -131,6 +172,23 @@ class ValidateSceneTests(unittest.TestCase):
         candidate["elements"][1]["fontFamily"] = 1
         errors, _ = validate_scene(candidate)
         self.assertEqual(errors, [])
+
+    def test_list_valued_identifiers_are_errors_not_crashes(self):
+        candidate = scene()
+        candidate["elements"][1]["containerId"] = ["left"]
+        candidate["elements"][-1]["startBinding"]["elementId"] = ["left"]
+        candidate["elements"][-1]["endBinding"]["elementId"] = {"id": "right"}
+        candidate["elements"][0]["boundElements"] = [{"id": ["x"], "type": "text"}]
+        errors, _ = validate_scene(candidate)
+        self.assertTrue(any("containerId does not resolve" in e for e in errors), errors)
+        self.assertTrue(
+            any("Binding.elementId does not resolve" in e for e in errors), errors
+        )
+        self.assertTrue(
+            any("boundElements reference does not resolve" in e for e in errors), errors
+        )
+        warnings, _ = geometry_warnings(candidate)  # must not raise
+        self.assertIsInstance(warnings, list)
 
     def test_rejects_reserved_font_slot(self):
         candidate = scene()
@@ -485,6 +543,240 @@ class ValidateSceneTests(unittest.TestCase):
             allowed_hard_line_break_ids={"missing-label"},
         )
         self.assertTrue(any("allowance does not resolve" in error for error in errors))
+
+
+class GeometryWarningTests(unittest.TestCase):
+    @staticmethod
+    def with_obstacle() -> dict:
+        candidate = scene()
+        candidate["elements"].append(common("block", "rectangle", 220, -20, 100, 120))
+        return candidate
+
+    def test_valid_scene_has_no_warnings(self):
+        self.assertEqual(geometry_warnings(scene()), ([], []))
+
+    def test_validate_scene_signature_is_unchanged(self):
+        result = validate_scene(self.with_obstacle())
+        self.assertEqual(len(result), 2)
+
+    def test_connector_through_unrelated_shape_warns(self):
+        warnings, notes = geometry_warnings(self.with_obstacle())
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("flow", warnings[0])
+        self.assertIn("block", warnings[0])
+        self.assertEqual(notes, [])
+
+    def test_connector_touching_shape_edge_does_not_warn(self):
+        candidate = scene()
+        # Top edge at y=40 coincides with the arrow's path.
+        candidate["elements"].append(common("edge", "rectangle", 220, 40, 100, 60))
+        self.assertEqual(geometry_warnings(candidate)[0], [])
+
+    def test_unbound_line_through_shape_warns(self):
+        candidate = self.with_obstacle()
+        line = common("rule", "line", 200, 0, 0, 200)
+        line.update(
+            {
+                "points": [[0, -50], [0, 150]],
+                "startBinding": None,
+                "endBinding": None,
+                "startArrowhead": None,
+                "endArrowhead": None,
+                "polygon": False,
+            }
+        )
+        candidate["elements"].append(line)
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(sum("rule" in warning for warning in warnings), 0)
+        line["x"] = 250
+        warnings, _ = geometry_warnings(candidate)
+        self.assertTrue(any("line rule" in warning for warning in warnings), warnings)
+
+    def test_containing_boundary_shape_is_not_an_obstacle(self):
+        candidate = scene()
+        candidate["elements"].append(common("zone", "rectangle", -50, -50, 640, 200))
+        self.assertEqual(geometry_warnings(candidate), ([], []))
+
+    def test_container_of_only_unrelated_shape_is_still_an_obstacle(self):
+        candidate = scene()
+        # Contains neither bound endpoint element, only the arrow's middle.
+        candidate["elements"].append(common("middle", "rectangle", 190, 20, 160, 40))
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(len(warnings), 1, warnings)
+
+    def test_shared_attach_point_warns(self):
+        candidate = scene()
+        third = common("third", "rectangle", 360, 200, 180, 80)
+        third["boundElements"] = [{"id": "flow2", "type": "arrow"}]
+        flow2 = common("flow2", "arrow", 180, 40, 180, 200)
+        flow2.update(
+            {
+                "points": [[0, 0], [180, 200]],
+                "startBinding": {
+                    "elementId": "left",
+                    "fixedPoint": [1, 0.51],
+                    "mode": "orbit",
+                },
+                "endBinding": {
+                    "elementId": "third",
+                    "fixedPoint": [0, 0.5],
+                    "mode": "orbit",
+                },
+                "startArrowhead": None,
+                "endArrowhead": "arrow",
+                "elbowed": False,
+            }
+        )
+        candidate["elements"][0]["boundElements"].append(
+            {"id": "flow2", "type": "arrow"}
+        )
+        candidate["elements"].extend([third, flow2])
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("flow.start", warnings[0])
+        self.assertIn("flow2.start", warnings[0])
+        self.assertIn("left", warnings[0])
+
+        flow2["startBinding"]["fixedPoint"] = [1, 0.8]
+        self.assertEqual(geometry_warnings(candidate)[0], [])
+
+    def test_connector_label_over_shape_warns(self):
+        candidate = scene()
+        candidate["elements"].append(common("block", "rectangle", 200, 100, 140, 80))
+        add_flow_label(candidate, "flow-label", 240, 85)
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("flow-label", warnings[0])
+        self.assertIn("block", warnings[0])
+
+    def test_connector_label_in_clear_space_does_not_warn(self):
+        candidate = scene()
+        add_flow_label(candidate, "flow-label", 240, 5)
+        self.assertEqual(geometry_warnings(candidate), ([], []))
+
+    def test_overlapping_connector_labels_warn(self):
+        candidate = scene()
+        add_flow_label(candidate, "label-a", 240, 5)
+        add_flow_label(candidate, "label-b", 260, 10)
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("label-a", warnings[0])
+        self.assertIn("label-b", warnings[0])
+
+    def test_connector_label_and_standalone_text_overlap_warns(self):
+        candidate = scene()
+        add_flow_label(candidate, "flow-label", 240, 5)
+        candidate["elements"].append(label("note", None, 250, 10))
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("flow-label", warnings[0])
+        self.assertIn("note", warnings[0])
+
+    def test_overlapping_standalone_texts_warn(self):
+        candidate = scene()
+        candidate["elements"].append(label("note-a", None, 240, 5))
+        candidate["elements"].append(label("note-b", None, 260, 10))
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("note-a", warnings[0])
+        self.assertIn("note-b", warnings[0])
+
+    def test_separate_standalone_texts_do_not_warn(self):
+        candidate = scene()
+        candidate["elements"].append(label("note-a", None, 240, 5))
+        candidate["elements"].append(label("note-b", None, 240, 150))
+        self.assertEqual(geometry_warnings(candidate), ([], []))
+
+    def test_standalone_text_partially_over_shape_warns(self):
+        candidate = scene()
+        candidate["elements"].append(common("block", "rectangle", 200, 100, 140, 80))
+        candidate["elements"].append(label("note", None, 300, 150, 100, 25))
+        warnings, _ = geometry_warnings(candidate)
+        self.assertEqual(len(warnings), 1, warnings)
+        self.assertIn("note", warnings[0])
+
+    def test_standalone_text_fully_inside_shape_does_not_warn(self):
+        candidate = scene()
+        candidate["elements"].append(common("zone", "rectangle", 200, 100, 140, 80))
+        candidate["elements"].append(label("note", None, 220, 130, 100, 25))
+        self.assertEqual(geometry_warnings(candidate), ([], []))
+
+    def test_rotated_element_is_noted_and_not_checked(self):
+        candidate = self.with_obstacle()
+        candidate["elements"][-1]["angle"] = 0.5
+        warnings, notes = geometry_warnings(candidate)
+        self.assertEqual(warnings, [])
+        self.assertEqual(len(notes), 1, notes)
+        self.assertIn("block", notes[0])
+        self.assertIn("not checked", notes[0])
+
+    def test_deleted_obstacle_is_ignored(self):
+        candidate = self.with_obstacle()
+        candidate["elements"][-1]["isDeleted"] = True
+        self.assertEqual(geometry_warnings(candidate), ([], []))
+
+    def test_malformed_input_does_not_crash(self):
+        self.assertEqual(geometry_warnings([]), ([], []))
+        self.assertEqual(geometry_warnings({"elements": [1, {"id": 3}]}), ([], []))
+        candidate = self.with_obstacle()
+        candidate["elements"][-2]["points"] = "bad"
+        self.assertEqual(geometry_warnings(candidate)[0], [])
+
+    def test_cli_warnings_do_not_change_exit_code(self):
+        with tempfile.TemporaryDirectory() as directory:
+            scene_path = Path(directory) / "scene.excalidraw"
+            scene_path.write_text(json.dumps(self.with_obstacle()), encoding="utf-8")
+            code, stdout, stderr = run_cli(str(scene_path), "--structural-only")
+        self.assertEqual(code, 0, stderr)
+        warn_lines = [line for line in stdout.splitlines() if line.startswith("WARN: ")]
+        self.assertEqual(len(warn_lines), 1, stdout)
+        self.assertIn("block", warn_lines[0])
+        lines = stdout.splitlines()
+        last_note = max(i for i, line in enumerate(lines) if line.startswith("NOTE: "))
+        self.assertGreater(lines.index(warn_lines[0]), last_note)
+        self.assertEqual(stderr, "")
+
+    def test_cli_strict_geometry_turns_warnings_into_errors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            scene_path = Path(directory) / "scene.excalidraw"
+            scene_path.write_text(json.dumps(self.with_obstacle()), encoding="utf-8")
+            code, stdout, stderr = run_cli(
+                str(scene_path), "--structural-only", "--strict-geometry"
+            )
+        self.assertEqual(code, 1)
+        self.assertNotIn("WARN:", stdout)
+        self.assertIn("ERROR: geometry:", stderr)
+        self.assertIn("block", stderr)
+
+    def test_cli_oversized_integer_is_a_parse_error_not_a_crash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            scene_path = Path(directory) / "scene.excalidraw"
+            scene_path.write_text('{"elements": [{"x": ' + "1" * 5000 + "}]}", encoding="utf-8")
+            code, _, stderr = run_cli(str(scene_path), "--structural-only")
+        self.assertEqual(code, 2)
+        self.assertIn("ERROR: cannot parse", stderr)
+
+    def test_cli_strict_geometry_passes_clean_scene(self):
+        with tempfile.TemporaryDirectory() as directory:
+            scene_path = Path(directory) / "scene.excalidraw"
+            scene_path.write_text(json.dumps(scene()), encoding="utf-8")
+            code, stdout, _ = run_cli(
+                str(scene_path), "--structural-only", "--strict-geometry"
+            )
+        self.assertEqual(code, 0)
+        self.assertNotIn("WARN:", stdout)
+
+    def test_cli_rotated_note_does_not_fail_strict_geometry(self):
+        candidate = self.with_obstacle()
+        candidate["elements"][-1]["angle"] = 0.5
+        with tempfile.TemporaryDirectory() as directory:
+            scene_path = Path(directory) / "scene.excalidraw"
+            scene_path.write_text(json.dumps(candidate), encoding="utf-8")
+            code, stdout, _ = run_cli(
+                str(scene_path), "--structural-only", "--strict-geometry"
+            )
+        self.assertEqual(code, 0)
+        self.assertIn("NOTE: geometry not checked for rotated element block", stdout)
 
 
 if __name__ == "__main__":
