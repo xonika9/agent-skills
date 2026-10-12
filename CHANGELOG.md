@@ -4,13 +4,29 @@
 
 ### Highlights
 
-- The global instruction files are shorter: the question-asking rule and the rule about reporting failed tools each appear once, and the shared core no longer restates when `x9-browser-session` stops trying routes, which the skill itself defines. The Claude Code file no longer reserves Haiku for explicit requests, so a skill may now choose it for a bounded adversarial or judge role.
-
 ### Install / update
 
 ### Compatibility
 
 ### Breaking changes
+
+## 3.12.0 - 2026-10-12
+
+### Highlights
+
+- The global instruction files are shorter: the question-asking rule and the rule about reporting failed tools each appear once, and the shared core no longer restates when `x9-browser-session` stops trying routes, which the skill itself defines. The Claude Code file no longer reserves Haiku for explicit requests, so a skill may now choose it for a bounded adversarial or judge role.
+
+### Install / update
+
+- Update the global instruction files for each runtime to receive the shorter rules.
+
+### Compatibility
+
+- No new requirements.
+
+### Breaking changes
+
+None.
 
 ## 3.11.0 - 2026-10-12
 
