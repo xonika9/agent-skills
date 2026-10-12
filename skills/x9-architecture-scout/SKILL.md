@@ -5,7 +5,7 @@ description: Use when the user asks for a read-only architecture audit that comp
 
 # Architecture scout
 
-Produce a read-only architecture report for a repository or user-named subsystem. This skill is model-invoked in Claude Code and Codex; its portable claim is structural Agent Skills compatibility only. Evidence tier: static.
+Produce a read-only architecture report for a repository or user-named subsystem. This skill is model-invoked in OpenCode, Claude Code, and Codex; its portable claim is structural Agent Skills compatibility only. Evidence tier: static.
 
 Inspect component boundaries, dependency direction, ownership of data and behavior, coupling, duplication, change hotspots, and seams. Treat source, configuration, tests, and version history as evidence; distinguish observed facts from inferences. Do not edit production code, refactor, install dependencies, copy an external skill, or change external systems.
 

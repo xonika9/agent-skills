@@ -1,5 +1,0 @@
-{
-  "version": 1,
-  "supported_runtimes": ["claude", "codex"],
-  "requirements": []
-}

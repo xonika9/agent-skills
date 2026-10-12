@@ -1,6 +1,7 @@
 {
   "version": 1,
   "supported_runtimes": [
+    "opencode",
     "claude",
     "codex"
   ],
@@ -8,6 +9,7 @@
     {
       "id": "python-runtime",
       "runtimes": [
+        "opencode",
         "claude",
         "codex"
       ],
@@ -23,6 +25,7 @@
     {
       "id": "okf-companion",
       "runtimes": [
+        "opencode",
         "claude",
         "codex"
       ],
@@ -38,6 +41,7 @@
     {
       "id": "obsidian-companion",
       "runtimes": [
+        "opencode",
         "claude",
         "codex"
       ],
@@ -53,6 +57,7 @@
     {
       "id": "agent-instructions-rubric",
       "runtimes": [
+        "opencode",
         "claude",
         "codex"
       ],

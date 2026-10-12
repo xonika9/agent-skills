@@ -5,7 +5,7 @@ description: Use when a large initiative has material unresolved decisions and n
 
 # Decision map
 
-Create, find, read, and update the durable decision map for a large initiative before turning it into an implementation plan. This skill is model-invoked in Claude Code and Codex, as its [onboarding declaration](references/onboarding.json) records; its portable claim is structural Agent Skills compatibility only.
+Create, find, read, and update the durable decision map for a large initiative before turning it into an implementation plan. This skill is model-invoked in OpenCode, Claude Code, and Codex; its portable claim is structural Agent Skills compatibility only.
 
 Use this only when unresolved choices can materially change an initiative's direction, scope, or plan. A request to design a recurring, multi-stage agent workflow belongs to `x9-loop-engineering`, even if it also has open decisions.
 

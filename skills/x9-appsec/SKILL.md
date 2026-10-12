@@ -5,7 +5,7 @@ description: Secure development and source-based review for public websites and 
 
 # Web security
 
-This package-owned skill is model-invoked in Claude Code and Codex, as its [onboarding declaration](references/onboarding.json) records. Its portable claim is structural Agent Skills compatibility. Review the whole application path, including server code and supporting services when they exist, regardless of stack. A clean review is bounded evidence, not a guarantee of security.
+This package-owned skill is model-invoked in OpenCode, Claude Code, and Codex. Its portable claim is structural Agent Skills compatibility. Review the whole application path, including server code and supporting services when they exist, regardless of stack. A clean review is bounded evidence, not a guarantee of security.
 
 ## Select the work
 

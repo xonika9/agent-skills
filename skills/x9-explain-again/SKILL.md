@@ -5,7 +5,7 @@ description: Use only when the user explicitly says they did not understand the 
 
 # Explain again
 
-Repair understanding of one fragment of the immediately previous substantive assistant answer. This is a model-invoked skill in Claude Code and Codex, as its [onboarding declaration](references/onboarding.json) records; `portable` means structural compatibility only, not verified invocation behavior.
+Repair understanding of one fragment of the immediately previous substantive assistant answer. This is a model-invoked skill in OpenCode, Claude Code, and Codex; `portable` means structural compatibility only, not verified invocation behavior.
 
 ## Trigger boundary
 

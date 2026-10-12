@@ -1,6 +1,6 @@
 # The vault block in AGENTS.md
 
-The block carries every rule an ordinary session needs for daily work, so the vault does not depend on this skill being invoked. Claude Code and Codex load `AGENTS.md` from the folder where the session starts; a rule moved to another file behind a pointer is often not followed on short requests.
+The block carries every rule an ordinary session needs for daily work, so the vault does not depend on this skill being invoked. OpenCode, Claude Code, and Codex load `AGENTS.md` from the folder where the session starts; a rule moved to another file behind a pointer is often not followed on short requests.
 
 ## Template
 

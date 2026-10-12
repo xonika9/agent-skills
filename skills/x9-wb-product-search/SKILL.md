@@ -8,7 +8,7 @@ description: >
 
 # x9-wb-product-search — подбор товаров на Wildberries
 
-Работает в Claude Code и Codex. Относительные пути разрешаются от каталога
+Работает в OpenCode, Claude Code и Codex. Относительные пути разрешаются от каталога
 установленного skill.
 
 Машиночитаемый контракт внешних предпосылок: [references/onboarding.json](references/onboarding.json).
@@ -108,9 +108,10 @@ skill, сам выполняет сбор кандидатов, проверку
 финалистов по правилам шага 8:
 
 - в Claude Code весь workflow выполняет текущая Opus-сессия Claude Code;
-- в Codex весь workflow выполняет текущая сессия Codex.
+- в Codex весь workflow выполняет текущая сессия Codex;
+- в OpenCode весь workflow выполняет текущая сессия OpenCode.
 
-Не вызывай Codex из Claude Code или Claude Code из Codex для основного поиска. Если
+Не вызывай для основного поиска другую среду из текущей. Если
 браузерный инструмент упал или был отменён, сообщи об этом прямо;
 не подменяй недостающую проверку памятью, публичной выдачей или выводом другого агента.
 
@@ -229,8 +230,8 @@ Verifier получает запрос и критерии пользовате�
 жалобы, противоречия характеристик и фото, подделки, упаковку и сроки годности.
 По каждой позиции он возвращает `PASS`, `DOWNRANK` или `REJECT` с доказательством.
 
-В Claude Code verifier должен быть fresh Opus subagent; в Codex — fresh native
-subagent. Запускай его последовательно в отдельной task-owned вкладке с доступом к
+В Claude Code verifier должен быть fresh Opus subagent; в Codex и OpenCode — fresh
+native subagent. Запускай его последовательно в отдельной task-owned вкладке с доступом к
 той же авторизованной WB-сессии. Если авторизованный маршрут недоступен, сначала
 восстанови его, получи разрешение на sessionless fallback или верни `DEGRADED`/
 `BLOCKED`: subagent не заменяет отсутствующий доступ. Если обязательный verifier

@@ -143,7 +143,7 @@ It works with any language and test runner, takes commands from the project itse
 
 Gathers one person's scattered notes and documents into a single vault: an inbox where you drop notes and files for the agent to sort, one topic folder per matter, from health or a video blog to a single tax question, grouped by a property rather than by folder, streams of same-shaped work such as videos that move through stages inside their topic, and an archive. Topics are named as you would say them, without dates. The agent first looks through the folder and any other folders you name, asks only what it could not tell, and shows one plan listing every move. Nothing changes until you approve it. Copies are verified by checksum, editing projects and media can stay on an external disk behind a link, originals are removed only after a separate confirmation, and everything except that confirmed removal can be undone from the run's journal.
 
-The daily rules go into the vault's `AGENTS.md`, so ordinary Claude Code and Codex sessions file a video idea, a doctor's visit, or a new topic in the right place without invoking the skill. Every note outside the inbox, raw material, archive, memory, and templates carries OKF metadata through [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md), including notes brought in from old folders, whose text stays unchanged, so an agent can tell what a file holds without opening it. When you start the agent in a parent folder that also holds other material, the vault keeps its own `AGENTS.md` and the parent gets a short pointer to it. The skill is needed again for structural changes and checks. Obsidian and Git are optional.
+The daily rules go into the vault's `AGENTS.md`, so ordinary OpenCode, Claude Code, and Codex sessions file a video idea, a doctor's visit, or a new topic in the right place without invoking the skill. Every note outside the inbox, raw material, archive, memory, and templates carries OKF metadata through [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md), including notes brought in from old folders, whose text stays unchanged, so an agent can tell what a file holds without opening it. When you start the agent in a parent folder that also holds other material, the vault keeps its own `AGENTS.md` and the parent gets a short pointer to it. The skill is needed again for structural changes and checks. Obsidian and Git are optional.
 
 #### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
 
@@ -173,7 +173,7 @@ Transient page errors can be refreshed up to twice when reloading cannot repeat 
 
 A Wildberries rating rarely tells the whole story: reviews may belong to another variant, the seller may be questionable, and the visible price depends on the account and region. This skill searches through your logged-in session, checks the exact variant, seller, price per unit, fresh and low-rated reviews, recurring risks, and buyer photos when appearance or packaging matters before producing a shortlist.
 
-It is deliberately Wildberries-specific and runs inside the current Claude Code or Codex session. Install `x9-browser-session` with it.
+It is deliberately Wildberries-specific and runs inside the current OpenCode, Claude Code, or Codex session. Install `x9-browser-session` with it.
 
 ### Ideas and agent behavior
 
