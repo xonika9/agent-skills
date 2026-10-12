@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import ctypes
-import errno
 import datetime as dt
 import hashlib
 import json
@@ -30,78 +29,13 @@ from pathlib import Path
 
 JOURNAL_DIR = ".x9-personal-vault"
 SF_DATALESS = getattr(stat, "SF_DATALESS", 0x40000000)
-# macOS copyfile(3): ACL | STAT | XATTR | DATA, fail if the destination exists, never follow the source link.
-COPYFILE_FLAGS = 0xF | (1 << 17) | (1 << 18)
-
-# Metadata fingerprints exclude atime: reading to verify a copy changes it.
-_METADATA_LIBC = ctypes.CDLL(None, use_errno=True) if sys.platform == "darwin" else None
-
-
-def metadata_snapshot(descriptor: int) -> dict:
-    info = os.fstat(descriptor)
-    attributes = []
-    acl_digest = None
-    if sys.platform == "darwin":
-        libc = _METADATA_LIBC
-        libc.flistxattr.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
-        libc.flistxattr.restype = ctypes.c_ssize_t
-        libc.fgetxattr.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_uint32, ctypes.c_int]
-        libc.fgetxattr.restype = ctypes.c_ssize_t
-        length = libc.flistxattr(descriptor, None, 0, 0)
-        if length < 0:
-            error = ctypes.get_errno()
-            raise OSError(error, os.strerror(error))
-        names = ctypes.create_string_buffer(length)
-        if length and libc.flistxattr(descriptor, names, length, 0) != length:
-            raise OSError("extended attributes changed while being read")
-        for name in sorted(filter(None, names.raw.split(b"\0"))):
-            length = libc.fgetxattr(descriptor, name, None, 0, 0, 0)
-            if length < 0:
-                error = ctypes.get_errno()
-                raise OSError(error, os.strerror(error))
-            value = ctypes.create_string_buffer(length)
-            if libc.fgetxattr(descriptor, name, value, length, 0, 0) != length:
-                raise OSError("extended attribute changed while being read")
-            attributes.append((name, value.raw))
-        libc.acl_get_fd_np.argtypes = [ctypes.c_int, ctypes.c_int]
-        libc.acl_get_fd_np.restype = ctypes.c_void_p
-        libc.acl_to_text.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_ssize_t)]
-        libc.acl_to_text.restype = ctypes.c_void_p
-        libc.acl_free.argtypes = [ctypes.c_void_p]
-        # macOS extended ACLs; a valid descriptor with no ACL returns ENOENT.
-        acl = libc.acl_get_fd_np(descriptor, 0x100)
-        if not acl:
-            error = ctypes.get_errno()
-            if error not in (errno.ENOENT, errno.ENOTSUP):
-                raise OSError(error, os.strerror(error))
-        else:
-            acl_text = None
-            try:
-                acl_length = ctypes.c_ssize_t()
-                acl_text = libc.acl_to_text(acl, ctypes.byref(acl_length))
-                if not acl_text:
-                    error = ctypes.get_errno()
-                    raise OSError(error, os.strerror(error))
-                acl_digest = hashlib.sha256(ctypes.string_at(acl_text, acl_length.value)).hexdigest()
-            finally:
-                if acl_text:
-                    libc.acl_free(acl_text)
-                libc.acl_free(acl)
-    elif hasattr(os, "listxattr"):
-        attributes = [(os.fsencode(name), os.getxattr(descriptor, name)) for name in sorted(os.listxattr(descriptor))]
-    digest = hashlib.sha256()
-    for name, value in attributes:
-        digest.update(len(name).to_bytes(8, "big") + name + len(value).to_bytes(8, "big") + value)
-    return {"mode": stat.S_IMODE(info.st_mode), "uid": info.st_uid, "gid": info.st_gid,
-            "mtime_ns": info.st_mtime_ns, "flags": getattr(info, "st_flags", 0), "xattrs": digest.hexdigest(), "acl": acl_digest}
 
 
 def path_metadata(path: Path) -> dict:
-    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
-    try:
-        return metadata_snapshot(descriptor)
-    finally:
-        os.close(descriptor)
+    """ctime moves on any mode, owner, flag, xattr, ACL, or content change; reading leaves it alone."""
+    info = os.lstat(path)
+    return {"mode": stat.S_IMODE(info.st_mode), "uid": info.st_uid, "gid": info.st_gid,
+            "flags": getattr(info, "st_flags", 0), "ctime_ns": info.st_ctime_ns}
 
 
 class PlanError(Exception):
@@ -314,14 +248,12 @@ class Plan:
         return {"op": "remove", "path": path, "verified_copy": copy}
 
 
-def copy_file(src: Path, dst: Path) -> list[int]:
-    """Own an exclusive destination descriptor and clean up only that inode on failure."""
+def copy_file(src: Path, dst: Path) -> None:
+    """Create dst exclusively, so a failed copy removes only the partial file this call made."""
     source_fd = os.open(src, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
     destination_fd = None
-    owned = None
     try:
         destination_fd = os.open(dst, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        owned = os.fstat(destination_fd)
         if sys.platform == "darwin":
             libc = ctypes.CDLL(None, use_errno=True)
             libc.fcopyfile.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_void_p, ctypes.c_uint32]
@@ -332,12 +264,10 @@ def copy_file(src: Path, dst: Path) -> list[int]:
             with os.fdopen(os.dup(source_fd), "rb") as reader, os.fdopen(os.dup(destination_fd), "wb") as writer:
                 shutil.copyfileobj(reader, writer, 1 << 20)
             shutil.copystat(src, dst, follow_symlinks=False)
-        return [owned.st_dev, owned.st_ino]
     except BaseException:
-        if owned is not None and lexists(dst):
-            current = os.lstat(dst)
-            if (current.st_dev, current.st_ino) == (owned.st_dev, owned.st_ino):
-                dst.unlink()
+        if destination_fd is not None:
+            # A descriptor's inode can differ from the path's on exFAT/FAT, so it is not compared.
+            dst.unlink(missing_ok=True)
         raise
     finally:
         os.close(source_fd)
@@ -358,12 +288,9 @@ def copy_directory_metadata(src: Path, dst: Path) -> None:
 
 
 
-def created_entry(path: Path, identity=None, **kind) -> dict:
+def created_entry(path: Path, **kind) -> dict:
     info = os.lstat(path)
-    actual = [info.st_dev, info.st_ino]
-    if identity is not None and actual != identity:
-        raise PlanError(f"destination changed during copy: {path}")
-    entry = {"path": str(path), "identity": actual, **kind}
+    entry = {"path": str(path), "identity": [info.st_dev, info.st_ino], **kind}
     if not is_link(path):
         entry["metadata"] = path_metadata(path)
     return entry
@@ -384,8 +311,8 @@ def entry_changed(item: dict, *, directory_times=True) -> bool:
         return True
     current, expected = path_metadata(path), item["metadata"]
     if item.get("dir") and not directory_times:
-        current = {k: v for k, v in current.items() if k != "mtime_ns"}
-        expected = {k: v for k, v in expected.items() if k != "mtime_ns"}
+        current = {k: v for k, v in current.items() if k != "ctime_ns"}
+        expected = {k: v for k, v in expected.items() if k != "ctime_ns"}
     if current != expected:
         return True
     return item.get("sha256") is not None and sha256(path) != item["sha256"]
@@ -399,8 +326,8 @@ def copy_tree(src: Path, dst: Path, created: list[dict]) -> None:
         created.append(created_entry(dst, link=target))
         return
     if src.is_file():
-        identity = copy_file(src, dst)
-        entry = created_entry(dst, identity, sha256=None)
+        copy_file(src, dst)
+        entry = created_entry(dst, sha256=None)
         created.append(entry)
         digest = sha256(src)
         if sha256(dst) != digest or entry_changed(entry):
@@ -576,9 +503,11 @@ def load_journal(journal: Path) -> tuple[list[dict], bool]:
 
 
 def undo(journal: Path) -> dict:
-    guard_parent(journal)
-    if journal.is_symlink() or journal.parent.name != JOURNAL_DIR:
+    journal = Path(os.path.abspath(journal))
+    if journal.is_symlink() or journal.parent.is_symlink() or journal.parent.name != JOURNAL_DIR:
         raise PlanError("undo requires an unlinked vault journal")
+    # The vault may be reached through a link such as /tmp; the journal records real paths.
+    journal = Path(os.path.realpath(journal.parent)) / journal.name
     vault = journal.parent.parent
     entries, undone = load_journal(journal)
     if undone:
@@ -651,6 +580,7 @@ def restore_move(entry: dict) -> str | None:
     new_directories = []
     try:
         if not lexists(src):
+            src.parent.mkdir(parents=True, exist_ok=True)
             restored = fresh_copy(dst, src)
         else:
             for rel, item in walk_entries(dst):
@@ -675,9 +605,8 @@ def restore_move(entry: dict) -> str | None:
                 continue
             back = src if rel == Path(".") else src / rel
             before, after = path_metadata(item), path_metadata(back)
-            if item.is_dir():
-                before.pop("mtime_ns", None)
-                after.pop("mtime_ns", None)
+            before.pop("ctime_ns")
+            after.pop("ctime_ns")
             if before != after:
                 return f"restored metadata differs at {back}; the moved copy is kept at {dst}"
     except (PlanError, OSError) as error:

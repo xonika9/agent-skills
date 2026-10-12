@@ -452,6 +452,52 @@ class ApplyPlanTest(unittest.TestCase):
         acl = subprocess.run(["ls", "-le", str(target)], capture_output=True, text=True, check=True)
         self.assertIn("allow read", acl.stdout)
 
+    def test_copy_works_when_descriptor_inode_differs_from_path(self):
+        # exFAT/FAT on macOS report a different inode for a new file's descriptor than for its path.
+        real_fstat = os.fstat
+
+        def shifted(descriptor):
+            fields = list(real_fstat(descriptor))
+            fields[1] += 1_000_000
+            return os.stat_result(fields)
+
+        with mock.patch.object(apply_plan.os, "fstat", side_effect=shifted):
+            code, result = self.run_main(self.manifest([{"op": "copy", "from": str(self.outside / "Сценарии"), "to": "copied"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 0, undo)
+        self.assertFalse((self.vault / "copied").exists())
+
+    def test_cross_device_undo_recreates_removed_source_parent(self):
+        source = self.outside / "Сценарии"
+        with mock.patch.object(apply_plan, "same_device", return_value=False):
+            code, result = self.run_main(self.manifest([{"op": "move", "from": str(source), "to": "moved"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        self.outside.rmdir()
+        code, undo = self.run_main("--undo", result["journal"])
+        self.assertEqual(code, 0, undo)
+        self.assertEqual((source / "кофе.md").read_text(encoding="utf-8"), "сценарий")
+        self.assertFalse((self.vault / "moved").exists())
+
+    def test_undo_accepts_aliased_journal_path_but_not_linked_journal_folder(self):
+        code, result = self.run_main(self.manifest([{"op": "copy", "from": "старое.md", "to": "copied.md"}]), "--apply")
+        self.assertEqual(code, 0, result)
+        journal = Path(result["journal"])
+        moved = self.outside / "elsewhere" / apply_plan.JOURNAL_DIR
+        moved.parent.mkdir()
+        journal.parent.rename(moved)
+        journal.parent.symlink_to(moved, target_is_directory=True)
+        code, refused = self.run_main("--undo", journal)
+        self.assertEqual(code, 1, refused)
+        self.assertTrue((self.vault / "copied.md").exists())
+        journal.parent.unlink()
+        moved.rename(journal.parent)
+        alias = self.vault.parent / "alias"
+        alias.symlink_to(self.vault, target_is_directory=True)
+        code, undo = self.run_main("--undo", alias / apply_plan.JOURNAL_DIR / journal.name)
+        self.assertEqual(code, 0, undo)
+        self.assertFalse((self.vault / "copied.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

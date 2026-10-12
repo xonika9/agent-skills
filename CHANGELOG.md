@@ -5,7 +5,7 @@
 ### Highlights
 
 - Skill authoring, runtime routing, research, diagrams, architecture reports, and release checks now catch the audited contract failures; shared instruction rules point to their owner, invalid declaration diagnostics reveal only public schema field names, and an explicit browser choice takes precedence over default routes.
-- Vault and OKF operations preserve changed user files and supported metadata during writes, recovery, and undo; transcript generation rejects source collisions, including hardlinks and temporary outputs.
+- Vault and OKF operations preserve changed user files and supported metadata during writes, recovery, and undo; transcript generation rejects source collisions, including hardlinks and temporary outputs. Vaults on exFAT and FAT drives work, undo succeeds after the source folder was removed or when the vault is reached through a linked path, and a failed OKF rollback names the files to check by hand.
 - `x9-onboarding` declarations can require a minimum `python3` version. A declaration lists runtimes only where they differ: a missing skill-level list means every runtime, and a missing list on a requirement means every runtime the skill supports. Onboarding now declares its own Python 3.11 requirement, `x9-okf-docs` declares Python 3.9 the same way instead of a manual check, and `x9-context-files-generator` and `x9-skill-creator` count `x9-agent-instructions` as required.
 - Every skill now runs in every Agent Skills runtime by default and is checked in OpenCode, Claude Code, and Codex. Skills no longer list supported runtimes in their text; that list appears only in the readiness declaration and description of the three skills tied to specific runtimes by design: `x9-codex-delegation`, `x9-codex-imagegen`, and `x9-opencode-sessions`. Skills that previously named only Claude Code and Codex, such as `x9-appsec`, `x9-web-stack`, and `x9-wb-product-search`, are no longer limited to them.
 - `x9-idea-critic` treats a critique from the one available provider as a complete result and names the missing provider briefly; a Claude answer without model telemetry is kept instead of failing the route.
@@ -25,7 +25,7 @@
 
 ### Compatibility
 
-- Filesystem checks reject observed identity or parent changes, but do not make a multi-file operation atomic or eliminate concurrent path-swap races. Older vault journals remain readable; copies without recorded identity and metadata are kept for manual review during undo.
+- Filesystem checks reject a linked or changed parent folder and a file edited during the run, but do not make a multi-file operation atomic or guard against folders swapped mid-run. Files that OKF writes get a fresh modification time. Older vault journals remain readable; copies without recorded identity and metadata are kept for manual review during undo.
 - The web test guard accepts only localhost or 127.0.0.1 databases ending in _test; IPv6 loopback URLs are refused because the tested postgres.js parser does not preserve that endpoint. Browser rendering, live databases, and model execution require their own runtime verification.
 - Onboarding reports `x9-onboarding` as needing setup when `python3` is older than 3.11, such as the stock macOS interpreter, and `x9-context-files-generator` or `x9-skill-creator` as needing setup without `x9-agent-instructions`. The web template's oversized-body limit is documented: bodies above the server cap get a bare `413` without the problem-details body.
 - More delegated work runs on Opus, which uses more of its usage allowance.

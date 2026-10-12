@@ -56,7 +56,7 @@ def writer_checks():
     import insert_frontmatter
 
     with tempfile.TemporaryDirectory() as tmp:
-        temp = Path(tmp)
+        temp = Path(tmp).resolve()
         first, second = temp / "first.md", temp / "second.md"
         first.write_bytes(b"one\n")
         second.write_bytes(b"two\n")
@@ -117,9 +117,16 @@ def data_safety_checks():
             try:
                 writer.atomic_replace_many([("a.md", a, b"old a", b"new a"), ("b.md", b, b"old b", b"new b")])
                 raise AssertionError("the injected write failure must propagate")
-            except OSError:
-                pass
+            except OSError as exc:
+                failure = str(exc)
         expect("rollback preserves an intervening user edit", a.read_bytes() == b"user data" and b.read_bytes() == b"old b")
+        expect("rollback names the file it did not restore", "not restored" in failure and "a.md" in failure
+               and "b.md" not in failure.split("not restored")[1])
+
+        a.write_bytes(b"old a")
+        os.utime(a, (0, 0))
+        writer.atomic_replace_many([("a.md", a, b"old a", b"new a")])
+        expect("a written file gets a fresh modification time", a.read_bytes() == b"new a" and a.stat().st_mtime > 0)
 
         a.write_bytes(b"old a")
         calls[0] = 0
@@ -168,8 +175,8 @@ def data_safety_checks():
                     writer.apply_manifest(args, {"docs/a.md": path}, root)
                 except (OSError, SystemExit):
                     pass
-            expect("parent replacement never redirects the planned write", (root / "original-docs" / "a.md").read_bytes() == before
-                   and (outside / "a.md").read_bytes() == before and (linked or path.read_bytes() == before))
+            expect("parent replacement never changes the moved original or a file outside the root",
+                   (root / "original-docs" / "a.md").read_bytes() == before and (outside / "a.md").read_bytes() == before)
 
         if sys.platform == "darwin":
             a.write_bytes(b"old a")
