@@ -4,7 +4,12 @@
 
 ### Highlights
 
+- New `x9-performance` skill finds where a system spends time, memory, CPU, size, or money it does not need to and removes the waste on any stack. An audit returns a ranked plain-language report of cheap fixes, owner decisions, and missing data; a named complaint is turned into a confirmed metric with defaults for owners who don't know the numbers. A change is kept only when alternating before-and-after runs all show the gain; waits are replaced by the condition they guarded, and load, profiling, or paid runs beyond the local machine need permission. Reading goes to subagents while measurements run one at a time, and every attempt is recorded in the project's `docs/performance/` notes with a marked pointer block in `AGENTS.md`.
+- The maintainer's private release workflow now checks each new or changed skill for a by-design runtime restriction as well as its external prerequisites, so a skill that cannot run in some runtime is caught before release rather than in use. The workflow also runs in OpenCode, confirming the version through its structured question tool.
+
 ### Install / update
+
+- Install the new `x9-performance` skill through your existing installation route; it needs no new command or paid service.
 
 ### Compatibility
 

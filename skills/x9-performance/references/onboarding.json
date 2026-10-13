@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "browser-session-skill",
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Measuring page loads and user actions in a browser.",
+      "check": {"type": "skill-present", "target_skill": "x9-browser-session"},
+      "guidance_id": "install-skill"
+    },
+    {
+      "id": "context-files-skill",
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Creating a missing AGENTS.md before adding the performance notes block.",
+      "check": {"type": "skill-present", "target_skill": "x9-context-files-generator"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}

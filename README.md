@@ -80,6 +80,7 @@ You do not need to learn the whole package first. Pick the problem that sounds f
 - You are starting a TypeScript web app, or want an existing project's stack and development rules checked: use [`x9-web-stack`](skills/x9-web-stack/SKILL.md).
 - You are building or preparing to release a public site or API: use [`x9-appsec`](skills/x9-appsec/SKILL.md).
 - The agent writes tests that prove nothing, the suite is full of duplicates and flaky tests, or you want to know how testing should be organized in your project: use [`x9-test-quality`](skills/x9-test-quality/SKILL.md).
+- Something is slow, cannot hold its load, or costs too much memory or money, or you want an audit of where the project wastes time: use [`x9-performance`](skills/x9-performance/SKILL.md).
 - You are choosing a product on Wildberries: use [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md).
 - You need timestamped transcripts of your own videos or want to find where you said something in them: use [`x9-video-transcripts`](skills/x9-video-transcripts/SKILL.md).
 - Your notes and documents are scattered across folders and you want one personal vault that agents keep in order: use [`x9-personal-vault`](skills/x9-personal-vault/SKILL.md).
@@ -138,6 +139,16 @@ On an existing suite it finds candidates for deletion or consolidation and gathe
 It can also audit how testing is organized in the project as a whole, scaled to its size: a solo project is not told to build a merge queue or contract tests, and the report keeps to the five findings that matter most. Where the project's size calls for it, the audit recommends: test size classes with hard timeouts; checks split by cost, with fast ones on every change, the heavy end-to-end suite on a schedule, and a small smoke set blocking releases; running only tests affected by a change; contracts between services instead of full end-to-end runs; a flaky-test quarantine with an owner and an expiry, while checks guarding security, money, and data never leave the gate; a green main branch through a merge queue and revert-first policy; reproducible runs from pinned dependencies; the real database in persistence tests; and migrations applied in CI. Coverage is used to find gaps, not as a target. The result is a prioritized report with evidence and a step-by-step plan; changes to tests, configuration, or CI are made only after your approval. On request, the adopted rules are recorded in the project's `TESTING.md` with working commands, so people and agents follow the same policy.
 
 It works with any language and test runner, takes commands from the project itself, and maps its recommendations onto Vitest, Jest, pytest, Go, and Playwright.
+
+### Performance
+
+#### [`x9-performance`](skills/x9-performance/SKILL.md)
+
+Agents tend to "optimize" by rule: add a cache, memoize a component, delete a pause, and report a speed-up nobody measured. This skill makes the agent prove where time, memory, CPU, size, or money actually go, and keep a change only when repeated before-and-after runs show it helped. It works on any stack and any metric: a slow page or request, a cold start, a server that cannot hold its load, memory that keeps growing, or a cloud or model bill.
+
+When you don't know what is wrong, ask for an audit. The agent maps the product's main paths, measures them locally, and returns a ranked report in plain words: cheap fixes, decisions that are yours to make with their payoff and price, and places where data is missing. Ask it to fix as well, and it takes the cheap items one at a time; anything that costs money, changes architecture, or touches shared systems waits for you. When you name a problem in your own words, the agent turns it into a metric, confirms it with you, and proposes sensible defaults if you don't know the numbers.
+
+A pause or retry is replaced by the condition it was waiting for, never just deleted, and stale data is never served as fresh. Load tests, profilers, and paid runs against anything but your own machine need your permission. Reading and searching go to subagents so the main conversation stays clear, while measurements run one at a time so they don't distort each other. Every attempt, including reverted ones, goes into `docs/performance/` in the project, so the next agent does not repeat a dead end.
 
 ### Personal notes and Obsidian
 

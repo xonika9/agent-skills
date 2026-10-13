@@ -3,7 +3,8 @@
 Use the runtime's structured user-input tool:
 
 - Codex: `request_user_input`;
-- Claude Code: `AskUserQuestion`.
+- Claude Code: `AskUserQuestion`;
+- OpenCode: `question`.
 
 Discover the live tool schema before constructing the question. Present the recommended `X.Y.Z`, the strongest changes that determine its bump, and a way to confirm, reject, or supply another version. Wait for an affirmative structured response before editing the changelog heading or either manifest version.
 

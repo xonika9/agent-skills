@@ -1,6 +1,6 @@
 {
   "claude_model": "opus",
-  "claude_effort": "medium",
+  "claude_effort": "high",
   "gpt_model": "gpt-6.1-sol",
-  "gpt_effort": "medium"
+  "gpt_effort": "high"
 }

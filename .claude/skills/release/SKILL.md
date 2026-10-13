@@ -9,7 +9,7 @@ metadata:
 
 Prepare or publish a version of `x9-agent-skills` from the complete repository state. The latest public tag, the diff to the release candidate, `CHANGELOG.md`, both plugin manifests, the validation workflow, and the release workflow are the sources of truth; do not infer release scope from the current conversation or recent commits alone.
 
-This is a private repository-local skill for Claude Code and Codex. Its canonical source is `.claude/skills/release`; `.agents/skills` exposes that source through a repository-relative symlink. Do not add it to the public `skills/` package or its manifests and READMEs.
+This is a private repository-local skill. Its canonical source is `.claude/skills/release`; `.agents/skills` exposes that source through a repository-relative symlink. Do not add it to the public `skills/` package or its manifests and READMEs.
 
 ## Select the mode
 
@@ -34,11 +34,11 @@ Reconcile every user-visible change since the latest public tag with the release
 
 ## Review onboarding contracts
 
-From the diff since the latest public tag, identify every changed public `skills/*/SKILL.md`, every changed resource reachable from a public skill, and every added, modified, or deleted `skills/*/references/onboarding.json`. For each affected public skill, read its owner `SKILL.md` and the relevant reachable references to determine semantically whether an external operating prerequisite was added, changed, or removed. Do not infer requirements with a heuristic parser, central registry, or hash gate.
+From the diff since the latest public tag, identify every changed public `skills/*/SKILL.md`, every changed resource reachable from a public skill, and every added, modified, or deleted `skills/*/references/onboarding.json`. For each affected public skill, read its owner `SKILL.md` and the relevant reachable references to determine semantically whether an external operating prerequisite or a by-design runtime restriction was added, changed, or removed. Do not infer requirements with a heuristic parser, central registry, or hash gate.
 
-Compare each finding with that skill's local `references/onboarding.json` using the declaration contract and validator owned by `x9-onboarding`. An added, modified, or deleted declaration is its own review trigger. For a deletion, read the owner even when its `SKILL.md` is unchanged and explicitly determine whether it now has no external operating prerequisites. A missing declaration is allowed only when the review finds no such requirements.
+Compare each finding with that skill's local `references/onboarding.json` using the declaration contract and validator owned by `x9-onboarding`. An added, modified, or deleted declaration is its own review trigger. For a deletion, read the owner even when its `SKILL.md` is unchanged and explicitly determine whether it now has no external operating prerequisites and runs in every runtime. A missing declaration is allowed only when the review finds neither.
 
-Record an observable onboarding verdict for every affected public skill: `MATCHED` when the local declaration reflects its requirements, `NO_REQUIREMENTS` when an absent declaration is justified, or `BLOCKED` when the declaration and semantic diff disagree. Include the changed surfaces and concise evidence in the release output. A `BLOCKED` verdict stops preparation until the contract or the candidate is corrected.
+Record an observable onboarding verdict for every affected public skill: `MATCHED` when the local declaration reflects its requirements and runtime restriction, `NO_REQUIREMENTS` when an absent declaration is justified, or `BLOCKED` when the declaration and semantic diff disagree. Include the changed surfaces and concise evidence in the release output. A `BLOCKED` verdict stops preparation until the contract or the candidate is corrected.
 
 ## Prevent README drift
 
@@ -58,7 +58,7 @@ Release authority permits reading the installed global files and updating their 
 
 ## Check personal skill links
 
-A public skill without personal links stays invisible to the maintainer's local runtimes. On the Mac and on the Fedora machine reachable through the SSH alias `x9-fedora`, every skill under `skills/` must be linked from `~/.agents/skills`, and from `~/.claude/skills` unless its `references/onboarding.json` restricts it to other runtimes; `scripts/check_skill_links.py` derives that exclusion from the declaration. When a new skill cannot run in Claude Code, declare the restriction there instead of tolerating the failure.
+A public skill without personal links stays invisible to the maintainer's local runtimes. On the Mac and on the Fedora machine reachable through the SSH alias `x9-fedora`, every skill under `skills/` must be linked from `~/.agents/skills`, and from `~/.claude/skills` unless its `references/onboarding.json` restricts it to other runtimes; `scripts/check_skill_links.py` derives that exclusion from the declaration.
 
 Release authority covers running the checker with `--fix`: it only adds missing links in each machine's established style and never replaces an existing entry. A wrong, broken, or stale entry, a skill not yet synced to Fedora, or an unreachable host keeps the gate `BLOCKED` until the maintainer resolves it.
 
