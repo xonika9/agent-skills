@@ -4,16 +4,32 @@
 
 ### Highlights
 
-- New `x9-performance` skill finds where a system spends time, memory, CPU, size, or money it does not need to and removes the waste on any stack. An audit returns a ranked plain-language report of cheap fixes, owner decisions, and missing data; a named complaint is turned into a confirmed metric with defaults for owners who don't know the numbers. A change is kept only when alternating before-and-after runs all show the gain; waits are replaced by the condition they guarded, and load, profiling, or paid runs beyond the local machine need permission. Reading goes to subagents while measurements run one at a time, and every attempt is recorded in the project's `docs/performance/` notes with a marked pointer block in `AGENTS.md`.
-- The maintainer's private release workflow now checks each new or changed skill for a by-design runtime restriction as well as its external prerequisites, so a skill that cannot run in some runtime is caught before release rather than in use. The workflow also runs in OpenCode, confirming the version through its structured question tool.
-
 ### Install / update
-
-- Install the new `x9-performance` skill through your existing installation route; it needs no new command or paid service.
 
 ### Compatibility
 
 ### Breaking changes
+
+## 4.1.0 - 2026-10-13
+
+### Highlights
+
+- New `x9-performance` skill finds where a system spends time, memory, CPU, size, or money it does not need to and removes the waste on any stack. An audit returns a ranked plain-language report of cheap fixes, owner decisions, and missing data; a named complaint is turned into a confirmed metric with defaults for owners who don't know the numbers. A change is kept only when alternating before-and-after runs all show the gain; waits are replaced by the condition they guarded, and load, profiling, or paid runs beyond the local machine need permission. Reading goes to subagents while measurements run one at a time, and every attempt is recorded in the project's `docs/performance/` notes with a marked pointer block in `AGENTS.md`.
+- The maintainer's private release workflow now checks each new or changed skill for a by-design runtime restriction as well as its external prerequisites, so a skill that cannot run in some runtime is caught before release rather than in use. The workflow also runs in OpenCode, confirming the version through its structured question tool.
+- `x9-idea-critic` now runs both the Claude and GPT critics at `high` effort by default instead of `medium`, for deeper critiques at a higher usage cost.
+
+### Install / update
+
+- Install the new `x9-performance` skill through your existing installation route; it needs no new command or paid service.
+- In OpenCode, point the `x9-idea-critic` GPT subagent at the `high` effort variant, or set `gpt_effort` back to `medium` in the skill's `config.json`.
+
+### Compatibility
+
+- Critiques from `x9-idea-critic` take longer and use more of each provider's allowance. An OpenCode subagent still configured for `medium` no longer matches the configured effort, so the GPT route fails until it is updated.
+
+### Breaking changes
+
+- None.
 
 ## 4.0.0 - 2026-10-12
 

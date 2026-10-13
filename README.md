@@ -204,7 +204,7 @@ Use this when you want resistance, not another enthusiastic brainstorm. The skil
 
 The result is a concise decision aid: a recommendation, grouped changes covering every material issue, a self-contained stronger proposal, and one next step with a pass/fail signal. Critics have no arbitrary finding limit; brevity comes from synthesis rather than discarded objections. The default uses one critic from each available provider; when a subscription is unavailable, it proceeds with one and marks the loss of independent review. Use `claude` or `gpt` for one critic, or `full` for a deeper panel.
 
-Route names stay the same when models change. The model and effort defaults for each provider live in the skill's [`config.json`](skills/x9-idea-critic/config.json); both effort defaults are `medium` and can be changed independently. OpenCode needs a subagent matching the configured GPT model and effort. The GPT route from Claude Code uses `x9-codex-delegation`.
+Route names stay the same when models change. The model and effort defaults for each provider live in the skill's [`config.json`](skills/x9-idea-critic/config.json); both effort defaults are `high` and can be changed independently. OpenCode needs a subagent matching the configured GPT model and effort. The GPT route from Claude Code uses `x9-codex-delegation`.
 
 #### [`x9-decision-map`](skills/x9-decision-map/SKILL.md)
 
