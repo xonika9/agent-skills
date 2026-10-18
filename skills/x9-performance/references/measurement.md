@@ -23,6 +23,8 @@ Before removing a sleep, poll, retry, or serial step, record why it exists and w
 
 Reject a gain that moves the cost to where the same person or system still pays it, hides work outside the measured window, or needed a test changed. Moving request-independent work earlier is legitimate under [locate](locate.md#time-of-one-operation).
 
+A gain counts only when the runs show the work happened. Each run counts failed, rejected, and timed-out operations and checks the output, because a failing or skipped path is often faster than a working one. The measured work falls inside the window: the request reached the server, the rows were written, the result was used, not left in an unconsumed iterator, an unawaited promise, or a value the compiler can discard. A gain larger than the change could give — beyond the lever's [bound](locate.md#time-of-one-operation) or the disk, network, or cores it runs on — measured something else; find what before keeping it.
+
 ## Order of work
 
 Check correctness before the metric. Change one thing at a time. After a kept change, re-measure the whole scenario: the main cause moves. Record every attempt, including reverted ones, in the journal described in [notes](notes.md). Runs on a shared staging environment go one at a time, with rollback.

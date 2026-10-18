@@ -12,8 +12,14 @@ Only the user-facing root session may launch a native OpenCode subagent for a GP
 
 Record the catalog assignment under the core telemetry rules. If no agent has the configured assignment, the route failed under the core skill's degradation rules; do not substitute a different model, an inherited model, or another provider.
 
+## Project scout
+
+Launch the scout as a native subagent only when a live agent's effective permissions deny every action except `read`, `grep`, and `glob`, and it has no configured model so it inherits the host session's model. Without such an agent the scout route is unavailable.
+
 ## Agent prerequisite
 
 An ordinary critique invocation does not change local agents; an explicit setup request authorizes this prerequisite. Consult the current [OpenCode V2 agent documentation](https://opencode.ai/v2/docs/agents) and confirm model availability. Under `agents` in the existing global configuration, use any unambiguous agent ID, `mode: "subagent"`, and `gpt_model` from the core configuration under the OpenAI provider with the `gpt_effort` variant. Its description must identify the actual model and effort for live discovery. Preserve unrelated settings.
 
 This general-purpose agent inherits normal runtime permissions. The sealed-packet and no-delegation constraints belong to the critic's task brief, not permanent restrictions on the agent. The effective agent definition, not the configuration text alone, is the setup evidence: later configuration can override model settings. Existing model-specific agents need not change. The Claude route uses Claude CLI and requires no OpenCode model provider or agent.
+
+An explicit setup request also authorizes adding the scout agent under `agents`: `mode: "subagent"`, no `model`, and permission rules that deny `*` and then allow `read`, `grep`, and `glob`, followed by `deny` rules for the scout's credential patterns under `read`. Confirm its effective permissions the same way.

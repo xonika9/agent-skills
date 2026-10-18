@@ -9,7 +9,7 @@ Find where a system spends time or resources it does not need to, prove why, and
 
 ## Modes
 
-- **Audit:** the person does not know what is wrong. Follow [audit](references/audit.md). An audit leaves no code change behind. When the request also asks to fix, each cheap item that can be verified locally goes through Optimize, one at a time, with the audit's agreed scope and defaults standing in for the metric confirmation; items that cost money, change architecture, or touch shared systems wait for the owner's choice.
+- **Audit:** the person does not know what is wrong. Follow [audit](references/audit.md). An audit leaves no code change behind. When the request also asks to fix, the run closes every item in the report as [audit and fix](references/audit.md#audit-and-fix) describes.
 - **Optimize:** the person names a problem. Name the metric, find where it goes per [locate](references/locate.md), then change and verify per [measurement](references/measurement.md). A question without a request to fix, such as «почему так долго?», stops after locating and leaves no code change behind.
 
 Route by where the wait is paid: test runs and pipelines belong to x9-test-quality; a developer's machine — dev server, hot reload, local build — belongs here.
@@ -18,13 +18,13 @@ Both modes start by reading the project's performance notes and end by updating 
 
 ## Name the metric
 
-People describe symptoms, not metrics. Find what the person notices from code, logs, or a quick measurement; when that is not enough, ask one plain question: what do you do, and what do you see then? State the metric in plain words for confirmation: what is measured, from which event to which, in which scenario and conditions. Then settle who pays for it — a person waiting, the system at its load, or a budget — the smallest gain worth keeping, the guard metrics that must not get worse, and the budget. Correctness is always a guard; add what a change could shift, such as memory spent by a cache or money spent by idle capacity.
+People describe symptoms, not metrics. Find what the person notices from code, logs, or a quick measurement; when that is not enough, ask what they do and what they see then. Settle the metric in plain words — what is measured, from which event to which, in which scenario and conditions — who pays for it (a person waiting, the system at its load, or a budget), the smallest gain worth keeping, the guard metrics that must not get worse, and the budget. Correctness is always a guard; add what a change could shift, such as memory spent by a cache or money spent by idle capacity. Before changing code, confirm these in one stop as [the message that ends a turn](#the-message-that-ends-a-turn) describes; a question that only locates proceeds on them and names them in its answer.
 
-When the owner cannot give a value, propose one with its reason and label it `assumed`: the minimum gain is the larger of 10% and the spread of at least three baseline runs taken before any change, where spread is (max − min) / median; expected load is the observed peak times two, or `NOT_PROVEN` without data; the budget is 30 minutes of local runs and no paid runs. Keep the work inside the agreed scenario and budget.
+When the owner cannot give a value, propose one with its reason and label it `assumed`: the minimum gain is the larger of 10% and the spread of at least three baseline runs taken before any change, where spread is (max − min) / median; expected load is the observed peak times two, or `NOT_PROVEN` without data; the budget is 30 minutes of local runs per metric and no paid runs. Keep the work inside the agreed scenario and budget.
 
 ## Evidence
 
-Label every claim `measured` (a number from data, with its conditions), `code` (a cause at a file and line, size estimated), `assumed`, or `NOT_PROVEN`. A number proves size, not cause; a static finding is a hypothesis that names the measurement that would confirm it. Report time and money spent inside a model or external provider as a separate part the project cannot shorten; the calls, payloads, and ordering around it remain levers. Measure browser behaviour through x9-browser-session when it is available.
+In worker replies, notes, and the saved report, label every claim `measured` (a number from data, with its conditions), `code` (a cause at a file and line, size estimated), `assumed`, or `NOT_PROVEN`; the message to the person translates them as [the message that ends a turn](#the-message-that-ends-a-turn) describes. A number proves size, not cause; a static finding is a hypothesis that names the measurement that would confirm it. Report time and money spent inside a model or external provider as a separate part the project cannot shorten; the calls, payloads, and ordering around it remain levers. Measure browser behaviour through x9-browser-session when it is available.
 
 ## Delegation
 
@@ -48,10 +48,22 @@ Never buy performance by weakening a test, check, coverage threshold, timeout po
 
 Missing data limits the conclusion: name what stayed unmeasured and mark the report `DEGRADED`. A comparison the budget cannot afford is not started; report what it would need.
 
+## The message that ends a turn
+
+The person reads only the message that ends a turn, so everything they must know or answer goes there; progress updates are not needed. Write it in the person's language and plain words: translate evidence labels and marks such as `DEGRADED` into ordinary phrases — measured, seen in the code, a guess, not checked — give a number only when it changes the decision, and leave thresholds, raw data, and rejected candidates to the notes, linking the file.
+
+Stop to wait only for a permission from the ask-first list, the metric before changing code, or a fact without a safe default, such as how to start a project that needs credentials or data. In an audit that also fixes, these questions come in the single stop after the audit. Everything else proceeds on stated defaults, and the result names the ones it used. A stop gives one or two sentences on what is already known, then every question it needs, numbered, each with a proposed answer and its reason, so a plain yes accepts them all.
+
+A result gives:
+
+- Audit: [audit](references/audit.md#reply-to-the-owner).
+- Question: what takes the time and where, how sure, what is still a guess, then the next step to choose — fix it, measure further, or leave it — and whether to record the finding in the notes.
+- Fix, including fixes after an audit: what improved, for whom, and by how much in the agreed scenario; what changed, and what was tried and reverted; what was not verified and the person should check; any item left open and why.
+
 ## Done
 
-- Audit: the report in [audit](references/audit.md#report); after fixes, the before-and-after table.
-- Optimize: [locate](references/locate.md#done) for a question; [measurement](references/measurement.md#done) for a fix.
+- Audit: the report in [audit](references/audit.md#report) and the reply in [audit](references/audit.md#reply-to-the-owner); after fixes, every item closed as [audit and fix](references/audit.md#audit-and-fix) describes.
+- Optimize: [locate](references/locate.md#done) for a question and [measurement](references/measurement.md#done) for a fix, each with its result as [the message that ends a turn](#the-message-that-ends-a-turn) describes.
 - The notes record this run per [notes](references/notes.md), and temporary timing marks are gone from the diff.
 
 The [onboarding declaration](references/onboarding.json) lists the optional companion skills.

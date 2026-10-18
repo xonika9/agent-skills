@@ -4,9 +4,18 @@
 
 ### Highlights
 
+- `x9-performance` now ends every turn with one message written for the owner. It stops only for a permission, the metric before a code change, or a fact it cannot assume, and asks everything at once with proposed answers so a plain yes is enough. A question and a fix now get a short plain-language result too, not only an audit, and an audit starts on the main paths measured locally instead of pausing to ask about priorities.
+- An `x9-performance` audit that also fixes now closes every item in one pass instead of fixing only the cheap ones and leaving a list for later. It measures locally checkable guesses during the run, asks all owner decisions and needed facts once right after the audit, and finishes only when each item is kept, reverted, declined, or stopped by the budget. Owner decisions are now limited to money, shared systems, and changes users or other programs would notice; internal restructuring counts as a local fix. The default measurement budget is now 30 minutes per metric rather than per run.
+- `x9-performance` no longer keeps a speedup that came from broken or skipped work. Each run counts failed, rejected, and timed-out operations and checks the output, confirms the measured work actually ran inside the timed window, and treats a gain larger than the change could physically give as a measurement error to explain before keeping it.
+- `x9-idea-critic` now finds project facts that neither you nor the proposing agent mentioned. For an idea about the current repository, a read-only scout on the main chat's model searches the code before the critics run, without seeing the conversation, and answers the critics' open questions afterwards. Every claim in the critics' brief is marked as verified, stated in the conversation, or assumed, and an objection is dismissed only with a quote that refutes it. Ideas outside code work as before.
+
 ### Install / update
 
+- In OpenCode, the `x9-idea-critic` scout needs a separate subagent without a configured model whose permissions allow only reading, searching, and listing files; ask the agent to set it up. Without it, code ideas are critiqued with project facts gathered by the proposing agent, and the answer says so.
+
 ### Compatibility
+
+- Critiques of code ideas take about a minute longer for the scout. In Codex the scout cannot be kept to the repository by the sandbox, only to reading; credential files are excluded by its instructions, and secret values are removed before its findings reach the Claude critic.
 
 ### Breaking changes
 

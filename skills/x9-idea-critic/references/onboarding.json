@@ -7,7 +7,7 @@
       "kind": "command",
       "level": "required",
       "group": "claude-provider-route",
-      "needed_for": "Running Claude critics through Claude CLI.",
+      "needed_for": "Running Claude critics and the project scout through Claude CLI.",
       "check": {"type": "command-present", "command": "claude"},
       "guidance_id": "install-command"
     },
@@ -47,6 +47,15 @@
       "kind": "user-action",
       "level": "optional",
       "needed_for": "Confirming that a native subagent matches the configured GPT model and effort under the OpenAI provider.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "opencode-scout-agent",
+      "runtimes": ["opencode"],
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Running the project scout for code ideas through a read-only native subagent that inherits the host session's model.",
       "check": {"type": "manual"},
       "guidance_id": "complete-user-action"
     },
