@@ -26,7 +26,8 @@ class GroundingAdmissionContractTests(unittest.TestCase):
         self.assertIn("invoke and present the canonical decision packet", self.grounding)
         self.assertIn("without naming the proposed mechanism", self.architecture_gate)
         self.assertIn("Open source, vendor maintenance, or prior investment", self.architecture_gate)
-        self.assertIn("operation, upgrades, recovery, observability, and exit", self.architecture_gate)
+        self.assertIn("operation, upgrades, recovery, observability, exit", self.architecture_gate)
+        self.assertIn("mandatory user step", self.architecture_gate)
 
     def test_small_near_miss_stays_lightweight(self):
         self.assertIn("small change that stays within an accepted surface", self.grounding)
@@ -86,7 +87,7 @@ class GroundingAdmissionContractTests(unittest.TestCase):
         self.assertIn("exactly one named bounded reversible experiment", self.architecture_gate)
         self.assertIn("result returns through Grounding", self.architecture_gate)
         self.assertIn("never automatically admits implementation", self.architecture_gate)
-        self.assertIn("cannot automatically become implementation admission", self.grounding)
+        self.assertNotIn("cannot automatically become implementation admission", self.grounding)
 
 
 if __name__ == "__main__":

@@ -74,6 +74,57 @@ class ValidateHtmlTests(unittest.TestCase):
         )
         self.assertTrue(any("<script>" in error for error in self.errors()))
 
+    def test_rejects_svg_resource_dependencies_and_refresh(self) -> None:
+        for fragment in (
+            '<svg><image href="https://example.invalid/pixel.png"></image></svg>',
+            '<svg><use xlink:href="other.svg#icon"></use></svg>',
+            '<svg><feImage href="//example.invalid/pixel.png"></feImage></svg>',
+            '<meta http-equiv=" Refresh " content="0;url=https://example.invalid/">',
+            '<svg><image href="#local"><set attributeName="href" to="https://example.invalid/pixel.png"></set></image></svg>',
+            '<svg><image href="#local"><animate attributeName="href" values="#local;https://example.invalid/pixel.png"></animate></image></svg>',
+        ):
+            with self.subTest(fragment=fragment):
+                self.html.write_text(valid_html().replace('</head>', fragment + '</head>'))
+                self.assertTrue(any('external/runtime' in error for error in self.errors()))
+
+    def test_allows_local_svg_references_and_source_links(self) -> None:
+        self.html.write_text(valid_html().replace(
+            '</main>', '<svg><defs><path id="icon"></path></defs>'
+            '<use href="#icon" xlink:href="#icon" fill="url(#icon)" '
+            'style="filter:url(#icon)"></use></svg></main>',
+        ))
+        self.assertEqual(self.errors(), [])
+
+    def test_rejects_html_resource_attributes(self) -> None:
+        for original, replacement in (
+            ('</main>', '<input type="image" src="https://example.invalid/pixel.png"></main>'),
+            ('</main>', '<input type="IMAGE" src="pixel.png"></main>'),
+            ('<body>', '<body background="https://example.invalid/pixel.png">'),
+            ('</main>', '<table background="pixel.png"><tr><td>Finding</td></tr></table></main>'),
+            ('<html lang="en">', '<html lang="en" manifest="report.appcache">'),
+            ('</main>', '<a href="https://example.com/source" ping="https://example.invalid/track">Source</a></main>'),
+        ):
+            with self.subTest(replacement=replacement):
+                self.html.write_text(valid_html().replace(original, replacement), encoding="utf-8")
+                self.assertTrue(any('external/runtime' in error for error in self.errors()))
+
+    def test_rejects_svg_presentation_resource_dependencies(self) -> None:
+        for attribute in ('fill', 'filter', 'cursor'):
+            with self.subTest(attribute=attribute):
+                self.html.write_text(valid_html().replace(
+                    '</main>', f'<svg><path {attribute}="url(https://example.invalid/resource.svg#item)"></path></svg></main>',
+                ), encoding="utf-8")
+                self.assertTrue(any('external/runtime' in error for error in self.errors()))
+
+    def test_duplicate_attributes_cannot_hide_resource_or_refresh(self) -> None:
+        for fragment in (
+            '<svg><image href="https://example.invalid/pixel.png" href="#local"></image></svg>',
+            '<meta http-equiv="refresh" http-equiv="ignored" content="0;url=https://example.invalid/">',
+        ):
+            with self.subTest(fragment=fragment):
+                self.html.write_text(valid_html().replace('</head>', fragment + '</head>'))
+                self.assertTrue(any('duplicate attributes' in error for error in self.errors()))
+
     def test_rejects_missing_markdown_source(self) -> None:
         self.html.write_text(
             valid_html().replace(SOURCE.replace("&", "&amp;"), "https://example.com"),
@@ -154,6 +205,10 @@ class ValidateHtmlTests(unittest.TestCase):
             valid_html().replace("</style>", "body { background: url(x.png); }</style>"),
             valid_html().replace("<body>", '<body style="background:url(https://example.invalid/x.png)">'),
             valid_html().replace("</style>", r"body { background: u\72l(//example.invalid/x.png); }</style>"),
+            valid_html().replace("</style>", 'body { background-image: image-set("https://example.invalid/x.png" 1x); }</style>'),
+            valid_html().replace("</style>", "body { background-image: -webkit-image-set('x.png' 1x); }</style>"),
+            valid_html().replace("</style>", r'body { background-image: -webkit-ima\67 e-set("//example.invalid/x.png" 1x); }</style>'),
+            valid_html().replace("<body>", '<body style="background-image:IMAGE-SET(&quot;x.png&quot; 1x)">'),
         ]
         for candidate in cases:
             with self.subTest(candidate=candidate):

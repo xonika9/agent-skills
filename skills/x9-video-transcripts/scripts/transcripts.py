@@ -265,9 +265,14 @@ def transcribe_one(source: Path, base: Path, lang: str, model: Path, vad: Path, 
         srt, txt = Path(str(base) + SRT_SUFFIX), Path(str(base) + TXT_SUFFIX)
         for dest, content in ((srt, srt_text),
                               (txt, srt_to_txt(srt_text, source, detected.group(1) if detected else lang))):
-            part = dest.with_name(dest.name + ".part")
+            # Keep the exclusive handle: reopening a predictable .part could follow a user-owned link.
+            # A bounded prefix also keeps valid long destination names publishable.
+            temporary = tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=dest.parent,
+                                                    prefix=".x9-transcript-", suffix=".part", delete=False)
+            part = Path(temporary.name)
             try:
-                part.write_text(content, encoding="utf-8")
+                with temporary:
+                    temporary.write(content)
                 os.replace(part, dest)
             finally:
                 part.unlink(missing_ok=True)

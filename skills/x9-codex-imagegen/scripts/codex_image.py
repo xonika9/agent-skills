@@ -3,12 +3,13 @@
 
 Runs one `codex exec` turn. By default Codex receives a brief and shapes the
 prompt with its own imagegen skill; with --verbatim it passes the given prompt
-to the image tool unchanged. Success is decided by the file, not by Codex's
+to the image tool unchanged. Image validity is decided by the file, not by Codex's
 reply: the PNG signature and IHDR header are read from disk. When Codex
 generated an image but did not save it, the newest PNG from that thread's
 generated_images folder is recovered instead of generating again.
 
-Prints one JSON object. Exit code 0 only for status "ok".
+Prints one JSON object. Exit code 0 only for status "ok"; a verified PNG
+without its final prompt is "incomplete" and remains available at --out.
 """
 
 from __future__ import annotations
@@ -346,6 +347,9 @@ def main() -> int:
         source = f"recovered:{recovered}" if recovered else ""
     info = fresh_png()
     if info:
+        if not final_prompt_text:
+            return finish("incomplete", source=source, width=info[0], height=info[1], has_alpha=info[2],
+                          error="PNG produced, but final prompt is unavailable; deliver it without generating again")
         return finish("ok", source=source, width=info[0], height=info[1], has_alpha=info[2])
 
     if timed_out:

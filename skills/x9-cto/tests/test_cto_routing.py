@@ -71,7 +71,8 @@ class CtoRoutingContractTests(unittest.TestCase):
         self.assertIn("one top-level `first_user_path`", execution)
         self.assertIn("scope discipline does not require a new dispatch-enforcement subsystem", execution)
         self.assertIn("controls must be effective before the dependent action", execution)
-        self.assertIn("Grounding never resumes broad mutation in the same turn", execution)
+        self.assertIn("it owns the freeze and the user-controlled resumption", execution)
+        self.assertNotIn("Grounding never resumes broad mutation in the same turn", execution)
         self.assertIn("Wait for explicit user confirmation", grounding)
 
     def test_autonomous_ce_run_asks_once_then_parks(self):
@@ -104,6 +105,8 @@ class CtoRoutingContractTests(unittest.TestCase):
         self.assertIn("only for a focused continuation", contract)
         self.assertIn("For `accept and close`, stop after the explanation", contract)
         self.assertIn("needs no synthetic follow-up", contract)
+        self.assertNotIn("Do not reopen accepted decisions", contract)
+        self.assertIn("Without an explicit user request to edit", contract)
         self.assertIn("follow its adaptive response contract", automatic)
         self.assertNotIn("return the existing two blocks", automatic)
 

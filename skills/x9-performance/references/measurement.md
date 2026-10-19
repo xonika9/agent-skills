@@ -31,7 +31,7 @@ Check correctness before the metric. Change one thing at a time. After a kept ch
 
 ## Handing off to ce-optimize
 
-When the target is code measured by a local command, several variants should be searched, and ce-optimize is installed, read its spec schema from the installed skill and write a spec with the metric, guard metrics, minimum gain, serial execution when the metric is time, and the measurement harness in its immutable scope. Then run ce-optimize with that spec; its own approval gate is where the owner agrees to its branch and commits. Afterwards, record its kept and reverted experiments in the journal. If the schema cannot express the guards, run the experiment here.
+When the target is code measured by a local command, several variants should be searched, and ce-optimize is installed, read its current spec schema and preparation contract. Before handing over, establish authority for its preparatory changes, including branches and commits; its later approval gate does not authorize earlier actions. If preparation conflicts with project rules or lacks authority, or the schema cannot express the guards, run the experiment here. Otherwise write a spec with the metric, guard metrics, minimum gain, serial execution when the metric is time, and the measurement harness in its immutable scope, then run ce-optimize with it. Afterwards, record its kept and reverted experiments in the journal.
 
 ## Done
 

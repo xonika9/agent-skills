@@ -38,7 +38,8 @@ The packet contains:
   confidence for each credible option;
 - compare credible alternatives by the total operational surface this project
   would own and their reversibility, including operation, upgrades, recovery,
-  observability, and exit. Open source, vendor maintenance, or prior investment
+  observability, exit, and every new setting, command, environment variable, or
+  mandatory user step. Open source, vendor maintenance, or prior investment
   does not reduce the surface that this project must operate;
 - a claim-to-evidence table;
 - what was measured, under which load and environment;
@@ -53,7 +54,7 @@ The packet contains:
 - independent-critique status and unresolved facts;
 - evidence and recommendation fields defined below.
 
-Use the existing `Independent research` section in `SKILL.md`; do not duplicate
+Use the existing `Evidence` section in `SKILL.md`; do not duplicate
 its source or freshness rules here. For this gate, extend that research from the
 initial mechanism to the relevant solution landscape.
 

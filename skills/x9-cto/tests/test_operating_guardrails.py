@@ -36,6 +36,12 @@ class OperatingGuardrailContractTests(unittest.TestCase):
         self.assertIn("one named new fact changes the prior conclusion", self.execution)
         self.assertIn("do not invent a time estimate", self.execution)
 
+    def test_stop_conditions_use_defined_terms(self):
+        self.assertIn("The path is `PROVEN` only when", self.execution)
+        self.assertIn("the only delivery budget", self.execution)
+        self.assertNotIn("checkpoint budget", self.execution)
+        self.assertNotIn("structured `next_action`", self.execution)
+
     def test_owner_progress_projects_the_nearest_barrier(self):
         self.assertIn("A repository-specific status integration", self.execution)
         for field in (

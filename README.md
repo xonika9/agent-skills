@@ -271,7 +271,7 @@ It needs `python3`, `ffmpeg`, and `whisper-cli`; the script downloads the two mo
 
 Make product and architecture decisions against the repository's actual constraints, keep delivery focused on a working user outcome, and review executor evidence before accepting it. Local workflows and authority stay with their repository owners. An optional marked block in `AGENTS.md` adds only otherwise missing local instructions or handoff routes; ordinary consultation creates no files.
 
-Use it for CTO decisions, executor handoffs, grounding, and accountable delivery. Routine debugging and implementation of a settled plan stay with their own workflows. Compound Engineering is needed only for its named methods and the explicit autonomous CE mode; missing required capabilities stop the dependent mode rather than silently replacing it.
+Use it for CTO decisions, executor handoffs, grounding, and accountable delivery. Routine debugging and implementation of a settled plan stay with their own workflows. The explicit `auto` mode needs the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`; decision support uses `ce-pov`, `ce-bakeoff`, `ce-brainstorm`, and `ce-ideate` when they are installed. Basic consultation needs none of them, and a missing required skill stops the dependent mode rather than being silently replaced.
 
 #### [`x9-task-graph`](skills/x9-task-graph/SKILL.md)
 

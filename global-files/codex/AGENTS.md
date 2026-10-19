@@ -74,8 +74,8 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### User-owned task creation
 
-- Treat `create_thread` as a non-idempotent external mutation. Give each requested task a distinct title.
-- If creation times out or returns an error that does not explicitly prove rejection before dispatch, do not retry immediately. First use `list_threads` and, when needed, `read_thread` to reconcile by title, project, prompt, and creation time. Reuse the matching task; create a replacement only after proving that no matching task exists.
+- Treat creation of a user-owned task or top-level conversation as a non-idempotent external mutation. Resolve the current creation, listing, and reading tools from the live catalog. Give each requested task a distinct title.
+- If creation times out or returns an error that does not explicitly prove rejection before dispatch, do not retry immediately. First list existing tasks and, when needed, read matching candidates to reconcile by title, project, prompt, and creation time. Reuse the matching task; create a replacement only after proving that no matching task exists.
 - If duplicate tasks are discovered, identify a canonical task and preserve any unique work. Report the duplicates; stop or archive them only when that cleanup is explicitly authorized.
 
 ### Subagent delegation

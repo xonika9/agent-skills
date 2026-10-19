@@ -106,31 +106,24 @@ Existing installations are not migrated automatically. If a live Claude Code or 
 
 ### 4. Add the last-resort wrapper
 
-Install `agent-browser`, confirm that its current `--help` includes the required `--cdp` route, and put this executable script on `PATH` as `agent-edge`:
+Install `agent-browser`, load its current workflow with `agent-browser skills get core`, and confirm that its current `--help` includes `--cdp`, `--session`, and `--pin-tab`. If strict tab binding is unavailable, this fallback is unavailable; do not attach through an unpinned shared session. Make Python 3, `curl`, and `lsof` available. Install [the bundled macOS wrapper](../scripts/agent_edge.py) on `PATH` as `agent-edge`, resolving `<skill-directory>` from the loaded `SKILL.md`:
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-PORT=9223
-PROFILE="$HOME/Library/Application Support/Microsoft Edge Automation"
-
-if ! curl --fail --silent --show-error --max-time 3 -o /dev/null "http://127.0.0.1:$PORT/json/version"; then
-  echo "Edge (Agent) is not running on port $PORT" >&2
-  exit 1
-fi
-
-PID="$(lsof -tiTCP:"$PORT" -sTCP:LISTEN | head -n 1)"
-COMMAND="$(ps -p "$PID" -o command=)"
-if [[ "$COMMAND" != *"--user-data-dir=$PROFILE"* || "$COMMAND" != *"--remote-debugging-port=$PORT"* ]]; then
-  echo "Port $PORT does not belong to the Microsoft Edge Automation profile" >&2
-  exit 1
-fi
-
-exec agent-browser --cdp "$PORT" "$@"
+install -m 755 "<skill-directory>/scripts/agent_edge.py" "<directory-on-PATH>/agent-edge"
 ```
 
-The wrapper must attach to the existing Edge profile. It must not launch a separate Chromium session.
+The wrapper reads the listener process's argument vector through macOS `KERN_PROCARGS2`. It follows Chromium's POSIX switch prefixes, ASCII whitespace trimming, `--` terminator, and `=` values, then rejects missing, duplicate, or mismatched profile/port switches. A separate argument after a key is not its value. It never relies on a flattened `ps` command string or launches a browser. An unreadable binding fails closed; preserve the existing profile and report the missing evidence. Replace an installed older wrapper only under the authority to install or update this adapter.
+
+Before the first browser command of a fallback task, choose a unique controller session. Set it once, keep the value in the task's continuation state, and reuse it for every command and resumed shell; do not regenerate it on each call or share it with another task. For example:
+
+```bash
+export AGENT_BROWSER_SESSION="edge-$(python3 -c 'import uuid; print(uuid.uuid4().hex)')"
+agent-edge tab new "<authorized-task-url>"
+```
+
+The example creates a controller session, not a browser profile. The wrapper requires a non-default session name of 1–64 ASCII letters, digits, `_`, or `-`, starting with a letter or digit. It adds `--session`, `--cdp`, and `--pin-tab` itself; place the command first and ordinary options after it (`agent-edge snapshot --json`). Connection, session, and pinning overrides are rejected. On entry, create the task's own tab as above, or enumerate and explicitly select a verified task-owned tab from the prior controller before reading or acting; never use the currently selected page as proof of ownership.
+
+When `agent-browser` reports `tab_gone`, the wrapper passes the failure through without retrying. Re-establish the profile binding, enumerate pages, and create or select a verified task-owned tab through the same named session before continuing. Do not disable pinning, reuse stale element references, or fall back to another task's tab. The unattended-Edge condition from the parent skill still applies when creating or switching tabs.
 
 ### 5. Verify without touching existing tabs
 
@@ -140,8 +133,9 @@ The wrapper must attach to the existing Edge profile. It must not launch a separ
 3. Confirm that `http://127.0.0.1:9223/json/version` responds locally.
 4. Attach with `chrome-devtools`, create a page with `background: true`, select it with
    `bringToFront: false`, navigate it, and confirm that the visible tab does not change.
-5. Verify `agent-edge` only while the user is not working in Edge; its current
-   `tab new` and `tab switch` behavior can foreground the task tab.
+5. Verify `agent-edge` with a unique task session and its pinned task tab only while
+   the user is not working in Edge; its current `tab new` and `tab switch` behavior
+   can foreground the task tab.
 6. Close only pages created by the check.
 
 For OpenCode, the verification requires the

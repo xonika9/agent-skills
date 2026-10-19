@@ -8,7 +8,7 @@ Run each scout pass in a fresh context with the host chat's exact model ID and, 
 
 ## Discovery pass brief
 
-Send this brief, filled in, through the adapter's private stdin transport:
+Send this brief, filled in, through the selected runtime adapter's transport:
 
 ```text
 You are a fact-finder for an idea critique. You receive a proposal; you do not receive the proposer's reasoning. Assume the proposal may omit what hurts it.

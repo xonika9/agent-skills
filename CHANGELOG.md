@@ -4,8 +4,15 @@
 
 ### Highlights
 
+- Transcript publication preserves pre-existing partial files and unrelated data behind symbolic or hard links. The browser fallback checks profile switches using Chromium's argument rules and keeps each task in a named controller session with a pinned tab; a lost tab stops the command.
+- Research HTML checks reject resource-bearing attributes, SVG presentation URLs, and string-based `image-set` dependencies. Diagram summaries flag unrepresented SVG text for direct reading and preserve literal draw.io labels outside HTML mode. Rule-block inspection distinguishes indented Markdown examples from active rules, including underlined headings, separators, and fenced examples inside lists.
+- Skill fixes preserve existing vault memory, account for instruction-file changes when adopting OKF, check preparation authority before handing off to `ce-optimize`, and use each runtime adapter's own scout transport. Diagram and architecture checks resolve their scripts from the loaded skill directory; Codex's duplicate-task protection discovers current tools instead of relying on old names.
+- Research HTML validation rejects external SVG resources, declarative resource mutation, automatic redirects, and ambiguous duplicate attributes. Rule-block inspection ignores examples inside tilde fences and longer backtick fences, while the Edge fallback verifies complete process arguments instead of accepting a similar profile path.
+- Codex image generation distinguishes a valid PNG with missing prompt metadata from complete success, delivers the existing image, and avoids another generation just to recover the prompt.
+
 - New `x9-cto` skill supports product and architecture decisions, executor handoffs, grounding, and accountable delivery across repositories. Repository policy keeps its own owners; optional marked CTO blocks contain only missing local instructions or routes. Ordinary consultation writes no files, and unavailable required integrations never silently change the workflow.
 - `x9-cto` checks that fixes preserve the original requirement when their tests or thresholds change, includes user setup and mandatory steps in ownership cost, and clarifies ambiguous requirements with one concrete case.
+- `x9-cto` hands general prompt and task-brief requests to `x9-agent-instructions`, also starts from Russian requests such as «посмотри как CTO», and keeps its short owner summary for decisions, Judge, Grounding, and the final delivery handoff, so quick questions and discussions stay light. Judge now edits a document when you ask it to directly, and a quick question loads less of the skill.
 - `x9-test-quality`, `x9-web-stack`, and `x9-appsec` now leave notes in the project, as `x9-performance` already did, so a repeated audit starts from the previous one and you see what changed between runs. Each skill keeps a register of findings with permanent IDs and statuses, and each audit report opens with what was fixed, what is new, what came back, and what was not checked this time; a finding nobody looked at is never counted as fixed. Notes go to `docs/testing/`, `docs/stack/`, and `docs/security/`; `AGENTS.md` gets a marked pointer block for testing and security notes and a pointer line in the existing rules block for stack notes. Project audits of the test setup also record the suite health numbers suited to the project's size, and test-pruning campaigns keep a ledger they can resume from; stack audits compare the stack map with the previous one, and bootstrap records the starting point; security audits track coverage of each attack surface, accepted risks with a review date, and owner-stated deployment facts. `x9-performance` gains the same register and comparison; on the first audit after updating, it builds the register from its latest saved audit.
 - `x9-performance` now ends every turn with one message written for the owner. It stops only for a permission, the metric before a code change, or a fact it cannot assume, and asks everything at once with proposed answers so a plain yes is enough. A question and a fix now get a short plain-language result too, not only an audit, and an audit starts on the main paths measured locally instead of pausing to ask about priorities.
 - An `x9-performance` audit that also fixes now closes every item in one pass instead of fixing only the cheap ones and leaving a list for later. It measures locally checkable guesses during the run, asks all owner decisions and needed facts once right after the audit, and finishes only when each item is kept, reverted, declined, or stopped by the budget. Owner decisions are now limited to money, shared systems, and changes users or other programs would notice; internal restructuring counts as a local fix. The default measurement budget is now 30 minutes per metric rather than per run.
@@ -15,16 +22,22 @@
 
 ### Install / update
 
-- Install `x9-cto` through the existing skill or plugin route. It replaces a repository-specific CTO skill when migrating; verify discovery before removing the old source. Named Compound Engineering methods and the autonomous CE mode require those separate skills; basic CTO consultation does not.
+- Update an installed `agent-edge` wrapper from `skills/x9-browser-session/scripts/agent_edge.py` when applying the browser adapter update, and confirm that the installed `agent-browser` supports `--session` and `--pin-tab`. The verified macOS fallback now requires Python 3 alongside `curl`, `lsof`, and `agent-browser`; native and MCP routes do not gain that dependency.
+
+- Install `x9-cto` through the existing skill or plugin route. It replaces a repository-specific CTO skill when migrating; verify discovery before removing the old source. The explicit `auto` mode requires the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`; decision support uses `ce-pov`, `ce-bakeoff`, `ce-brainstorm`, and `ce-ideate` when they are installed. Basic CTO consultation needs none of them.
 - In OpenCode, the `x9-idea-critic` scout needs a separate subagent without a configured model whose permissions allow only reading, searching, and listing files; ask the agent to set it up. Without it, code ideas are critiqued with project facts gathered by the proposing agent, and the answer says so.
 
 ### Compatibility
+
+- `x9-codex-imagegen` returns `status: incomplete` and exit code 1 when a verified PNG exists but its final prompt is unavailable. Consumers must deliver the existing `out` file and report the missing metadata rather than retrying generation.
 
 - Audits in `x9-test-quality`, `x9-web-stack`, and `x9-appsec` are no longer purely read-only: they write their notes folder, and test and security audits add their block to `AGENTS.md`. Project code, tests, and configuration still change only after you ask for fixes.
 - In a public repository, one whose visibility cannot be established, or one that publishes `docs/` as a site, `x9-appsec` asks where to keep its notes before the first write and proposes a local folder excluded from version control, so open findings are not published. A recorded permission for active testing never carries over to a later run.
 - Critiques of code ideas take about a minute longer for the scout. In Codex the scout cannot be kept to the repository by the sandbox, only to reading; credential files are excluded by its instructions, and secret values are removed before its findings reach the Claude critic.
 
 ### Breaking changes
+
+- `agent-edge` requires a unique non-default `AGENT_BROWSER_SESSION` kept for the whole task and command-first calls such as `agent-edge snapshot --json`. The wrapper owns the CDP, session, and pinning options and rejects overrides; separate switch values in the browser process no longer count as verified profile or port values.
 
 ## 4.1.0 - 2026-10-13
 

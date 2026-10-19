@@ -78,10 +78,10 @@ If print is a requested destination, release the wrapper's overflow and the SVG'
 
 ## Validation
 
-Run the bundled checker on the canonical file:
+Resolve `<skill-directory>` from the loaded `SKILL.md`, then run the bundled checker on the canonical file. Resolve the diagram path separately from the working project:
 
 ```bash
-python3 ../scripts/check_svg.py diagram.svg
+python3 "<skill-directory>/scripts/check_svg.py" "<absolute-diagram.svg>"
 ```
 
 It exits `1` on contract errors and reports geometry problems as `WARN`; add `--strict-geometry` to fail on them and on any element whose geometry it could not check. Geometry warnings are estimates from declared coordinates, and text width is approximate.

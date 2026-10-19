@@ -50,10 +50,14 @@ if mode == "copy":
     print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": reply}}}}))
 elif mode == "alpha":
     Path(out).write_bytes(alpha_png)
-elif mode == "recover":
+elif mode in ("recover", "recover_no_prompt"):
     folder = Path(os.environ["CODEX_HOME"]) / "generated_images" / {THREAD!r}
     folder.mkdir(parents=True)
     (folder / "exec-1.png").write_bytes(png)
+elif mode in ("missing_prompt", "empty_prompt"):
+    Path(out).write_bytes(png)
+    if mode == "empty_prompt":
+        print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": "FINAL_PROMPT:   "}}}}))
 elif mode == "truncated":
     Path(out).write_bytes(png[:26])
 elif mode == "nonpng":
@@ -80,6 +84,8 @@ elif mode == "hang":
     subprocess.Popen([sys.executable, "-c", late])
     sys.stdout.flush()
     time.sleep(60)
+if mode in ("alpha", "recover"):
+    print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": "FINAL_PROMPT: a red square, landscape 3:2"}}}}))
 """
 
 
@@ -109,6 +115,14 @@ def main() -> None:
         assert result["thread_id"] == THREAD and result["has_alpha"] is False, result
         assert result["final_prompt"] == "a red square, landscape 3:2", result
         assert "(brief)" in result["last_message"], result
+
+        for mode in ("missing_prompt", "empty_prompt", "recover_no_prompt"):
+            destination = tmp / f"{mode}.png"
+            code, result = run(tmp, mode, destination)
+            assert code == 1 and result["status"] == "incomplete", result
+            assert not result["final_prompt"] and "prompt" in result["error"], result
+            assert destination.read_bytes() == png_bytes(30, 20), "deliver the PNG without generating again"
+            assert (result["width"], result["height"]) == (30, 20), result
 
         code, result = run(tmp, "copy", tmp / "v.png", "--verbatim")
         assert code == 0 and "(verbatim)" in result["last_message"], result

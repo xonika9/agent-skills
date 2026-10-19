@@ -78,7 +78,9 @@ parent task. Avito work is sequential even when the rest of the research is dele
    DevTools capability, retry its documented recovery once and then use
    `chrome-devtools` MCP against the same Edge profile.
 7. If MCP cannot attach or cannot perform the required operation, use `agent-edge`,
-   which connects `agent-browser` to the same Edge profile. Because the current
+   which connects `agent-browser` to the same Edge profile. Before entering this route,
+   load `agent-browser skills get core` and follow the [fallback session contract](references/setup.md#4-add-the-last-resort-wrapper):
+   use a unique stable controller session and its pinned task-owned tab. Because the current
    `agent-browser` brings newly created and selected tabs to the foreground, use this
    fallback only when the user is not simultaneously working in Edge. If that condition
    is unknown and the fallback would require creating or switching tabs, ask one short

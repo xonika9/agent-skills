@@ -10,7 +10,7 @@ GATE = ROOT / "references" / "feasibility-gate.md"
 
 class FeasibilityAdmissionContractTests(unittest.TestCase):
     def test_cto_uses_direct_evidence_without_legacy_policy(self):
-        skill = SKILL.read_text(encoding="utf-8")
+        skill = " ".join(SKILL.read_text(encoding="utf-8").split())
         execution = EXECUTION.read_text(encoding="utf-8")
         gate = GATE.read_text(encoding="utf-8")
 
@@ -42,6 +42,7 @@ class FeasibilityAdmissionContractTests(unittest.TestCase):
         self.assertIn("cheapest local falsifier", gate)
         self.assertIn("remains `NOT_PROVEN` rather than selected", gate)
         self.assertIn("not a separate task lifecycle", gate)
+        self.assertIn("Record the result as `reuse_decision`", gate)
 
 
 if __name__ == "__main__":

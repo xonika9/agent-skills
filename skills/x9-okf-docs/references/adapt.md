@@ -57,4 +57,4 @@ python3 <skill-directory>/scripts/insert_frontmatter.py <root> \
 
 ## Completion
 
-The diff touches only headers and the agreed `.x9-okf.json`, and the check with the inventory passes.
+The diff touches only headers, the agreed `.x9-okf.json`, and the instruction-file changes allowed by [the block template](agents-block.md#writing-and-updating); the check with the inventory passes. For a check-only request, nothing changed.

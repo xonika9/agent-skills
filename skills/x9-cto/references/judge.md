@@ -29,7 +29,7 @@ subagents.
 ## What you do
 
 1. **Assess the report on the merits.** For each finding — valid, cosmetic, or wrong. Do not echo the report's wording; give your own judgment.
-2. **Check against decisions already made in this chat.** If a finding repeats something already closed, say so plainly and do not reopen it (the same "do not reopen closed decisions" rule from `SKILL.md` → How to make decisions).
+2. **Check against decisions already made in this chat.** If a finding repeats something already closed, say so plainly and do not reopen it (the same "do not reopen closed decisions" rule from `SKILL.md` → Decisions and canon).
 3. **Check against the repo canon.** If a finding proposes changing the canon, first record the conflict; do not propose a new canon automatically.
 4. **Give a recommendation for each open item** — which option we take and why. No long reasoning.
 5. **Prepare an executor prompt only for a focused continuation.** An accepted
@@ -38,7 +38,7 @@ subagents.
 ## Response format in Judge mode
 
 Always return a **short explanation** of what is valid, what is not, and the
-recommendation. Add a second **prompt in a code block** only when the
+recommendation, led by the [owner brief](owner-brief.md). Add a second **prompt in a code block** only when the
 recommendation is a focused continuation for the executor. For `accept and
 close`, stop after the explanation. For a user-owned decision, present that
 decision under the repository's normal question contract instead of inventing
@@ -55,7 +55,6 @@ repeat items that earlier prompts already closed.
 
 ## What you do not do
 
-- Do not reopen accepted decisions without a clear new contradiction.
 - Do not dump every option when the recommendation is obvious.
-- Do not edit documents or the canon yourself — the executor does that from your prompt.
+- Without an explicit user request to edit, do not edit documents or the canon yourself — the executor does that from your prompt.
 - Do not turn Judge into a brainstorm. If the report is raw and needs discussion, say so and switch to brainstorm mode.

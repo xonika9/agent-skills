@@ -13,7 +13,7 @@ outcome; delegation changes who executes a bounded unit, not who owns the result
 - [Feasibility admission before broad delivery](#feasibility-admission-before-broad-delivery)
 - [Start with a closure contract](#start-with-a-closure-contract)
 - [Working-state-first evidence ladder](#working-state-first-evidence-ladder)
-- [Value budget and strategy reassessment](#value-budget-and-strategy-reassessment)
+- [Delivery budget and strategy reassessment](#delivery-budget-and-strategy-reassessment)
 - [Grounding control](#grounding-control)
 - [Delegate execution](#delegate-execution)
 - [Supervise actively](#supervise-actively)
@@ -64,9 +64,11 @@ adaptive:
   only unit tests or a commit;
 - one top-level `first_user_path` records the actor, entry point, observable end
   state, authoritative product-path evidence, and the smallest owned-surface
-  allowlist needed to prove it. This checkpoint and its delivery budget are
-  inherited by every child workstream; a local fix, reassessment, or replacement
-  executor cannot reset, replace, or enlarge them;
+  allowlist needed to prove it. The path is `PROVEN` only when that
+  authoritative evidence passes on the integrated state; until then it is
+  unproven. This checkpoint and its delivery budget are inherited by every child
+  workstream; a local fix, reassessment, or replacement executor cannot reset,
+  replace, or enlarge them;
 - before the first implementation write or dispatch, `architecture_gate` is
   recorded as `NOT_APPLICABLE — <reason>` or points to a durable decision packet
   and its current recommendation;
@@ -80,10 +82,11 @@ adaptive:
 - stable acceptance milestones identify observable product movement before
   implementation; commits, diagnostics, reviews, receipts, retries, and
   contract generations cannot create or close those milestones by themselves;
-- a task-specific delivery budget defines the measurable envelope that can
-  change the strategy: elapsed work when observable, external or target
-  attempts, paid cost when applicable, and planned source or subsystem scope;
-  omit a dimension that cannot be observed instead of inventing a value;
+- the task-specific delivery budget of `first_user_path`, the only delivery
+  budget, defines the measurable envelope that can change the strategy: elapsed
+  work when observable, external or target attempts, paid cost when applicable,
+  and planned source or subsystem scope; omit a dimension that cannot be
+  observed instead of inventing a value;
 - likely blind spots are identified where the literal task could pass while the
   outcome remains incomplete, such as configuration, environment-specific
   behavior, migrations, cleanup, documentation, task state, release wiring, and
@@ -114,10 +117,6 @@ a substitute. If a required control is unavailable, stop that action and report
 it. Grounding and user stop conditions remain binding.
 
 Ordinary work remains in this chat or its authorized internal executors.
-
-When an initially narrow task reveals an applicable architecture gate, stop
-further implementation, preserve existing work, and reclassify it as
-exploratory evidence. Do not discard user-owned or already-produced work.
 
 If a persistent goal was explicitly requested, keep it active across this cycle
 and update it to complete only after the independent tail audit and integrated
@@ -173,25 +172,27 @@ Do not prebuild its fallback. When the observable reconsideration signal occurs,
 route the expansion through the existing strategy reassessment instead of
 silently widening implementation.
 
-## Value budget and strategy reassessment
+## Delivery budget and strategy reassessment
 
-Optimize delivery for accepted product movement. Track product milestones
-separately from evidence or diagnosis that changes a load-bearing decision.
-A supporting-tool repair is not milestone movement unless resulting
-product-path evidence proves or invalidates an accepted product milestone;
-calling it a blocker or promising future evidence does not suffice. New evidence
-can invalidate an approach and justify strategy reassessment without a completed
-milestone, but must change the causal conclusion about the accepted outcome,
-not merely describe another failure of supporting machinery. Neither milestone
-movement nor reassessment resets the cumulative delivery budget. Use the existing
-work ledger; create no new controller, record schema, approval step, or universal
-retry count.
+Optimize delivery for accepted product movement and the smallest avoidable owned
+surface. Track product milestones separately from evidence or diagnosis that
+changes a load-bearing decision. A supporting-tool repair is not milestone
+movement unless resulting product-path evidence proves or invalidates an
+accepted product milestone; calling it a blocker or promising future evidence
+does not suffice. Scope such repairs under [product scope and supporting
+machinery](product-scope.md). New evidence can invalidate an approach and
+justify strategy reassessment without a completed milestone, but must change the
+causal conclusion about the accepted outcome, not merely describe another
+failure of supporting machinery. Neither milestone movement nor reassessment
+resets the delivery budget; it is cumulative. Use the existing work ledger;
+create no new controller, record schema, approval step, or universal retry
+count.
 
 Suspend broad implementation and require one strategy reassessment when any of
 these facts is recorded:
 
-- the accepted checkpoint budget is exhausted without the milestone movement
-  it was intended to buy;
+- the delivery budget is exhausted without the milestone movement it was
+  intended to buy;
 - implementation begins to own a commodity protocol, parser, platform client,
   helper process, or infrastructure subsystem absent from the accepted
   `reuse_decision`;
@@ -205,8 +206,9 @@ These are task-specific facts, not universal retry counts or line thresholds.
 The reassessment extends the existing work ledger; it creates no new lifecycle
 status or parallel state machine. It records the
 accepted milestone state, causal evidence, budget consumed, reuse alternatives,
-keep/delete boundary, cheapest falsifier, and one structured `next_action` or
-Decision Packet.
+keep/delete boundary, cheapest falsifier, and either one `next_action` naming
+the action, its allowed surface, and the evidence it must produce, or a
+[decision packet](architecture-decision-gate.md#decision-packet).
 
 The head CTO performs the reassessment and may continue autonomously only
 when no grounding trigger is recorded and the chosen `next_action` remains
@@ -220,10 +222,8 @@ diagnosis and preservation remain allowed.
 ## Grounding control
 
 When the user requests grounding or the delivery records a grounding trigger,
-follow [grounding.md](grounding.md). Stop new implementation dispatches and
-broad mutation immediately. Read-only inspection and preservation remain
-allowed. Grounding never resumes broad mutation in the same turn; resumption
-requires the user's explicit confirmation of the grounded recommendation.
+follow [grounding.md](grounding.md); it owns the freeze and the user-controlled
+resumption.
 
 ## Delegate execution
 
@@ -383,6 +383,7 @@ The outcome is complete only when all are true:
   the handoff. An in-scope action waiting for authority keeps the outcome
   incomplete; it must never be converted to `complete` for a tidy handoff.
 
-Finish with the outcome first, then verification, commits/artifacts, and the
-small set of remaining external actions. Never use “the executor finished” as a
+Finish with the [owner brief](owner-brief.md) and the outcome first, then
+verification, commits/artifacts, and the small set of remaining external
+actions. Never use “the executor finished” as a
 completion criterion.

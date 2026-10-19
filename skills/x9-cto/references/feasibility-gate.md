@@ -30,7 +30,8 @@ Missing, stale, or mismatched evidence is never `NOT_APPLICABLE`.
 
 Before owning a commodity protocol, platform client, parser, SDK surface,
 runtime helper, or infrastructure control plane, compare maintained candidates
-with the custom path. Record the product capability needed, viable candidates,
+with the custom path. Record the result as `reuse_decision`: the product
+capability needed, viable candidates,
 their integration and operating boundaries, the cheapest local falsifier, and
 the evidence for the chosen path. An untested promising candidate remains
 `NOT_PROVEN` rather than selected.

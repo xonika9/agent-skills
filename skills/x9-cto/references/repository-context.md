@@ -47,9 +47,17 @@ by the owner; retain its exact actor, conditions, and withheld actions.
 
 ## Recording and configuring
 
-Route an authorized result to its existing canonical owner. If none exists,
-propose the smallest appropriate location. Do not create a parallel decision
-ledger, task-state file, or cached tracker in the CTO block.
+Route an authorized result to its existing canonical owner; where the
+repository canon names another location, the canon is the `source of truth`. If
+none exists, propose the smallest appropriate location. Do not create a parallel
+decision ledger, task-state file, or cached tracker in the CTO block.
+
+Record only what became a decision, principle, or working direction, and do not
+bloat documents. A disputed decision goes only into a brainstorm, research, or
+temporary note; an accepted and stable one updates the canonical document. Keep
+temporary, exploratory, or post-release topics out of the main canon, and do not
+rewrite canonical documents while the discussion has not closed the disputed
+question.
 
 Creating or updating CTO integration follows the
 [marked-block contract](agents-block.md). Ordinary advice does not write it.

@@ -27,8 +27,8 @@ Enter grounding when any of these is true:
   implementation admission;
 - during active autonomous delivery, the user asks to stop growth and return to
   the minimum user path;
-- the accepted checkpoint budget is exhausted without movement of
-  `first_user_path`;
+- the delivery budget of `first_user_path` is exhausted without movement of
+  that path;
 - proposed work leaves the `first_user_path` allowlist before that path is
   `PROVEN`;
 - proposed work introduces or expands a client, protocol, process, runtime,
@@ -45,19 +45,18 @@ evidence conditions, not universal time, commit, line, or retry thresholds.
 
 ## Control operation
 
-For pre-implementation admission, state the user's successful action without
-naming the proposed mechanism, product, or technology. Establish the observed
-problem and its evidence before comparing mechanisms; inability to state that
-action or evidence blocks `IMPLEMENTATION_READY`. Classify the existing
-high-impact architecture gate. Do not create a second admission packet.
+For pre-implementation admission, first state the mechanism-free user action
+and the observed problem with its evidence, before comparing mechanisms, as the
+[decision packet](architecture-decision-gate.md#decision-packet) requires, even
+when the gate does not apply. Classify the existing high-impact architecture
+gate. Do not create a second admission packet.
 
 For active delivery, stop new implementation dispatches and broad mutation.
 Inspect the current diff, closure contract, `first_user_path`, budget
 consumption, product-path evidence, owned surface, reuse alternatives, active
 executors, and fragile local state. Preserve produced work as evidence; do not
-delete, rewrite, release, or deploy it. Compare alternatives by the total
-operational surface the project would own and reversibility, not their source
-provenance.
+delete, rewrite, release, or deploy it. Compare alternatives as the
+[decision packet](architecture-decision-gate.md#decision-packet) does.
 
 Return exactly one existing recommendation:
 
@@ -82,11 +81,10 @@ environment, or observation time. For an applicable architecture gate,
 `IMPLEMENTATION_READY` additionally requires its mandatory independent challenge
 with no unresolved invalidating critique.
 
-`EXPERIMENT_ONLY` permits one named bounded reversible experiment. Its result
-returns through Grounding; it cannot automatically become implementation
-admission.
-
 ## Output and resumption
+
+Put the [owner brief](owner-brief.md) first, then the view for the current
+context.
 
 For pre-implementation admission, lead with an owner-readable view:
 

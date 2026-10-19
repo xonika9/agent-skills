@@ -35,12 +35,62 @@ def shared_part(lines):
 
 
 def marked_regions(lines):
-    regions, stack, fenced, code = [], [], False, set()
+    regions, stack, fence, code = [], [], None, set()
+    list_indents = []
+    paragraph = None
     for number, line in enumerate(lines, 1):
-        if line.lstrip().startswith("```"):
-            fenced = not fenced
-        if fenced or line.lstrip().startswith("```"):
+        line = line.expandtabs(4)
+        indent = len(line) - len(line.lstrip(" "))
+        if fence:
+            char, length, margin = fence
+            if not line.strip() or indent >= margin:
+                code.add(number)
+                if re.fullmatch(r" {0,3}" + re.escape(char) + r"{" + str(length) + r",} *", line[margin:]):
+                    fence = None
+                continue
+            fence = None
+        if not line.strip():
+            paragraph = None
+            continue
+        while list_indents and indent < list_indents[-1]:
+            list_indents.pop()
+        base = list_indents[-1] if list_indents else 0
+        context = tuple(list_indents)
+        continuing = paragraph == context
+        # Four columns beyond a list's content margin are code, not list rules.
+        if indent >= base + 4 and not continuing:
             code.add(number)
+            paragraph = None
+            continue
+        line = line[base:]
+        if continuing and re.fullmatch(r" {0,3}(?:-+|=+) *", line):
+            paragraph = None
+            continue
+        if re.fullmatch(r" {0,3}(?:(?:- *){3,}|(?:\* *){3,}|(?:_ *){3,})", line):
+            paragraph = None
+            continue
+        item = re.match(r"^ {0,3}([-+*]|[0-9]{1,9}[.)])( +|$)", line)
+        if item and continuing and (
+            not line[item.end():].strip()
+            or (item[1][0].isdigit() and int(item[1][:-1]) != 1)
+        ):
+            item = None
+        if item:
+            paragraph = None
+            padding = len(item[2])
+            content = item.end() - (padding - 1 if padding > 4 else 0)
+            if not padding:
+                content += 1
+            list_indents.append(base + content)
+            line = line[content:]
+            if len(line) - len(line.lstrip(" ")) >= 4:
+                code.add(number)
+                continue
+        opening = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if opening and not (opening[1][0] == "`" and "`" in opening[2]):
+            fence = (opening[1][0], len(opening[1]), list_indents[-1] if list_indents else 0)
+            code.add(number)
+            paragraph = None
             continue
         start, end = START.match(line.strip()), END.match(line.strip())
         if start:
@@ -48,6 +98,10 @@ def marked_regions(lines):
         elif end and stack and (end.group(1) or end.group(2)) == stack[-1][0]:
             name, opened = stack.pop()
             regions.append((name, opened, number))
+        if not line.strip() or re.match(r"^ {0,3}(?:#{1,6}(?: |$)|>|<)", line):
+            paragraph = None
+        else:
+            paragraph = tuple(list_indents)
     return sorted(regions, key=lambda region: region[1]), stack, code
 
 
@@ -79,7 +133,8 @@ def main():
             failed = True
             continue
         if not found:
-            notes = [f"section {heading!r} at line {n}" for n, line in enumerate(lines, 1) if line == heading]
+            notes = [f"section {heading!r} at line {n}" for n, line in enumerate(lines, 1)
+                     if n not in code and line == heading]
             predecessor = PREDECESSORS.get(block)
             notes += [f"predecessor {name!r} at line {s}" for name, s, _ in regions if name == predecessor]
             print(f"{block}: absent" + (f" ({'; '.join(notes)})" if notes else ""))

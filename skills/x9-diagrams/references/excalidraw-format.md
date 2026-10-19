@@ -173,10 +173,10 @@ REST wrappers may instead use `label`, `start`, and `end`, and may encode enums 
 
 The bundled checker deliberately covers the basic diagram subset: `rectangle`, `diamond`, `ellipse`, `text`, `line`, and `arrow`. Use the target Excalidraw version to validate scenes containing frames, images, embeds, freehand elements, or other types.
 
-For an intermediate structural check, run:
+Resolve `<skill-directory>` from the loaded `SKILL.md` and use absolute paths for the scene files. For an intermediate structural check, run:
 
 ```bash
-python3 ../scripts/check_scene.py diagram.excalidraw \
+python3 "<skill-directory>/scripts/check_scene.py" "<absolute-diagram.excalidraw>" \
   --structural-only \
   --viewport-width 1600 \
   --viewport-height 900
@@ -187,8 +187,8 @@ Add `--require-font-family 5` or `--require-font-family 6` only when the diagram
 For final evidence, replace `--structural-only` with `--normalization-result <second-pass.excalidraw>` whenever the scene contains active bound text:
 
 ```bash
-python3 ../scripts/check_scene.py diagram.excalidraw \
-  --normalization-result diagram.normalized-again.excalidraw
+python3 "<skill-directory>/scripts/check_scene.py" "<absolute-diagram.excalidraw>" \
+  --normalization-result "<absolute-diagram.normalized-again.excalidraw>"
 ```
 
 The checker also prints `WARN` lines for connectors crossing an unrelated shape, two arrows sharing one attach point, and connector or standalone labels colliding with shapes or each other. Warnings are estimates from stored geometry and do not fail the check; add `--strict-geometry` when they should. Resolve each one or confirm in the render that it is harmless.

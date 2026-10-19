@@ -12,6 +12,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -202,6 +203,19 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual((code, json.loads(out)["done"]), (0, 1))
         self.assertIn("# language: ru", (self.tmp / "memo.transcript.txt").read_text())
 
+    def test_long_source_name_with_valid_sidecar_names_is_transcribed(self):
+        stem = "a" * 230
+        source = self.videos / (stem + ".mp4")
+        source.write_bytes(b"source recording")
+
+        code, out = self.call("run", str(source))
+
+        self.assertEqual((code, json.loads(out)["done"]), (0, 1), out)
+        self.assertEqual(source.read_bytes(), b"source recording")
+        for suffix in (t.SRT_SUFFIX, t.TXT_SUFFIX):
+            self.assertIn("Пространствус", (self.videos / (stem + suffix)).read_text())
+        self.assertEqual(list(self.videos.glob("*.part")), [])
+
     def test_folder_without_media_is_an_error(self):
         empty = self.tmp / "empty"
         empty.mkdir()
@@ -310,13 +324,87 @@ class EndToEnd(unittest.TestCase):
                 self.assertEqual((code, len(summary["collisions"])), (1, 1))
                 self.assertIn("overwrite", summary["collisions"][0]["error"])
 
-    def test_existing_temporary_output_with_a_distinct_inode_does_not_block(self):
-        temporary = self.videos / "a.transcript.srt.part"
-        temporary.write_text("old disposable output")
-        code, out = self.call("run", str(self.videos / "a.mp4"))
-        self.assertEqual((code, json.loads(out)["done"]), (0, 1))
-        self.assertEqual((self.videos / "a.mp4").read_text(), "x")
-        self.assertFalse(temporary.exists())
+    def test_existing_temporary_outputs_and_their_targets_are_preserved(self):
+        for suffix in (t.SRT_SUFFIX, t.TXT_SUFFIX):
+            for kind in ("file", "symlink", "hardlink"):
+                with self.subTest(suffix=suffix, kind=kind):
+                    folder = self.tmp / (suffix + kind)
+                    folder.mkdir()
+                    source = folder / "clip.mp4"
+                    source.write_bytes(b"source recording")
+                    unrelated = folder / "unrelated.mov"
+                    unrelated.write_bytes(b"unrelated recording")
+                    temporary = folder / ("clip" + suffix + ".part")
+                    if kind == "symlink":
+                        temporary.symlink_to(unrelated)
+                    elif kind == "hardlink":
+                        os.link(unrelated, temporary)
+                    else:
+                        temporary.write_bytes(b"user-owned partial file")
+                    before, inode = temporary.read_bytes(), temporary.lstat().st_ino
+
+                    code, out = self.call("run", str(source))
+
+                    self.assertEqual((code, json.loads(out)["done"]), (0, 1))
+                    self.assertEqual(source.read_bytes(), b"source recording")
+                    self.assertEqual(unrelated.read_bytes(), b"unrelated recording")
+                    self.assertTrue(temporary.exists())
+                    self.assertEqual(temporary.read_bytes(), before)
+                    self.assertEqual(temporary.lstat().st_ino, inode)
+                    self.assertEqual(temporary.is_symlink(), kind == "symlink")
+                    self.assertIn("Пространствус", (folder / ("clip" + suffix)).read_text())
+
+    def test_output_links_are_replaced_without_changing_their_targets(self):
+        for suffix in (t.SRT_SUFFIX, t.TXT_SUFFIX):
+            for kind in ("symlink", "hardlink"):
+                with self.subTest(suffix=suffix, kind=kind):
+                    folder = self.tmp / (suffix + kind)
+                    folder.mkdir()
+                    source, unrelated = folder / "clip.mp4", folder / "unrelated.mov"
+                    source.write_bytes(b"source recording")
+                    unrelated.write_bytes(b"unrelated recording")
+                    destination = folder / ("clip" + suffix)
+                    if kind == "symlink":
+                        destination.symlink_to(unrelated)
+                    else:
+                        os.link(unrelated, destination)
+
+                    code, out = self.call("run", str(source), "--force")
+
+                    self.assertEqual((code, json.loads(out)["done"]), (0, 1))
+                    self.assertEqual(unrelated.read_bytes(), b"unrelated recording")
+                    self.assertEqual(source.read_bytes(), b"source recording")
+                    self.assertFalse(destination.is_symlink())
+                    self.assertFalse(os.path.samefile(destination, unrelated))
+                    self.assertIn("Пространствус", destination.read_text())
+
+    def test_failed_publication_cleans_its_temporary_file_only(self):
+        replace = os.replace
+        for suffix in (t.SRT_SUFFIX, t.TXT_SUFFIX):
+            with self.subTest(suffix=suffix):
+                folder = self.tmp / suffix
+                folder.mkdir()
+                source = folder / "clip.mp4"
+                source.write_bytes(b"source recording")
+                destination = folder / ("clip" + suffix)
+                destination.write_bytes(b"previous transcript")
+                old_partial = folder / (destination.name + ".part")
+                old_partial.write_bytes(b"user-owned partial file")
+
+                def fail_selected_publication(src, dest):
+                    if dest == destination:
+                        raise OSError("publication denied")
+                    return replace(src, dest)
+
+                with patch.object(t.os, "replace", side_effect=fail_selected_publication):
+                    code, out = self.call("run", str(source), "--force")
+
+                self.assertEqual((code, json.loads(out)["status"]), (1, "partial"))
+                self.assertIn("publication denied", json.loads(out)["failed"][0]["error"])
+                self.assertEqual(destination.read_bytes(), b"previous transcript")
+                self.assertTrue(old_partial.exists())
+                self.assertEqual(old_partial.read_bytes(), b"user-owned partial file")
+                self.assertEqual(set(folder.glob("*.part")), {old_partial})
 
     def test_moved_folder_stays_current_and_search_names_the_transcript(self):
         old = self.tmp / "old"

@@ -35,9 +35,22 @@ def css_has_dependency(css: str) -> bool:
 
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
     css = CSS_ESCAPE.sub(decode, css)
-    if re.search(r"@import\b", css, re.IGNORECASE):
+    # image-set also accepts bare string URLs; reports do not need this function.
+    if re.search(r"@import\b|(?:-webkit-)?image-set\s*\(", css, re.IGNORECASE):
         return True
     return any(not match.group(2).strip().startswith("#") for match in CSS_URL.finditer(css))
+
+
+# Resource-bearing attributes are unnecessary in the standalone report format.
+# href/xlink:href remain separate so source anchors and local SVG references work.
+RESOURCE_ATTRIBUTES = {
+    "src", "srcset", "imagesrcset", "background", "poster", "data", "manifest",
+    "code", "codebase", "classid", "archive", "ping",
+}
+CSS_RESOURCE_ATTRIBUTES = {
+    "fill", "stroke", "filter", "clip-path", "mask", "marker", "marker-start",
+    "marker-mid", "marker-end", "cursor", "color-profile",
+}
 FORBIDDEN_RUNTIME_TAGS = {
     "script",
     "img",
@@ -47,6 +60,13 @@ FORBIDDEN_RUNTIME_TAGS = {
     "video",
     "audio",
     "source",
+    # Declarative SVG animation can replace a safe fragment or style with a URL.
+    "set",
+    "animate",
+    "animatecolor",
+    "animatemotion",
+    "animatetransform",
+    "discard",
 }
 RUNTIME_LINK_RELATIONS = {
     "stylesheet",
@@ -139,6 +159,9 @@ class ReportParser(HTMLParser):
         self, tag: str, attrs: list[tuple[str, str | None]]
     ) -> None:
         tag = tag.lower()
+        names = [name.lower() for name, _value in attrs]
+        if len(names) != len(set(names)):
+            self.structure_errors.append(f"duplicate attributes on <{tag}>")
         values = {name.lower(): value or "" for name, value in attrs}
         if values.get("style"):
             self.inline_style_chunks.append(values["style"])
@@ -155,6 +178,8 @@ class ReportParser(HTMLParser):
             self.html_language = values.get("lang") or None
 
         if tag == "meta":
+            if values.get("http-equiv", "").strip().lower() == "refresh":
+                self.runtime_dependencies.append("<meta refresh>")
             if values.get("charset", "").lower() == "utf-8":
                 self.has_utf8 = True
             if (
@@ -175,12 +200,19 @@ class ReportParser(HTMLParser):
                 self.internal_hrefs.append(href)
 
         for name, value in values.items():
+            if name in RESOURCE_ATTRIBUTES and value.strip():
+                self.runtime_dependencies.append(f"resource attribute {name} on <{tag}>")
+            if name in CSS_RESOURCE_ATTRIBUTES and css_has_dependency(value):
+                self.runtime_dependencies.append(f"CSS resource in {name} on <{tag}>")
             if name.startswith("on"):
                 self.runtime_dependencies.append(f"event handler {name}")
             if name in {"href", "src", "action", "formaction", "xlink:href"}:
                 normalized = value.translate(dict.fromkeys(map(ord, "\t\r\n"))).lstrip().lower()
                 if normalized.startswith("javascript:"):
                     self.runtime_dependencies.append(f"JavaScript URL in {name}")
+            if (name in {"href", "xlink:href"} and tag not in {"a", "link"}
+                    and value.strip() and not value.strip().startswith("#")):
+                self.runtime_dependencies.append(f"nonlocal {name} on <{tag}>")
 
         if tag in FORBIDDEN_RUNTIME_TAGS:
             self.runtime_dependencies.append(f"<{tag}>")

@@ -242,9 +242,9 @@ def drawio_model(extra: str = "") -> str:
         '<mxGraphModel dx="800" dy="600"><root>'
         '<mxCell id="0"/><mxCell id="1" parent="0"/>'
         '<mxCell id="grp" value="Platform &lt;b&gt;core&lt;/b&gt; &amp;amp; co" '
-        'style="swimlane;startSize=20" vertex="1" parent="1">'
+        'style="swimlane;startSize=20;html=1;" vertex="1" parent="1">'
         '<mxGeometry x="100" y="100" width="400" height="200" as="geometry"/></mxCell>'
-        '<mxCell id="web" value="Web&lt;br&gt;app" style="rounded=1;" vertex="1" '
+        '<mxCell id="web" value="Web&lt;br&gt;app" style="rounded=1;html=1;" vertex="1" '
         'parent="grp"><mxGeometry x="20" y="40" width="80" height="40" as="geometry"/></mxCell>'
         '<mxCell id="db" value="Orders DB" style="shape=cylinder3;" vertex="1" parent="grp">'
         '<mxGeometry x="200" y="40" width="60" height="60" as="geometry"/></mxCell>'
@@ -277,6 +277,73 @@ PAGE_TWO = (
 
 
 class DrawioTests(TempCase):
+    def test_label_mode_preserves_plain_text_and_interprets_html_in_every_role(self):
+        plain = "List<Order> &lt; & <b>bold</b>"
+        cases = (
+            ("html=0;", plain, plain),
+            ("", plain, plain),
+            ("html=1;", "List&lt;Order&gt; &amp;lt; &amp; <b>bold</b>",
+             "List<Order> &lt; & bold"),
+        )
+        for style, value, expected in cases:
+            for wrapper in (None, "object", "UserObject"):
+                with self.subTest(style=style, wrapper=wrapper):
+                    escaped = html.escape(value, quote=True)
+
+                    def cell(cell_id, attributes):
+                        body = f'<mxCell style="{style}" {attributes}/>'
+                        if wrapper is None:
+                            return body.replace("<mxCell ", f'<mxCell id="{cell_id}" value="{escaped}" ')
+                        return f'<{wrapper} id="{cell_id}" label="{escaped}">{body}</{wrapper}>'
+
+                    model = (
+                        '<mxGraphModel><root><mxCell id="0"/>'
+                        + cell("1", 'parent="0"')
+                        + cell("a", 'vertex="1" parent="1"')
+                        + '<mxCell id="b" vertex="1" parent="1"/>'
+                        + cell("e", 'edge="1" parent="1" source="a" target="b"')
+                        + cell("el", 'vertex="1" parent="e"')
+                        + '</root></mxGraphModel>'
+                    )
+                    scene = summarize(self.write("labels.drawio", model))["scenes"][0]
+                    self.assertEqual(scene["nodes"][0]["label"], expected)
+                    self.assertEqual(scene["edges"][0]["label"], expected + " / " + expected)
+                    self.assertEqual(scene["layers"][0]["name"], expected)
+
+    def test_edge_label_uses_its_own_html_mode(self):
+        model = ('<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/>'
+                 '<mxCell id="a" vertex="1" parent="1"/>'
+                 '<mxCell id="e1" value="&lt;b&gt;fetch&lt;/b&gt;" style="html=1;" '
+                 'edge="1" parent="1" source="a" target="a"/>'
+                 '<mxCell id="l1" value="List&lt;Order&gt;" style="html=0;" vertex="1" parent="e1"/>'
+                 '<mxCell id="e2" value="List&lt;Order&gt;" style="html=0;" '
+                 'edge="1" parent="1" source="a" target="a"/>'
+                 '<mxCell id="l2" value="&lt;b&gt;fetch&lt;/b&gt;" style="html=1;" '
+                 'vertex="1" parent="e2"/></root></mxGraphModel>')
+        scene = summarize(self.write("mixed.drawio", model))["scenes"][0]
+        self.assertEqual([edge["label"] for edge in scene["edges"]],
+                         ["fetch / List<Order>", "List<Order> / fetch"])
+
+    def test_plain_technical_labels_survive_all_drawio_source_envelopes(self):
+        model = PAGE_TWO.replace('value="Solo"', 'value="List&lt;Order&gt; &amp;lt;"')
+        mxfile = '<mxfile><diagram>' + model + '</diagram></mxfile>'
+        svg = '<svg content="' + html.escape(mxfile, quote=True) + '"></svg>'
+        sources = (
+            ("model.xml", model),
+            ("plain.drawio", mxfile),
+            ("compressed.drawio", '<mxfile><diagram>' + compress_drawio(model) + '</diagram></mxfile>'),
+            ("escaped.drawio", '<mxfile><diagram>' + html.escape(model) + '</diagram></mxfile>'),
+            ("quoted.drawio", '<mxfile><diagram>' + urllib.parse.quote(model) + '</diagram></mxfile>'),
+            ("export.svg", svg),
+            ("preview.html", '<html>' + svg + '</html>'),
+        )
+        for filename, source in sources:
+            with self.subTest(filename=filename):
+                path = self.write(filename, source)
+                self.assertEqual(summarize(path)["scenes"][0]["nodes"][0]["label"],
+                                 "List<Order> &lt;")
+                self.assertIn(r"List\<Order\> \&lt;", self.digest_md(path))
+
     def test_two_pages_uncompressed(self):
         xml = (
             '<mxfile><diagram name="Main" id="d1">' + drawio_model() + "</diagram>"
@@ -426,6 +493,38 @@ PLAIN_SVG = (
 
 
 class SvgTests(TempCase):
+    def test_unrepresented_svg_text_requires_reading_source(self):
+        variants = (
+            '<text>Queue retention: <tspan>24 hours</tspan></text>',
+            '<g><text>Queue retention: 24 hours</text></g>',
+            '<g data-edge="e" data-from="n" data-to="n"><path/><text>Queue retention: 24 hours</text></g>',
+            '<g data-node=""><text>Queue retention: 24 hours</text></g>',
+            '<g data-label-for="missing"><text>Queue retention: 24 hours</text></g>',
+        )
+        for content in variants:
+            for filename in ("annotations.svg", "annotations.html"):
+                with self.subTest(content=content, filename=filename):
+                    source = '<svg><g data-node="n"><rect/><text>Node</text></g>' + content + '</svg>'
+                    path = self.write(filename, source)
+                    scene = summarize(path)["scenes"][0]
+                    self.assertEqual(scene["discarded"].get("unrepresented_text"), 1)
+                    self.assertTrue(any("read the SVG source directly" in note for note in scene["notes"]))
+                    out = self.digest_md(path)
+                    self.assertIn("unrepresented text 1", out)
+                    self.assertIn("read the SVG source directly", out)
+
+    def test_svg_text_in_nodes_boundaries_and_linked_labels_is_represented_once(self):
+        svg = ('<svg><g data-boundary="zone"><rect/><text>Zone</text>'
+               '<g data-node="n" data-parent="zone"><rect/><text>List&lt;Order&gt; <tspan>node</tspan></text></g></g>'
+               '<g data-edge="e" data-from="n" data-to="n"><path/></g>'
+               '<g data-label-for="e"><text>24 <tspan>hours</tspan></text></g>'
+               '<g><text>  </text></g></svg>')
+        scene = summarize(self.write("complete.svg", svg))["scenes"][0]
+        self.assertEqual([n["label"] for n in scene["nodes"]], ["Zone", "List<Order> node"])
+        self.assertEqual(scene["edges"][0]["label"], "24 hours")
+        self.assertEqual(scene["discarded"], {})
+        self.assertEqual(scene["notes"], [])
+
     def check_semantic(self, scene: dict) -> None:
         self.assertTrue(scene["semantic"])
         self.assertEqual(scene["name"], "Checkout flow")
@@ -446,7 +545,8 @@ class SvgTests(TempCase):
         self.assertTrue(scene["metrics"]["has_cycle"])  # svc<->db
         self.assertEqual(
             scene["discarded"],
-            {"scripts": 1, "external_refs": 1, "dangling_edges": 1, "orphan_labels": 1},
+            {"scripts": 1, "external_refs": 1, "dangling_edges": 1, "orphan_labels": 1,
+             "unrepresented_text": 2},
         )
 
     def test_semantic_svg(self):

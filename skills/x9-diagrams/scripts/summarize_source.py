@@ -59,6 +59,7 @@ DISCARD_ORDER = (
     "external_refs",
     "event_handlers",
     "orphan_labels",
+    "unrepresented_text",
 )
 MARKDOWN_SPECIAL = re.compile(r"([\\|*_`\[\]<>#&~])")
 MARKDOWN_AUTOLINK = re.compile(r"://|\b(www)\.", re.IGNORECASE)  # group 1: www
@@ -473,6 +474,12 @@ class _Cell:
     geometry: tuple[float, float, float | None, float | None] | None
 
 
+def drawio_label(cell: _Cell) -> str:
+    # XML parsing already decoded entities; only html=1 adds another markup layer.
+    _, props = parse_style(cell.style)
+    return html_to_text(cell.value) if props.get("html") == "1" else clean_label(cell.value)
+
+
 def _read_cells(model: ET.Element) -> list[_Cell]:
     root = next((c for c in model if local_name(c.tag) == "root"), None)
     if root is None:
@@ -543,7 +550,7 @@ def parse_drawio_page(name: str, model: ET.Element) -> Scene:
     ]
     layer_ids = {c.id for c in layer_cells}
     scene.layers = [
-        {"id": c.id, "name": html_to_text(c.value) or c.id, "nodes": 0}
+        {"id": c.id, "name": drawio_label(c) or c.id, "nodes": 0}
         for c in layer_cells
     ]
     layer_by_id = {layer["id"]: layer for layer in scene.layers}
@@ -587,7 +594,7 @@ def parse_drawio_page(name: str, model: ET.Element) -> Scene:
         scene.nodes.append(
             Node(
                 cell.id,
-                html_to_text(cell.value),
+                drawio_label(cell),
                 kind,
                 cell.parent if cell.parent in vertex_ids else None,
                 container,
@@ -597,7 +604,7 @@ def parse_drawio_page(name: str, model: ET.Element) -> Scene:
 
     edge_labels: dict[str, list[str]] = defaultdict(list)
     for cell in label_cells:
-        text = html_to_text(cell.value)
+        text = drawio_label(cell)
         if text and cell.parent:
             edge_labels[cell.parent].append(text)
     for cell in cells:
@@ -614,7 +621,7 @@ def parse_drawio_page(name: str, model: ET.Element) -> Scene:
                 if pattern and all(p is not None and p <= 2 for p in pattern)
                 else "dashed"
             )
-        parts = [p for p in [html_to_text(cell.value), *edge_labels.get(cell.id, [])] if p]
+        parts = [p for p in [drawio_label(cell), *edge_labels.get(cell.id, [])] if p]
         scene.edges.append(
             Edge(
                 cell.id,
@@ -724,13 +731,17 @@ def _walk_own(group: ET.Element, foreign: set[int]) -> Iterator[ET.Element]:
         stack.extend(reversed(list(element)))
 
 
-def _own_text(group: ET.Element, foreign: set[int]) -> str:
+def _own_text(
+    group: ET.Element, foreign: set[int], represented: set[ET.Element] | None = None
+) -> str:
     pieces = []
     for element in _walk_own(group, foreign):
         if local_name(element.tag) == "text":
             words = [s.strip() for s in element.itertext() if s.strip()]
             if words:
                 pieces.append(" ".join(words))
+                if represented is not None:
+                    represented.add(element)
     if not pieces:
         for child in group:
             if local_name(child.tag) == "title":
@@ -843,11 +854,14 @@ def parse_svg(text: str, *, from_html: bool = False) -> list[Scene]:
         if local_name(style.tag) == "style":
             css.extend(_css_rules("".join(style.itertext())))
     edge_ids = set()
+    represented_text: set[ET.Element] = set()
     label_texts: dict[str, list[str]] = defaultdict(list)
+    label_coverage: dict[str, set[ET.Element]] = defaultdict(set)
     for element in semantic_elements:
         if "data-label-for" in element.attrib:
-            label_texts[element.get("data-label-for", "")].append(
-                _own_text(element, foreign)
+            target = element.get("data-label-for", "")
+            label_texts[target].append(
+                _own_text(element, foreign, label_coverage[target])
             )
 
     seen_ids: set[str] = set()
@@ -873,7 +887,7 @@ def parse_svg(text: str, *, from_html: bool = False) -> list[Scene]:
             scene.nodes.append(
                 Node(
                     node_id,
-                    _own_text(element, foreign),
+                    _own_text(element, foreign, represented_text),
                     kind,
                     parent,
                     container,
@@ -920,8 +934,21 @@ def parse_svg(text: str, *, from_html: bool = False) -> list[Scene]:
     for edge in scene.edges:
         texts = [t for t in label_texts.get(edge.id, []) if t]
         edge.label = clean_label(" / ".join(texts))
+        represented_text.update(label_coverage[edge.id])
     orphans = sum(len(v) for k, v in label_texts.items() if k not in edge_ids)
     scene.discard("orphan_labels", orphans)
+    unrepresented = sum(
+        1 for element in elements
+        if local_name(element.tag) == "text"
+        and element not in represented_text
+        and any(part.strip() for part in element.itertext())
+    )
+    if unrepresented:
+        scene.discard("unrepresented_text", unrepresented)
+        scene.notes.append(
+            f"{unrepresented} text element(s) are absent from the semantic model; "
+            "read the SVG source directly to preserve annotations and other text"
+        )
     if duplicates:
         scene.notes.append(f"{duplicates} duplicate semantic id(s)")
     return [scene]

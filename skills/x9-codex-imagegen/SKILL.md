@@ -5,7 +5,7 @@ description: Use when an agent outside Codex, such as Claude Code or OpenCode on
 
 # Generate images through Codex
 
-Codex generates images with its built-in tool under the user's ChatGPT login; no `OPENAI_API_KEY` is needed. This skill lets an agent on any model use that route: it hands Codex a brief, Codex shapes the prompt with its own `imagegen` skill, and success is a verified PNG on disk, never Codex's reply.
+Codex generates images with its built-in tool under the user's ChatGPT login; no `OPENAI_API_KEY` is needed. This skill lets an agent on any model use that route: it hands Codex a brief, Codex shapes the prompt with its own `imagegen` skill, and image production is proven by a verified PNG on disk, never just Codex's reply.
 
 The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.
 
@@ -34,6 +34,7 @@ Generate only the images the user asked for. Never substitute an image drawn ano
 The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread_id`, `log_dir`, and `error`.
 
 - `ok` — the PNG signature, dimensions, and `has_alpha` were read from disk; a requested transparent background needs `has_alpha: true`. `source` is `codex-copy`, or `recovered:<path>` when Codex generated the image but did not save it. Compare `width` and `height` with the requested proportions and crop or scale a copy when they differ.
+- `incomplete` — the PNG is verified and available at `out`, but `final_prompt` is missing or empty. Deliver the PNG, check its dimensions and transparency as for `ok`, and state that the final prompt is unavailable. Do not generate again for missing metadata; the command exits 1 to distinguish this from complete success.
 - `network_error` with `idle_cut_suspected: true` — the run failed only after minutes, which a network that drops silent connections causes but a late transient fault can too. Retry once after 60 seconds; if that run is suspected again, stop and report that the image needs a route that keeps silent connections open, such as `X9_CODEX_IMAGE_PROXY`.
 - `network_error` otherwise — retry at most twice, after 60 and then 120 seconds.
 - `proxy_unreachable` — `X9_CODEX_IMAGE_PROXY` is set but does not answer, so nothing was started. Report `error` so the user can restore the proxy.
@@ -43,5 +44,5 @@ The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread
 
 ## Done
 
-- Each requested image exists at its destination with status `ok`, its dimensions match the requested proportions or the adjustment is reported, and its `final_prompt` is available to the user.
-- Every image that was not produced is reported with its status, exact error, and `log_dir`.
+- Each complete result has status `ok`, its image exists at its destination, its dimensions match the requested proportions or the adjustment is reported, and its `final_prompt` is available to the user.
+- Every incomplete or missing result is reported with its status, exact error, and `log_dir`; an `incomplete` result includes delivery of its existing PNG and the missing-metadata explanation above.

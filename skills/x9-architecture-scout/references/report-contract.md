@@ -68,10 +68,10 @@ Mermaid source must be valid-looking text beginning with a supported diagram dec
 
 ## Structural validation boundary
 
-Run:
+Resolve `<skill-directory>` from the loaded `SKILL.md`, then run the checker with the report's absolute path; the working directory remains the audited project:
 
 ```bash
-python3 scripts/validate_report.py <report.html>
+python3 "<skill-directory>/scripts/validate_report.py" "<absolute-report.html>"
 ```
 
 The checker verifies the fixed hierarchy, basic landmarks and heading order, comparison semantics, the three textual statuses, safe and exact loaded resources, absence of unsafe active content, escaped repository evidence, a Mermaid-renderable element, separately visible Mermaid source, text equivalents, and responsive/overflow hooks. It cannot prove that the CSS is visually readable, that Mermaid rendered, or that source evidence is factually sufficient. Those remain the separate render and method statuses.
