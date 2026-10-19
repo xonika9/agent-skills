@@ -1,6 +1,6 @@
 ---
 name: x9-web-stack
-description: Use when starting a TypeScript web application on the x9 stack (Bun, React, Hono, PostgreSQL), auditing an existing web project's stack, structure, and development rules — on this stack or another — or writing durable development rules into a project's AGENTS.md — «создай проект на нашем стеке», «проверь стек проекта», «добавь правила разработки в AGENTS.md», "bootstrap a web app", "audit this project's stack". Not for a dedicated security review (x9-appsec), reviewing the test suite or test setup (x9-test-quality), comparing architecture directions (x9-architecture-scout), or general AGENTS.md and README upkeep (x9-context-files-generator).
+description: Use when starting a TypeScript web application on the x9 stack (Bun, React, Hono, PostgreSQL), auditing an existing web project's stack, structure, and development rules — on this stack or another — or writing durable development rules into a project's AGENTS.md — «создай проект на нашем стеке», «проверь стек проекта», «добавь правила разработки в AGENTS.md», "bootstrap a web app", "audit this project's stack". Not for a dedicated security review (x9-appsec), reviewing the test suite or test setup (x9-test-quality), comparing architecture directions (x9-architecture-scout), or general AGENTS.md and README upkeep or its portable rule blocks (x9-context-files-generator).
 compatibility: Bootstrap requires python3, bun, and git; Docker for the dev database. Audit needs read access to the project. Writing durable AGENTS.md rules needs authorized write access; x9-agent-instructions owns the instruction-quality rubric.
 ---
 
@@ -11,8 +11,10 @@ This skill owns a vetted template for TypeScript web applications — the stack,
 ## Select the action
 
 - **Bootstrap:** a new project on this stack. The request authorizes creating the project in an empty target directory, installing packages from the public registry, starting local containers, and running local checks. Follow [bootstrap](references/bootstrap.md).
-- **Audit:** an existing project, on this stack or another. The first pass is read-only: a ranked report per [audit](references/audit.md). Apply only findings the user selects; an explicit request to fix already selects them.
+- **Audit:** an existing project, on this stack or another. The first pass changes nothing but the project notes: a ranked report per [audit](references/audit.md). Apply only findings the user selects; an explicit request to fix already selects them.
 - **Rules block:** write or refresh the development-rules block in the project's `AGENTS.md` per [agents-block](references/agents-block.md). A request for it authorizes editing the block. Bootstrap always writes it; an audit report offers it.
+
+Bootstrap and audits record their results in the project's stack notes, and an audit starts by reading them, as [notes](references/notes.md) describes.
 
 Infer the action from the whole request. A request to "set up" or "improve" an existing repository is an audit, not a bootstrap.
 
@@ -29,7 +31,7 @@ Versions, action tags, and library behaviour change faster than this skill. Inst
 ## Done
 
 - Bootstrap: the done condition in [bootstrap](references/bootstrap.md#done) holds and the report names what was not verified.
-- Audit: the report follows [audit](references/audit.md#report); after fixes, each applied finding has check output.
+- Audit: the report follows [audit](references/audit.md#report) and the notes are updated; after fixes, each applied finding has check output and its register status.
 - Rules block: the done condition in [agents-block](references/agents-block.md#done) holds.
 
 The [onboarding declaration](references/onboarding.json) lists external prerequisites.

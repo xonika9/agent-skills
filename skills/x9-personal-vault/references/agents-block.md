@@ -75,7 +75,7 @@ If the parent's `AGENTS.md` already describes the vault's folders or properties 
 
 ## Writing and updating
 
-- `AGENTS.md`: with markers, replace only the content between them; without markers, insert the block after the file's opening summary; with no file, create one holding a one-line title and the block.
+- `AGENTS.md`: with markers, replace only the content between them; without markers, insert the block after the repository's own rules, among the other skills' marked blocks; with no file, create one holding a one-line title and the block.
 - `CLAUDE.md`, which Claude Code reads instead of `AGENTS.md`: with no file, create it containing exactly `@AGENTS.md`. For an existing file, when normalization is already authorized, route it through `x9-context-files-generator`, which owns the canonical-file and preservation contract: preserve unique rules in their appropriate owner before leaving the import-only file. Otherwise, add `@AGENTS.md` at the top when absent and preserve the rest. Show the selected mode and affected rules in the plan. Do this in the vault and, when it holds the pointer, in the parent.
 - Load `x9-agent-instructions` before writing the block, because it is agent-facing prose.
 

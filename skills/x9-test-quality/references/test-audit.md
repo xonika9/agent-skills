@@ -48,7 +48,7 @@ Land one coherent batch per change set, only as far as the [authority](../SKILL.
 
 ## Handoff
 
-Report:
+Save the report as [notes](notes.md#reports) describes; named follow-ups become register rows. Report:
 
 - removed low-value categories and their root cause;
 - production owner simplifications;

@@ -13,13 +13,15 @@ Help tests catch regressions without slowing the developer down. This file gover
 
 Practices for writing tests are in [references/test-design.md](references/test-design.md); runner mechanics in [references/tooling.md](references/tooling.md).
 
+The three deeper modes start by reading the project's testing notes and end by updating them as [references/notes.md](references/notes.md) describes.
+
 The skill assumes no particular language, test runner, or CI system.
 
 ## Authority
 
 What the current task and the repository's rules already authorize continues without new questions: writing and fixing the tests the change needs, small testability refactors such as extracting a pure function (explained in the result), and the project's usual local and CI runs. Ask first when an action widens the scope, adds a recurring or paid cost, touches a shared or production environment or an external service, weakens a protection, or changes a public interface or the architecture.
 
-A request to audit or review, in any mode, is read-only: report and change nothing. A fix or cleanup request authorizes the edits it names or the recommendations the user approved; quarantining a test, changing retry or timeout policy, changing repository settings such as branch protection, required checks, or a merge queue, and adding a blocking gate or scheduled job are approved one by one unless the request named them. An explicit campaign request authorizes the campaign's edits. Commit, push, integrate branches, open a pull request, or merge only when authorized, under the repository's policy.
+A request to audit or review, in any mode, is read-only: report and change nothing except the project notes an audit writes and their `AGENTS.md` block. A fix or cleanup request authorizes the edits it names or the recommendations the user approved; quarantining a test, changing retry or timeout policy, changing repository settings such as branch protection, required checks, or a merge queue, and adding a blocking gate or scheduled job are approved one by one unless the request named them. An explicit campaign request authorizes the campaign's edits. Commit, push, integrate branches, open a pull request, or merge only when authorized, under the repository's policy.
 
 ## Writing a test
 

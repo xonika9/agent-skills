@@ -169,7 +169,7 @@ Rank only findings in sections the scale enables, by risk:
 
 Report:
 
-- a one-paragraph verdict that names the scale;
+- a one-paragraph verdict that names the scale and, after an earlier audit, what was fixed, what is new, and what came back since then;
 - at most five findings in full, each as evidence (file and line, configuration key, command output, or CI run) → the failure it allows → the smallest fix → its cost, marking any that needs an owner decision;
 - the remaining findings one line each;
 - a short ordered plan in which each step can land as one change set;
@@ -177,7 +177,9 @@ Report:
 
 Keep observed facts separate from inferences. A new tool or a rewritten pipeline needs a concrete defect that nothing smaller fixes. When the project has few tests or no CI, the deliverable is a target setup instead: the classes and run tiers this project needs at its scale, the first tests to write in [gap order](#coverage-and-gaps), and the minimal CI that runs them.
 
-The audit is done when the scoped inventory has been inspected or named as not inspected, the report follows this shape, and the plan covers every critical and high finding.
+Save the report with the header, comparison, and suite health that [notes](notes.md#reports) describes, giving each finding its register ID.
+
+The audit is done when the scoped inventory has been inspected or named as not inspected, the report follows this shape, the plan covers every critical and high finding, and the notes are updated.
 
 ## Applying fixes
 
@@ -199,4 +201,4 @@ Record only what the project adopted or already enforces, and mark a rule as pla
 - how coverage is used;
 - where new tests go and the [questions](../SKILL.md#writing-a-test) every new test must answer.
 
-Every command in the file has been run, or is listed as not run with the reason, and every rule not marked planned matches the configuration it describes. Agents do not load this file automatically: propose a one-line pointer to it in the repository's agent instruction file, such as `AGENTS.md`, instead of copying its rules there.
+Every command in the file has been run, or is listed as not run with the reason, and every rule not marked planned matches the configuration it describes. Agents do not load this file automatically: the [AGENTS.md block](notes.md#agentsmd-block) points to it once the notes exist; until then, propose a one-line pointer in the repository's agent instruction file. Do not copy its rules there.

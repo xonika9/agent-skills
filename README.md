@@ -118,7 +118,7 @@ It also compares the current harness's user configuration with sanitized, opinio
 
 A template for TypeScript web applications that has been run end to end: Bun, React with TanStack Router, Query, and Form, Hono with an OpenAPI contract, PostgreSQL with Drizzle, Biome, Vitest, and Docker Compose behind Caddy. A new project starts from a verified scaffold with current package versions, a reference module, module boundaries enforced by the linter, and one `verify` command.
 
-For an existing project the skill maps each layer against the template. Where the tools match, it checks the template's rules and known library pitfalls; where they differ, it applies only the underlying principles and suggests replacing a tool only for a concrete defect. It can also keep a marked rules block in the project's `AGENTS.md`, so agents follow the rules without invoking the skill.
+For an existing project the skill maps each layer against the template. Where the tools match, it checks the template's rules and known library pitfalls; where they differ, it applies only the underlying principles and suggests replacing a tool only for a concrete defect. It can also keep a marked rules block in the project's `AGENTS.md`, so agents follow the rules without invoking the skill. Each audit is saved in `docs/stack/` with a numbered list of findings, so the next audit shows what was fixed, what is new, and how the stack changed, and does not raise again what you deliberately chose.
 
 ### Application security
 
@@ -127,6 +127,8 @@ For an existing project the skill maps each layer against the template. Where th
 A public application includes more than its pages. This skill follows the actual trust boundaries across the browser, API, backend jobs, data stores, integrations, and deployment. During development it checks the changed path and helps put controls at the trusted decision point; before release it maps the relevant surfaces and records what the evidence does not cover.
 
 Findings identify the affected resource, evidence, potential harm, priority, and smallest effective fix. Unverified hypotheses stay separate. Source review does not authorize attack requests to a running site or service; active testing needs explicit permission, a named target, and boundaries.
+
+A pre-release audit saves its findings, accepted risks, and which surfaces it covered in `docs/security/`, so the next audit reports what was fixed, what is new, and where coverage grew. In a public repository, or when it cannot tell, the agent first asks where to keep these notes and proposes a local folder outside version control, so open findings are not published.
 
 ### Tests
 
@@ -138,6 +140,8 @@ On an existing suite it finds candidates for deletion or consolidation and gathe
 
 It can also audit how testing is organized in the project as a whole, scaled to its size: a solo project is not told to build a merge queue or contract tests, and the report keeps to the five findings that matter most. Where the project's size calls for it, the audit recommends: test size classes with hard timeouts; checks split by cost, with fast ones on every change, the heavy end-to-end suite on a schedule, and a small smoke set blocking releases; running only tests affected by a change; contracts between services instead of full end-to-end runs; a flaky-test quarantine with an owner and an expiry, while checks guarding security, money, and data never leave the gate; a green main branch through a merge queue and revert-first policy; reproducible runs from pinned dependencies; the real database in persistence tests; and migrations applied in CI. Coverage is used to find gaps, not as a target. The result is a prioritized report with evidence and a step-by-step plan; changes to tests, configuration, or CI are made only after your approval. On request, the adopted rules are recorded in the project's `TESTING.md` with working commands, so people and agents follow the same policy.
 
+Audits and campaigns are saved in `docs/testing/`: a numbered list of findings, suite health numbers suited to the project's size, such as CI time, flaky rate, and skipped tests, and the campaign ledger, so a repeated audit shows the progress and an interrupted campaign resumes where it stopped.
+
 It works with any language and test runner, takes commands from the project itself, and maps its recommendations onto Vitest, Jest, pytest, Go, and Playwright.
 
 ### Performance
@@ -148,7 +152,7 @@ Agents tend to "optimize" by rule: add a cache, memoize a component, delete a pa
 
 When you don't know what is wrong, ask for an audit. The agent maps the product's main paths, measures them locally, and returns a ranked report in plain words: local fixes, decisions that are yours to make with their payoff and price, and places where data is missing. Ask it to fix as well, and it checks every guess it can measure on your machine, asks all your decisions once right after the audit, and then fixes everything in one pass; only what you decline or what would exceed the budget stays open. Anything that costs money, touches shared systems, or changes what users see waits for your choice. When you name a problem in your own words, the agent turns it into a metric, confirms it with you, and proposes sensible defaults if you don't know the numbers.
 
-A pause or retry is replaced by the condition it was waiting for, never just deleted, and stale data is never served as fresh. Load tests, profilers, and paid runs against anything but your own machine need your permission. Reading and searching go to subagents so the main conversation stays clear, while measurements run one at a time so they don't distort each other. Every attempt, including reverted ones, goes into `docs/performance/` in the project, so the next agent does not repeat a dead end.
+A pause or retry is replaced by the condition it was waiting for, never just deleted, and stale data is never served as fresh. Load tests, profilers, and paid runs against anything but your own machine need your permission. Reading and searching go to subagents so the main conversation stays clear, while measurements run one at a time so they don't distort each other. Every attempt, including reverted ones, goes into `docs/performance/` in the project, so the next agent does not repeat a dead end, and each audit opens with what was fixed, what is new, and what came back since the previous one.
 
 ### Personal notes and Obsidian
 
@@ -262,6 +266,12 @@ Each recording gets `<name>.transcript.srt` for players and editors and `<name>.
 It needs `python3`, `ffmpeg`, and `whisper-cli`; the script downloads the two models, about 875 MB, on first use. It was verified on macOS with Apple Silicon.
 
 ### Planning and architecture
+
+#### [`x9-cto`](skills/x9-cto/SKILL.md)
+
+Make product and architecture decisions against the repository's actual constraints, keep delivery focused on a working user outcome, and review executor evidence before accepting it. Local workflows and authority stay with their repository owners. An optional marked block in `AGENTS.md` adds only otherwise missing local instructions or handoff routes; ordinary consultation creates no files.
+
+Use it for CTO decisions, executor handoffs, grounding, and accountable delivery. Routine debugging and implementation of a settled plan stay with their own workflows. Compound Engineering is needed only for its named methods and the explicit autonomous CE mode; missing required capabilities stop the dependent mode rather than silently replacing it.
 
 #### [`x9-task-graph`](skills/x9-task-graph/SKILL.md)
 

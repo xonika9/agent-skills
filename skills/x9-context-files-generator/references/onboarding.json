@@ -8,6 +8,14 @@
       "needed_for": "Creating or reviewing agent instructions.",
       "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
       "guidance_id": "install-skill"
+    },
+    {
+      "id": "python-runtime",
+      "kind": "command",
+      "level": "optional",
+      "needed_for": "Checking the development rule blocks in AGENTS.md.",
+      "check": {"type": "command-present", "command": "python3"},
+      "guidance_id": "install-command"
     }
   ]
 }

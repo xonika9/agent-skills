@@ -26,14 +26,16 @@ Security and testing are checked at the level of the rules here. A deeper review
 
 ## Report
 
+Save the report with the header and the comparison with the previous report that [notes](notes.md#reports) describes; the chat reply carries the same content and opens, after an earlier audit, with what was fixed, what is new, and what came back.
+
 1. Stack map: each layer, the project's tool, Same / Different / Absent.
-2. Findings, ranked, numbered for selection.
+2. Findings, ranked, each with its register ID for selection.
 3. What already matches, in one short paragraph.
 4. Not checked, and why (no access to deployment, no database to run tests, and so on).
-5. Whether to write or update the `AGENTS.md` rules block.
+5. Whether to write or update the `AGENTS.md` rules block, including the line naming the notes when it is missing.
 
 Run the project's own lint, typecheck, and tests when they are local and side-effect-free; report their results as evidence. Do not run migrations, deploys, or anything against shared or remote services.
 
 ## Applying fixes
 
-Apply only the findings the user selects. After the change, run the project's verify command or the closest available checks and report the result per finding. A fix goes back to the user only when it materially expands the selected scope, reveals a new material risk, or would perform a data or deployment action that the user has not already authorized.
+Apply only the findings the user selects. After the change, run the project's verify command or the closest available checks, report the result per finding, and set each finding's status in the register. A fix goes back to the user only when it materially expands the selected scope, reveals a new material risk, or would perform a data or deployment action that the user has not already authorized.

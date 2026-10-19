@@ -38,7 +38,7 @@ Install or refresh the block whenever this skill writes metadata in a repository
 - **Block present.** If its shared part differs from the template, replace the shared part and keep Local unchanged. Otherwise leave it.
 - **An older OKF section outside the markers.** Replace it with the block. Move its folder scope and exemptions into `.x9-okf.json`, and its local conventions about these documents into Local. Rules about other workflows stay where they are, outside the block.
 - **Fields and files with another owner.** Before writing Local, look at the headers in scope. A retired OKF field the repository still relies on, such as `status` marking deprecated decisions, is kept through a Local line. A tool that writes its own header with OKF field names, such as Compound Engineering with `type: feat`, owns those files: exclude their folders or files in `.x9-okf.json` and name the tool in Local.
-- **Nothing about OKF.** Insert the block after the file's opening summary. With no `AGENTS.md`, create one holding a one-line title and the block, plus a `CLAUDE.md` containing `@AGENTS.md` when none exists.
+- **Nothing about OKF.** Insert the block after the repository's own rules, among the other skills' marked blocks. With no `AGENTS.md`, create one holding a one-line title and the block, plus a `CLAUDE.md` containing `@AGENTS.md` when none exists.
 - **The repository says it does not use OKF.** Change nothing and stop; that decision is the user's.
 
 Never change text between another skill's markers. A rule outside the block that conflicts with one inside is the user's decision: report it and keep both until they choose. Load `x9-agent-instructions` before writing Local lines, because they are agent-facing prose.

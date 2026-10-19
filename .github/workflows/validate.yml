@@ -34,6 +34,7 @@ jobs:
       - name: Run deterministic regression tests
         run: |
           python3 skills/x9-skill-creator/scripts/test_validate.py
+          python3 -m unittest discover -s skills/x9-cto/tests -p 'test_*.py'
           python3 skills/x9-onboarding/scripts/test_validate_onboarding.py
           python3 skills/x9-onboarding/scripts/validate_onboarding.py skills
           python3 skills/x9-onboarding/scripts/test_validate_profiles.py

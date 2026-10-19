@@ -1,6 +1,6 @@
 ---
 name: x9-context-files-generator
-description: Use when creating, auditing, or updating repository-level AGENTS.md, CLAUDE.md, or README.md — «создай AGENTS.md», «обнови README», «настрой контекст репозитория», "generate repository context files". Do not use for global personal instructions, skills, the development-rules block owned by x9-web-stack, the vault block owned by x9-personal-vault, or ordinary documentation unrelated to onboarding agents or humans.
+description: Use when creating, auditing, or updating repository-level AGENTS.md, CLAUDE.md, or README.md, including inserting or refreshing this skill's portable rule blocks (execution discipline, sources of truth, documentation, dependency updates, interface references, Compound Engineering) — «создай AGENTS.md», «обнови README», «настрой контекст репозитория», «вставь переносимые блоки правил», "generate repository context files". Do not use for global personal instructions, skills, the development-rules block owned by x9-web-stack, the vault block owned by x9-personal-vault, the CTO block owned by x9-cto, or ordinary documentation unrelated to onboarding agents or humans.
 compatibility: Requires x9-agent-instructions, which owns the quality of agent-facing instruction prose.
 ---
 
@@ -32,6 +32,7 @@ Infer the action from the whole request, not only trigger words.
 6. Judge agent-file content with the derivability test in that contract.
 7. Use English for machine-facing instructions by default; follow repository/user language when human maintenance or domain literals make that clearer.
 8. Run commands you present only when they are safe, local, and within the requested repository scope. Read-only inspection and ordinary local validation are allowed by default. Destructive, external, costly, deployment, migration, production-data, account-mutating, or credential-changing commands require explicit user authority; otherwise preserve the command and label it unverified with the reason.
+9. In a code repository, finish by offering the development rule blocks in [references/rule-blocks.md](references/rule-blocks.md); it owns when to offer them and how to insert or update them.
 
 Read [references/agents-md.md](references/agents-md.md) when editing agent files, [references/readme.md](references/readme.md) for README work, and [references/research-basis.md](references/research-basis.md) when judging how much inferred architecture belongs in context.
 
@@ -48,5 +49,6 @@ Read [references/agents-md.md](references/agents-md.md) when editing agent files
 - Agent and human files contain only behavior-changing audience-specific material.
 - The instruction rubric is reported as `applied`, `not applicable`, or `degraded`; a complete or clean agent-file result requires `applied`.
 - A fresh-context reader can start the project without inventing a command.
+- Every rule block the user chose meets the done condition in [references/rule-blocks.md](references/rule-blocks.md#done).
 
 The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.

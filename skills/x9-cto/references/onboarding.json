@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "context-files-skill",
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Creating a missing repository instruction file during explicit CTO configuration.",
+      "check": {"type": "skill-present", "target_skill": "x9-context-files-generator"},
+      "guidance_id": "install-skill"
+    }
+  ]
+}

@@ -9,6 +9,7 @@ The block gives every agent working in the project the development rules it cann
 ## Development rules
 
 <one line: what the block covers and that a project override goes outside the block>
+<when stack notes exist, one line: audit findings live in the notes' `findings.md`, such as `docs/stack/findings.md`, deliberate departures in `docs/decisions/`, and a change that fixes a finding sets its status to `fixed` with the check>
 
 ### Before finishing
 ### Structure
@@ -36,7 +37,7 @@ For a project on a different stack, express each chosen principle in that stack'
 
 ## Writing and updating
 
-- With no markers, insert the block after the file's opening summary or setup section. Create a missing `AGENTS.md` through the `x9-context-files-generator` contract.
+- With no markers, insert the block after the repository's own rules, among the other skills' marked blocks. Create a missing `AGENTS.md` through the `x9-context-files-generator` contract.
 - With markers, replace only the content between them. Text outside the markers is never changed by this skill.
 - A rule outside the block that conflicts with one inside is a decision for the user: report it and keep both until they choose. A project rule outside the block that already covers a pool rule replaces that pool rule; do not duplicate it.
 - Load `x9-agent-instructions` before writing the block, because it is agent-facing prose.

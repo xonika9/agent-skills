@@ -1,6 +1,6 @@
 # Test-pruning campaign
 
-Campaign mode prunes one subsystem's whole test surface: a plugin, an integration, or one core area. Land it as one change set, or as one per lane once that lane's keepers pass when the repository prefers smaller changes. The [retention bar](../SKILL.md#retention-bar) and the [test audit](test-audit.md) evidence and validation apply to every lane; step 6's preservation review replaces the per-batch fresh-context review. This file adds the order of work and the lessons of a full campaign. Each step ends on its completion criterion; do not start the next step early.
+Campaign mode prunes one subsystem's whole test surface: a plugin, an integration, or one core area. Land it as one change set, or as one per lane once that lane's keepers pass when the repository prefers smaller changes. The [retention bar](../SKILL.md#retention-bar) and the [test audit](test-audit.md) evidence and validation apply to every lane; step 6's preservation review replaces the per-batch fresh-context review. This file adds the order of work and the lessons of a full campaign. Each step ends on its completion criterion; do not start the next step early. The baseline, lanes, ledgers, plans, and the last completed step per lane are written to the campaign's folder in the [notes](notes.md#layout) as they are produced, and a resumed campaign starts from there.
 
 ## 1. Baseline
 
