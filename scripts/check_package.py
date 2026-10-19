@@ -8,6 +8,8 @@ from pathlib import Path
 import re
 import struct
 
+from release_version import parse_version
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_NAME = "x9-agent-skills"
@@ -25,7 +27,6 @@ SHARED_MANIFEST_FIELDS = (
     "keywords",
     "skills",
 )
-SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 RUNTIME_NAMES = {"opencode": "OpenCode", "claude": "Claude Code", "codex": "Codex"}
 # Skills run in every runtime by default; support is never listed in SKILL.md prose.
@@ -75,7 +76,10 @@ def validate_manifest(manifest: dict, source: str) -> None:
     for field in ("name", "version", "description", "homepage", "repository", "license", "skills"):
         require(isinstance(manifest.get(field), str) and manifest[field], f"{source}.{field} is required")
     require(manifest["name"] == PLUGIN_NAME, f"{source}.name must be {PLUGIN_NAME}")
-    require(bool(SEMVER.fullmatch(manifest["version"])), f"{source}.version must use strict semver")
+    try:
+        parse_version(manifest["version"])
+    except ValueError as error:
+        fail(f"{source}.version must use calendar version YY.MM.DD.N: {error}")
     require(manifest["skills"] == "./skills/", f"{source}.skills must be ./skills/")
     require(isinstance(manifest.get("author"), dict), f"{source}.author is required")
     require(bool(manifest["author"].get("name")), f"{source}.author.name is required")

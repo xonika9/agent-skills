@@ -98,3 +98,5 @@ Static or slow is not a deletion reason. Coverage locates code no test executes;
 Run the tests you touched and their owner's sibling tests with the repository's own commands, found in its instruction files, package manifests, task runners, and CI configuration; the package manager is not necessarily the test runner. A result counts only when no file changed during the run.
 
 Repeat a new or changed test only when it uses real time, threads or async concurrency, or shared external state, or has flaked before: about ten runs in random order or one minute, whichever comes first. Where the runner cannot repeat tests, say so. A check that could not run is reported as not run with its reason.
+
+The [onboarding declaration](references/onboarding.json) lists the optional companion for creating a missing repository instruction file.

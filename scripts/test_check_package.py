@@ -12,7 +12,7 @@ import check_package
 def manifest() -> dict:
     return {
         "name": "x9-agent-skills",
-        "version": "2.4.0",
+        "version": "26.10.19.1",
         "description": "Shared description",
         "author": {"name": "xonika9", "url": "https://example.com"},
         "homepage": "https://example.com",
@@ -102,6 +102,16 @@ def test_runtime_claims() -> None:
 
 
 def main() -> None:
+    check_package.validate_manifest(manifest(), "manifest")
+    for version in ("4.1.0", "26.2.03.1", "26.02.30.1", "26.10.19.0", "26.10.19.01"):
+        invalid = manifest()
+        invalid["version"] = version
+        try:
+            check_package.validate_manifest(invalid, "manifest")
+        except SystemExit as error:
+            assert "version" in str(error)
+        else:
+            raise AssertionError(f"expected invalid calendar version {version} to fail")
     check_package.validate_shared_metadata(manifest(), manifest())
     for field in manifest():
         expect_mismatch(field)

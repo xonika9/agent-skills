@@ -4,10 +4,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from datetime import date
 import subprocess
 import tempfile
+from unittest.mock import patch
 
 import prepare_release
+from release_version import next_version, parse_version
 
 
 EMPTY = """## Unreleased
@@ -80,7 +83,76 @@ def test_all_unreleased_sections_are_required() -> None:
         expect_failure(incomplete, ["skills/example/SKILL.md"])
 
 
+def test_calendar_metadata_and_changelog_date() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        path = root / "CHANGELOG.md"
+        notes = EMPTY[:EMPTY.index("## 1.0.0")]
+        release = "## 26.10.19.1 - 2026-10-19\n\n### Highlights\n\n- A release.\n"
+        path.write_text(notes + release, encoding="utf-8")
+        with patch.object(prepare_release, "ROOT", root):
+            assert "A release." in prepare_release.changelog_notes("26.10.19.1")[1]
+            path.write_text(notes + release.replace("2026-10-19", "2026-10-20"), encoding="utf-8")
+            try:
+                prepare_release.changelog_notes("26.10.19.1")
+            except SystemExit as error:
+                assert "date must match" in str(error)
+            else:
+                raise AssertionError("a mismatched changelog date must block release")
+        manifest = root / "plugin.json"
+        manifest.write_text('{"version": "26.10.19.1"}', encoding="utf-8")
+        assert prepare_release.load_version(manifest) == "26.10.19.1"
+        manifest.write_text('{"version": "26.02.30.1"}', encoding="utf-8")
+        with patch.object(prepare_release, "ROOT", root):
+            try:
+                prepare_release.load_version(manifest)
+            except SystemExit as error:
+                assert "Invalid release version" in str(error)
+            else:
+                raise AssertionError("an impossible calendar date must block release")
+
+
+def test_new_release_must_be_newer_than_public_tags() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        for name in (".claude-plugin", ".codex-plugin"):
+            (root / name).mkdir()
+            (root / name / "plugin.json").write_text('{"version": "26.10.19.1"}', encoding="utf-8")
+        template = EMPTY[:EMPTY.index("## 1.0.0")]
+        release = "## 26.10.19.1 - 2026-10-19\n\n" + "\n\n".join(
+            f"### {section}\n\n- Release entry." for section in prepare_release.REQUIRED_SECTIONS
+        )
+        (root / "CHANGELOG.md").write_text(template + release, encoding="utf-8")
+        with patch.object(prepare_release, "ROOT", root), \
+             patch.object(prepare_release, "tag_exists", return_value=False), \
+             patch.object(prepare_release, "changed_paths_since", return_value=[]), \
+             patch("sys.argv", ["prepare_release.py", "--check"]), patch("builtins.print"):
+            for tag in ("v26.10.19.2", "v26.10.20.1"):
+                with patch.object(prepare_release, "previous_release_tag", return_value=tag):
+                    try:
+                        prepare_release.main()
+                    except SystemExit as error:
+                        assert "must be newer" in str(error)
+                    else:
+                        raise AssertionError("an older calendar version must block publication")
+            for tag in ("v4.1.0", "v26.10.18.10"):
+                with patch.object(prepare_release, "previous_release_tag", return_value=tag):
+                    prepare_release.main()
+
+
 def main() -> None:
+    assert parse_version("26.10.19.1") == (date(2026, 10, 19), 1)
+    assert parse_version("28.02.29.1") == (date(2028, 2, 29), 1)
+    assert next_version(["v4.1.0"], date(2026, 10, 19)) == "26.10.19.1"
+    assert next_version(["v26.10.19.2", "v26.10.19.10", "v4.1.0"], date(2026, 10, 19)) == "26.10.19.11"
+    assert next_version(["v26.10.19.11"], date(2026, 10, 20)) == "26.10.20.1"
+    assert next_version(["v26.10.19.11"], date(2027, 1, 1)) == "27.01.01.1"
+    try:
+        next_version(["v26.10.20.1"], date(2026, 10, 19))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("a future release tag must stop version selection")
     assert not prepare_release.has_unreleased_entries(EMPTY)
     assert prepare_release.has_unreleased_entries(WITH_ENTRY)
     assert prepare_release.is_release_relevant("skills/x9-research/SKILL.md")
@@ -101,6 +173,8 @@ def main() -> None:
     expect_failure(EMPTY, ["scripts/check_public.py"])
     expect_failure(EMPTY, [".claude/skills/release/scripts/check_skill_links.py"])
     test_all_unreleased_sections_are_required()
+    test_calendar_metadata_and_changelog_date()
+    test_new_release_must_be_newer_than_public_tags()
     test_changed_paths_include_both_sides_of_move()
     print("PASS: changelog coverage regression scenarios")
 

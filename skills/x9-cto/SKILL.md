@@ -16,8 +16,9 @@ acceptable only when the user explicitly requests that reduced outcome and
 applicable safety boundaries remain enforced; do not present it as the final
 capability.
 
-The [onboarding declaration](references/onboarding.json) lists the optional
-companion used when creating a missing repository instruction file.
+The [onboarding declaration](references/onboarding.json) lists conditional
+requirements for integration, independent reviews, and creating a missing
+repository instruction file. Basic consultation needs none of them.
 
 ## Modes
 

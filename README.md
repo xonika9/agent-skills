@@ -130,7 +130,7 @@ A public application includes more than its pages. This skill follows the actual
 
 Findings identify the affected resource, evidence, potential harm, priority, and smallest effective fix. Unverified hypotheses stay separate. Source review does not authorize attack requests to a running site or service; active testing needs explicit permission, a named target, and boundaries.
 
-A pre-release audit saves its findings, accepted risks, and which surfaces it covered in `docs/security/`, so the next audit reports what was fixed, what is new, and where coverage grew. In a public repository, or when it cannot tell, the agent first asks where to keep these notes and proposes a local folder outside version control, so open findings are not published.
+A pre-release audit saves its findings, accepted risks, and which surfaces it covered in `docs/security/`, so the next audit reports what was fixed, what is new, and where coverage grew. In a public repository, when visibility is unknown, or when `docs/` is published as a site, the agent first asks where to keep these notes and proposes a local folder outside version control, so open findings are not published. Creating the notes also adds or refreshes their pointer block in an existing `AGENTS.md`. Creating a missing instruction file uses the optional companion `x9-context-files-generator`.
 
 ### Tests
 
@@ -143,6 +143,8 @@ On an existing suite it finds candidates for deletion or consolidation and gathe
 It can also audit how testing is organized in the project as a whole, scaled to its size: a solo project is not told to build a merge queue or contract tests, and the report keeps to the five findings that matter most. Where the project's size calls for it, the audit recommends: test size classes with hard timeouts; checks split by cost, with fast ones on every change, the heavy end-to-end suite on a schedule, and a small smoke set blocking releases; running only tests affected by a change; contracts between services instead of full end-to-end runs; a flaky-test quarantine with an owner and an expiry, while checks guarding security, money, and data never leave the gate; a green main branch through a merge queue and revert-first policy; reproducible runs from pinned dependencies; the real database in persistence tests; and migrations applied in CI. Coverage is used to find gaps, not as a target. The result is a prioritized report with evidence and a step-by-step plan; changes to tests, configuration, or CI are made only after your approval. On request, the adopted rules are recorded in the project's `TESTING.md` with working commands, so people and agents follow the same policy.
 
 Audits and campaigns are saved in `docs/testing/`: a numbered list of findings, suite health numbers suited to the project's size, such as CI time, flaky rate, and skipped tests, and the campaign ledger, so a repeated audit shows the progress and an interrupted campaign resumes where it stopped.
+
+These modes also add or refresh the notes' pointer block in an existing `AGENTS.md`; test and configuration changes still require a fix or cleanup request. Creating a missing instruction file uses the optional companion `x9-context-files-generator`.
 
 It works with any language and test runner, takes commands from the project itself, and maps its recommendations onto Vitest, Jest, pytest, Go, and Playwright.
 
@@ -190,13 +192,15 @@ The [setup guide](skills/x9-browser-session/references/setup.md), which you can 
 
 The verified Edge recipe uses localhost CDP port `9223` and checks that the endpoint belongs to the expected automation profile before private or authenticated work. Existing installations copied from the earlier `9222` recipe must update the launcher, MCP endpoint, and `agent-edge` wrapper together.
 
+The macOS fallback needs Python 3, `curl`, `lsof`, and an `agent-browser` version supporting `--session` and `--pin-tab`. Update an older installed `agent-edge` wrapper through the setup guide and keep one unique non-default `AGENT_BROWSER_SESSION` for the whole task. Calls are command-first, for example `agent-edge snapshot --json`; the wrapper supplies the connection, session, and tab-binding flags.
+
 Transient page errors can be refreshed up to twice when reloading cannot repeat a submission or other state change. Avito browsing uses one sequential lane across the parent task: after a security warning or CAPTCHA, the agent waits five seconds, refreshes the same page at most twice, and stops with `DEGRADED` if access remains blocked. It does not solve the challenge or switch controllers to work around it.
 
 #### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
 
 A Wildberries rating rarely tells the whole story: reviews may belong to another variant, the seller may be questionable, and the visible price depends on the account and region. This skill searches through your logged-in session, checks the exact variant, seller, price per unit, fresh and low-rated reviews, recurring risks, and buyer photos when appearance or packaging matters before producing a shortlist.
 
-It is deliberately Wildberries-specific and runs inside the current OpenCode, Claude Code, or Codex session. Install `x9-browser-session` with it.
+It is deliberately Wildberries-specific and runs inside the current OpenCode, Claude Code, or Codex session. Install `x9-browser-session` with it. In Claude Code, the current session must use Opus; an unavailable or unverified model blocks the search.
 
 ### Ideas and agent behavior
 
@@ -213,6 +217,8 @@ Use this when you want resistance, not another enthusiastic brainstorm. The skil
 The result is a concise decision aid: a recommendation, grouped changes covering every material issue, a self-contained stronger proposal, and one next step with a pass/fail signal. Critics have no arbitrary finding limit; brevity comes from synthesis rather than discarded objections. The default uses one critic from each available provider; when a subscription is unavailable, it proceeds with one and marks the loss of independent review. Use `claude` or `gpt` for one critic, or `full` for a deeper panel.
 
 When the idea concerns the current repository, a separate read-only scout on the main chat's model first searches the code without seeing the conversation, so critics also learn project facts that neither you nor the agent mentioned: validators, existing mechanisms, callers, and earlier decisions. Every claim in the brief is marked as verified, merely stated in the conversation, or assumed, and an objection can be dismissed only with a quote that refutes it, not with "we already agreed".
+
+If the scout is unavailable or you decline it, the proposing agent gathers project facts and the answer states that limitation. The Codex scout needs the `codex` CLI for its isolated read-only run.
 
 Route names stay the same when models change. The model and effort defaults for each provider live in the skill's [`config.json`](skills/x9-idea-critic/config.json); both effort defaults are `high` and can be changed independently. OpenCode needs a subagent matching the configured GPT model and effort. The scout in OpenCode needs a separate subagent that may only read files. The GPT route from Claude Code uses `x9-codex-delegation`.
 
@@ -259,6 +265,8 @@ Codex generates images with its built-in tool under a ChatGPT login, so no image
 
 The result counts only when a real PNG with readable dimensions exists at the requested path, and the final prompt comes back with it. If Codex generated the image but did not save it, the skill recovers the file instead of paying for a second generation. A finished prompt from the user can still be passed through unchanged.
 
+A verified PNG without its final prompt is delivered as an incomplete result, with `status: incomplete` and exit code 1. Missing prompt metadata never triggers another generation. A requested transparent background is checked visually; an alpha channel alone does not prove it.
+
 ### Video and audio
 
 #### [`x9-video-transcripts`](skills/x9-video-transcripts/SKILL.md)
@@ -278,6 +286,8 @@ It needs `python3`, `ffmpeg`, and `whisper-cli`; the script downloads the two mo
 Make product and architecture decisions against the repository's actual constraints, keep delivery focused on a working user outcome, and review executor evidence before accepting it. Local workflows and authority stay with their repository owners. An optional marked block in `AGENTS.md` adds only otherwise missing local instructions or handoff routes; ordinary consultation creates no files.
 
 Use it for CTO decisions, executor handoffs, grounding, and accountable delivery. Routine debugging and implementation of a settled plan stay with their own workflows. The explicit `auto` mode needs the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`; decision support uses `ce-pov`, `ce-bakeoff`, `ce-brainstorm`, and `ce-ideate` when they are installed. Basic consultation needs none of them, and a missing required skill stops the dependent mode rather than being silently replaced.
+
+Architecture gates and autonomous delivery require independent subagents for criticism and the final audit. These conditional requirements are included in readiness checks; basic consultation remains available without them.
 
 #### [`x9-task-graph`](skills/x9-task-graph/SKILL.md)
 
@@ -299,6 +309,8 @@ Every report includes at least one architecture diagram, so both `python3` for v
 
 On a new repository, it creates useful `README.md`, `AGENTS.md`, and `CLAUDE.md` files. On an existing codebase, it reads the real commands, structure, CI, and local constraints before updating them, so the result does not become a generated file tree or a pile of advice the agent could infer itself.
 
+In code repositories, it also offers optional reusable blocks for execution, sources of truth, documentation, dependency updates, interface references, and Compound Engineering. You choose which applicable blocks to add or refresh, including after an otherwise clean audit. Shared wording stays consistent across repositories; local facts and project-specific rules are preserved. The checker uses Python 3. Content repositories such as blogs and notes vaults are excluded unless you ask.
+
 For personal cross-runtime repositories, root `AGENTS.md` is the source of truth for root-local context and `CLAUDE.md` imports it with `@AGENTS.md`. A branch-specific procedure belongs in its profile document; root `AGENTS.md` may point to it only when the condition and target are explicit. Claude Code and AGENTS-aware harnesses receive the same root context without two copies drifting apart.
 
 For agent-facing prose, it loads `x9-agent-instructions` as a required companion rubric instead of copying prompt-quality rules. The full plugin already includes both skills; install them together when copying `x9-context-files-generator` individually. Without the companion, readiness checks report the skill as needing setup; repository and structural checks still run, but agent-file instruction quality is reported as degraded.
@@ -308,6 +320,8 @@ For agent-facing prose, it loads `x9-agent-instructions` as a required companion
 Give it an already understood repeated process to package as an Agent Skill, or hand it an existing skill for an audit. When the idea is underspecified, it asks only the questions that change the design. It then builds or fixes the trigger contract, structure, references, runtime adapters, safety boundaries, and validation. If the process is a multi-stage autonomous loop, design that loop with `x9-loop-engineering` first.
 
 The method applies one quality contract to skills in any Agent Skills runtime. Structural validation uses explicit portable, Claude Code, and Codex profiles, so a passing check names the compatibility it actually proved. The skill supports both static audits and clean-context behavioral evaluation when the extra evidence is worth the cost.
+
+Audits also identify workflow and context that can be removed. Every report includes concrete simplifications or explicitly states that none are justified. An audit can finish with documented defects; a scoped fix reports unrelated existing issues without expanding its work.
 
 Before it writes frontmatter, the skill classifies each claimed runtime as model-invoked or user-only, records any cross-skill consumer separately, and checks whether the process has an independent owner. Claude-only invocation metadata does not become portable or Codex metadata just because the skill can be manually invoked there.
 
@@ -365,6 +379,10 @@ npx skills update -g
 ```
 
 Plugin users can update through their agent's marketplace flow. Review [CHANGELOG.md](CHANGELOG.md) before adopting a new version if your workflows depend on runtime-specific behavior.
+
+Starting with `26.10.19.1`, releases use `YY.MM.DD.N`: the Moscow date and a daily sequence starting at 1. The number identifies when a release was made; incompatible changes and migration steps remain in the changelog. Earlier releases keep their original numbers.
+
+For this update, replace an installed `agent-edge` wrapper and follow the new fallback session contract above; its former invocation contract is no longer supported.
 
 For 4.0.0, custom onboarding declarations must remove full three-runtime lists and requirement lists that repeat the skill's scope. Supported-runtime lists belong only in the declaration; portable skills must also remove Boolean `metadata.internal`. Update the Claude Code global file if you want its revised worker routing: Opus for analysis and implementation, with Sonnet reserved for bounded search and fact extraction. This uses more of the Opus allowance.
 

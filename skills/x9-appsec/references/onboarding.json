@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "requirements": [
+    {
+      "id": "context-files-skill",
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Creating a missing AGENTS.md for the audit notes pointer block.",
+      "check": {
+        "type": "skill-present",
+        "target_skill": "x9-context-files-generator"
+      },
+      "guidance_id": "install-skill"
+    }
+  ]
+}

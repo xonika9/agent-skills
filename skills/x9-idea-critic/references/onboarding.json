@@ -78,6 +78,15 @@
       "needed_for": "Running GPT critics.",
       "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
       "guidance_id": "enable-runtime-feature"
+    },
+    {
+      "id": "codex-scout-command",
+      "runtimes": ["codex"],
+      "kind": "command",
+      "level": "optional",
+      "needed_for": "Running the isolated project scout for code ideas in Codex.",
+      "check": {"type": "command-present", "command": "codex"},
+      "guidance_id": "install-command"
     }
   ]
 }

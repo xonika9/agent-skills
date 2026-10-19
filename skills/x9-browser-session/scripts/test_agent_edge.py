@@ -58,6 +58,7 @@ class ProfileBindingTests(unittest.TestCase):
              patch.object(agent_edge, 'process_argv', return_value=[
                  EXE, '--user-data-dir=/tmp/wrong', '--remote-debugging-port=9223']), \
              patch.object(agent_edge.os, 'execvp') as dispatch, \
+             patch.object(sys, 'argv', ['agent-edge', 'snapshot']), \
              patch('sys.stderr'):
             run.return_value.stdout = '123\n'
             self.assertEqual(agent_edge.main(), 1)

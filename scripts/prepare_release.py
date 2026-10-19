@@ -9,9 +9,10 @@ from pathlib import Path
 import re
 import subprocess
 
+from release_version import next_version, parse_version
+
 
 ROOT = Path(__file__).resolve().parents[1]
-SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 REQUIRED_SECTIONS = (
     "Highlights",
     "Install / update",
@@ -37,6 +38,7 @@ RELEASE_RELEVANT_FILES = {
     "scripts/check_package.py",
     "scripts/check_public.py",
     "scripts/prepare_release.py",
+    "scripts/release_version.py",
     ".github/workflows/validate.yml",
     ".github/workflows/release.yml",
     ".claude/skills/release/SKILL.md",
@@ -50,7 +52,11 @@ RELEASE_RELEVANT_FILES = {
 def load_version(path: Path) -> str:
     with path.open(encoding="utf-8") as handle:
         version = json.load(handle)["version"]
-    if not isinstance(version, str) or not SEMVER.fullmatch(version):
+    try:
+        if not isinstance(version, str):
+            raise ValueError("version is not a string")
+        parse_version(version)
+    except ValueError:
         raise SystemExit(f"Invalid release version in {path.relative_to(ROOT)}: {version!r}")
     return version
 
@@ -153,6 +159,8 @@ def changelog_notes(version: str) -> tuple[str, str]:
         raise SystemExit(
             f"CHANGELOG.md has no heading '## {version} - YYYY-MM-DD'"
         )
+    if match.group(1) != parse_version(version)[0].isoformat():
+        raise SystemExit("Changelog date must match the calendar release version")
 
     start = match.end()
     next_heading = re.search(r"^## ", changelog[start:], re.MULTILINE)
@@ -168,11 +176,22 @@ def main() -> None:
     parser.add_argument("--notes-out", type=Path)
     parser.add_argument("--github-output", type=Path)
     parser.add_argument(
+        "--next-version", action="store_true",
+        help="Print the next Moscow-dated YY.MM.DD.N version from fetched public tags",
+    )
+    parser.add_argument(
         "--check",
         action="store_true",
         help="Validate release metadata without writing release notes",
     )
     args = parser.parse_args()
+    if args.next_version:
+        tags = subprocess.check_output(["git", "tag", "--list", "v[0-9]*"], cwd=ROOT, text=True)
+        try:
+            print(next_version(tags.splitlines()))
+        except ValueError as error:
+            raise SystemExit(str(error))
+        return
     if not args.check and args.notes_out is None:
         parser.error("--notes-out is required unless --check is used")
 
@@ -192,6 +211,12 @@ def main() -> None:
         validate_new_release(changelog, notes)
         previous_tag = previous_release_tag(tag)
         if previous_tag:
+            try:
+                previous_version = parse_version(previous_tag[1:])
+            except ValueError:
+                previous_version = None  # Historical semantic versions predate CalVer.
+            if previous_version is not None and parse_version(claude_version) <= previous_version:
+                raise SystemExit(f"New release {tag} must be newer than {previous_tag}")
             print(f"AUDIT: reconcile release notes with every change since {previous_tag}:")
             for path in changed_paths_since(previous_tag):
                 print(f"- {path}")

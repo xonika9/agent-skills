@@ -24,12 +24,17 @@ For a new or changed skill:
 
 ## Versioning
 
-Contributors add user-visible changes to `Unreleased`; the maintainer confirms the release version. The strongest change since the latest public tag determines the bump:
+Contributors add user-visible changes to `Unreleased`. Releases use calendar versions
+`YY.MM.DD.N`, for example `26.10.19.1`: the date in `Europe/Moscow`, followed by
+a positive sequence starting at 1 each day. Month and day have two digits; the
+sequence has no leading zeros. Compatibility changes do not determine the number.
 
-- `PATCH`: backward-compatible fixes and corrections only.
-- `MINOR` while the project is `0.x`: new capabilities or any intentional change to public behavior or contracts, including incompatible pre-1.0 changes.
-- `1.0.0`: an explicit maintainer declaration that the public contracts are stable.
-- After `1.0.0`, `MAJOR`: incompatible public-contract changes; `MINOR`: backward-compatible capabilities; `PATCH`: backward-compatible fixes.
+After fetching public tags, `python3 scripts/prepare_release.py --next-version`
+prints the next number. A release request authorizes automatic number selection
+without a separate confirmation. Both plugin manifests, the changelog, and the
+`v`-prefixed tag use that number; the workflow owns tag creation. Historical
+semantic-version releases remain unchanged. Describe incompatible changes and
+required migration under `Breaking changes` and `Install / update`.
 
 Release metadata and publication are enforced by [`scripts/prepare_release.py`](scripts/prepare_release.py), the [validation workflow](.github/workflows/validate.yml), and the [release workflow](.github/workflows/release.yml).
 

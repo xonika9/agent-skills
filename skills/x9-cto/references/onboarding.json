@@ -8,6 +8,22 @@
       "needed_for": "Creating a missing repository instruction file during explicit CTO configuration.",
       "check": {"type": "skill-present", "target_skill": "x9-context-files-generator"},
       "guidance_id": "install-skill"
+    },
+    {
+      "id": "compound-engineering-skills",
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Confirming the CE chain for auto mode and conditional decision support skills.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
+      "id": "independent-subagents",
+      "kind": "runtime-feature",
+      "level": "optional",
+      "needed_for": "Running independent architecture criticism and the autonomous delivery tail audit.",
+      "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
+      "guidance_id": "enable-runtime-feature"
     }
   ]
 }
