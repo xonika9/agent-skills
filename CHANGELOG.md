@@ -4,11 +4,21 @@
 
 ### Highlights
 
+- Compound Engineering overrides preserve fresh workers, unit commits, clean stage acceptance, review order, and cross-provider delegation without requiring a work registry. Paid checks reuse existing authorization, and stages finish at local commits unless publication is authorized. Instruction-block refreshes remove superseded template rules, preserve project-specific exceptions, and respect each specialist skill's ownership.
+
+- Reusable execution, source-ownership, documentation, dependency, and interface-reference rules follow existing project workflows without requiring work registries, custom update automation, or narrated recordings.
+
+- Context-file audits offer applicable rule blocks for insertion or update even when no defects are found, combining block selection with any proposed fixes before editing.
+
+- Repository instructions clarify that working on `main` does not authorize a commit and point to the contributor guide for validation instead of repeating release-check internals.
+
 - Vault undo stops before writing through a replaced directory link and keeps its recovery copy. Transcript retries recover from a partially published result pair, and OKF refuses ambiguous Unicode-normalized document paths instead of silently omitting one.
 - Report checks reject CSS image-set resource loads, preserve plain-text source URLs, allow architecture reports without unused Tailwind, and verify ordinary rules and block order in agent instruction files.
 - CTO document corrections report their actual remaining edits when verification fails, allow a new supported repair method without an unnecessary freeze, and use the canonical feasibility states. Performance work uses already agreed metrics and changes persistent repository instructions only when authorized.
 - Diagram conversion reads complete labels and omitted elements when a digest is shortened. Wildberries search declares its existing Opus prerequisite and avoids a duplicate card pass; image generation distinguishes an alpha channel from a verified transparent background.
 - Readiness checks accept the browser fallback declaration and include Node for the web stack's test runner. Migration checks describe schema-upgrade coverage accurately, security findings follow current evidence after risk acceptance expires, and global recovery guidance uses the active runtime's continuation controls.
+
+- Skill audit reports include a dedicated simplification section in single-target and batch results, with concrete proposals or an explicit statement that none are justified.
 
 - Skill audits identify existing workflow and context complexity to remove, weigh fixes against recurring cost, and preserve credible rare serious risks. Reviews distinguish useful local reminders from unnecessary duplication and do not invent fixes for inapplicable criteria; audit completion no longer requires a defect-free target, and scoped fixes report unrelated existing issues without expanding the work.
 

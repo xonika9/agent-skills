@@ -1,6 +1,6 @@
 # Agent Skills repository
 
-This is the public source of truth for the `x9-*` Agent Skills. The package targets the open Agent Skills format; Claude Code and Codex also have native plugin manifests in this repository. Never create branches — always commit and work directly on `main`.
+This is the public source of truth for the `x9-*` Agent Skills. The package targets the open Agent Skills format; Claude Code and Codex also have native plugin manifests in this repository. Work directly on `main`; do not create branches.
 
 
 ## Source ownership
@@ -32,9 +32,8 @@ This is the public source of truth for the `x9-*` Agent Skills. The package targ
 
 - Update `CHANGELOG.md` in the same task as every user-visible change, before reporting completion. Describe the outcome, not the implementation steps. Do not defer changelog reconstruction to release day.
 - Keep an `Unreleased` section with `Highlights`, `Install / update`, `Compatibility`, and `Breaking changes`.
-- While the current version tag exists, `scripts/prepare_release.py --check` blocks release-relevant changes when `Unreleased` is empty. For a new untagged version, it instead requires complete dated release notes and an empty `Unreleased` template.
 
 ## Verification
 
-Run the focused checks for the files changed.
+Choose focused checks for the changed files from [CONTRIBUTING.md](CONTRIBUTING.md#validation).
 Confirm that root `CLAUDE.md` contains exactly `@AGENTS.md` plus a final newline.

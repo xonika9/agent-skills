@@ -14,7 +14,7 @@ Use for repository `AGENTS.md` and `CLAUDE.md`, not global personal files.
 
 Read the live file immediately before editing. Existing rules may encode incidents that are invisible in code. Merge surgically; a full replacement requires explicit user intent and a before/after review.
 
-Text between another skill's markers, such as `<!-- x9-okf-docs:start -->` and `<!-- x9-okf-docs:end -->`, or `<!-- x9-cto:start -->` and `<!-- x9-cto:end -->`, belongs to that skill: never rewrite, paraphrase, or merge it, and move it only as a whole block under [the ordering rule](rule-blocks.md#order). Report a conflict with it instead. This skill's own `<!-- x9-context-files-generator:<block>:start -->` blocks and their hand-maintained predecessor follow [rule-blocks.md](rule-blocks.md).
+Text between another skill's markers, such as `<!-- x9-okf-docs:start -->` and `<!-- x9-okf-docs:end -->`, or `<!-- x9-cto:start -->` and `<!-- x9-cto:end -->`, belongs to that skill: never independently rewrite, paraphrase, or merge it. A refresh explicitly included in the authorized scope follows that owner's block contract; otherwise report the needed owner-specific change. Move it only as a whole block under [the ordering rule](rule-blocks.md#order). Report a conflict with it instead. This skill's own `<!-- x9-context-files-generator:<block>:start -->` blocks and their hand-maintained predecessor follow [rule-blocks.md](rule-blocks.md).
 
 Use one canonical owner per fact. A concise summary may appear in another audience file when omitting it would cause a different action.
 
@@ -32,7 +32,7 @@ Dependency inventories, copied signatures, visible file layouts, and mechanicall
 - Generic advice the model already follows.
 - File-tree inventories and architecture descriptions derivable from a quick search.
 - Guessed commands or environment variables.
-- Global model/browser/tool mechanics; those belong to global instructions and runtime adapters.
+- Generic global model/browser/tool mechanics belong to global instructions and runtime adapters. Preserve explicit user-selected workflow overrides in their owning block, including cross-provider authority and runtime dispatch when that is the requested portable policy.
 
 ## Root and profile context
 

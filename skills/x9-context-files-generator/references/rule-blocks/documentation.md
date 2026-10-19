@@ -1,17 +1,15 @@
 <!-- x9-context-files-generator:documentation:start -->
 ## Documentation discipline
 
-Shared rules from the `x9-context-files-generator` template. Edit only Local, which takes precedence; the rest is replaced when the template changes.
+Shared defaults from the `x9-context-files-generator` template. Repository-specific instructions outside this block take precedence. Local contains optional pointers to existing project resources.
 
-- Keep accepted decisions, proposals, dated research, and archives visibly distinct. Do not silently modernize historical evidence.
-- Keep README files navigational, requirements and architecture contractual, and research and evidence historical.
-- Keep executable setup and verification details in scripts or CI. Add a command to `AGENTS.md` only when a non-inferable caveat changes how it must be run; otherwise link to its owner.
-- Do not copy current delivery status into README, requirements, architecture, research, or this file; link to where the state lives.
-- A documentation-only change needs no code check unless that check examines documentation, as Local states. At minimum run `git diff --check` and verify repository-relative Markdown links, plus the documentation checks in Local.
-- Keep a tool's artifacts under the root that tool's configuration names; do not create a parallel artifact directory.
+- Update current documentation affected by a change. Preserve historical plans and research as historical evidence rather than silently rewriting them to describe the present.
+- Keep setup and verification procedures in their existing scripts or documentation, with concise entry points in README or agent instructions where useful.
+- Keep current work status in its existing home; do not maintain competing status summaries across documents.
+- For documentation-only changes, run the applicable documentation checks and inspect changed repository-relative links. Run code checks when the change affects what they verify.
+- Use a tool's configured artifact location instead of creating a parallel directory.
 
 ### Local
 
-- <code checks that also examine documentation, such as a docs-site build, and documentation checks beyond the minimum, such as the OKF scope check>
-- <tool artifact roots and the files that configure them>
+- <existing documentation checks and artifact locations that need an explicit pointer>
 <!-- x9-context-files-generator:documentation:end -->

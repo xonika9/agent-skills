@@ -94,6 +94,7 @@ Each report must record `Report language: <tag>`, identify the project-relative 
 - one section for each of the 10 rubric dimensions, containing a localized no-finding statement or concrete findings;
 - severity, evidence, impact, and a concrete proposed fix for every finding;
 - a localized `Why these changes help` section, with the concise explanation required by [audit reporting](audit-reporting.md) for every retained finding;
+- the localized `What can be simplified` section required by [audit reporting](audit-reporting.md#what-can-be-simplified);
 - the complete judge checklist from [quality-rubric.md](quality-rubric.md), with localized answers and explanations under its answer rules, and concrete fixes for retained findings;
 - the localized persistent-report verdict block defined by [audit reporting](audit-reporting.md).
 
@@ -128,6 +129,7 @@ The consolidated report contains:
 - `Report language: <tag>` matching the worker assignments;
 - the localized persistent-report findings table from [audit reporting](audit-reporting.md), including one accounting row for every clean target;
 - a localized `Why these changes help` section, with one concise explanation for every retained finding;
+- the localized `What can be simplified` section required by [audit reporting](audit-reporting.md#what-can-be-simplified);
 - selected evidence tier and validation coverage;
 - instruction-rubric coverage and any degraded targets;
 - decisions requested, with a recommended default and concrete alternatives;

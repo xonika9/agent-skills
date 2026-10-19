@@ -8,6 +8,7 @@ Use this contract for every Audit handoff. Full evidence may live in persistent 
 - [Finding lifecycle](#finding-lifecycle)
 - [Required findings table](#required-findings-table)
 - [Why these changes help](#why-these-changes-help)
+- [What can be simplified](#what-can-be-simplified)
 - [Single-target handoff](#single-target-handoff)
 - [Batch handoff](#batch-handoff)
 - [Filtered findings](#filtered-findings)
@@ -70,16 +71,21 @@ After QA, recompute status from retained findings:
 
 After the table, include one explanation for every retained finding, keyed by its identifier. Use no more than two short sentences: state the practical improvement rather than repeating the finding, evidence, or recommendation; add the material cost or trade-off when the change affects dependencies, compatibility, authority, runtime behavior, or scope. Omit this section when there are no retained findings.
 
+## What can be simplified
+
+Always include this section after `Why these changes help`, or directly after the findings table when that section is omitted. Localize its heading as `Что можно упростить` in Russian reports. List retained simplification findings by their existing identifiers: briefly name what to remove, combine, or replace and which required result is preserved, without repeating the full evidence. When none are justified, say so explicitly rather than inventing simplifications.
+
 ## Single-target handoff
 
 The main auditor owns both the raw audit and final QA. Return:
 
 1. The required findings table.
 2. `Why these changes help` when retained findings exist.
-3. `Action`, selected evidence tier, instruction-rubric result (`applied`, `not applicable`, or `degraded`), and validation result.
-4. A short `Needs your decision` section only when table rows use `User decision`; include the recommended default and concrete alternatives.
-5. `Decided here` for a Fix action: the safe reasoned changes already applied.
-6. `Remaining/deferred`, including `NOT_PROVEN` behavioral claims without presenting the deferral as a finding.
+3. `What can be simplified`, including an explicit no-simplifications statement when applicable.
+4. `Action`, selected evidence tier, instruction-rubric result (`applied`, `not applicable`, or `degraded`), and validation result.
+5. A short `Needs your decision` section only when table rows use `User decision`; include the recommended default and concrete alternatives.
+6. `Decided here` for a Fix action: the safe reasoned changes already applied.
+7. `Remaining/deferred`, including `NOT_PROVEN` behavioral claims without presenting the deferral as a finding.
 
 Do not return only the Verdict block or bury Minor findings in prose.
 
@@ -93,7 +99,7 @@ Workers produce raw per-target reports. The orchestrator does not repeat every f
 4. Merge duplicates and filter unsupported or non-operational recommendations.
 5. Recompute every target status from retained findings.
 6. Write the consolidated report required by [batch-audit.md](batch-audit.md).
-7. Return the complete findings table in chat, followed by `Why these changes help`, decisions, instruction-rubric coverage, evidence/deferred scope, and the consolidated-report link.
+7. Return the complete findings table in chat, followed by `Why these changes help`, `What can be simplified`, decisions, instruction-rubric coverage, evidence/deferred scope, and the consolidated-report link.
 
 The final chat table contains every retained Blocker, Important, and Minor finding. `Needs your decision` never determines whether a finding is shown.
 

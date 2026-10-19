@@ -15,7 +15,7 @@ Do not apply the subordinate rubric to `README.md` or to a `CLAUDE.md` that cont
 ## Select the action
 
 - **Create or update:** an explicit request to create, update, fix, or rewrite a context file authorizes the requested in-scope edits; do not ask for the same permission again.
-- **Audit:** an explicit audit/check request is read-only. Completion is a report accounting for every requested file, with source evidence and impact for each finding, the smallest complete proposed change, validation results, and unverified claims. Ask whether to apply proposals only when retained findings exist.
+- **Audit:** an explicit audit/check request is read-only. Completion is a report accounting for every requested file, with source evidence and impact for each finding, the smallest complete proposed change, validation results, and unverified claims. Ask whether to apply retained fixes, and include any optional rule-block choices defined in [references/rule-blocks.md](references/rule-blocks.md) in the same question round.
 - **Bare skill invocation:** inspect the current repository read-only by default. If changes would help, show the proposal and ask once before editing.
 
 Infer the action from the whole request, not only trigger words.
