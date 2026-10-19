@@ -2,6 +2,15 @@
   "version": 1,
   "requirements": [
     {
+      "id": "current-opus-session",
+      "runtimes": ["claude"],
+      "kind": "user-action",
+      "level": "required",
+      "needed_for": "Running the main Wildberries workflow in the current Claude Code session on Opus.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
+    },
+    {
       "id": "browser-session",
       "kind": "skill",
       "level": "required",

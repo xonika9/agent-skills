@@ -8,7 +8,7 @@ The result is a local repository that passes `bun run verify` against a real dat
 - Sign-in variant (A, B, C, or none yet) and whether server rendering is needed. Neither blocks the scaffold; ask only when the user has not said and the answer is needed for the step at hand.
 - The current stable Bun version, discovered live (for example `gh api repos/oven-sh/bun/releases/latest --jq .tag_name`). The local `bun` should match it; the script warns when it does not.
 
-`python3`, `bun`, and `git` are required; Docker is needed for the dev database and the container build.
+`python3`, `bun`, `node`, and `git` are required; Docker is needed for the dev database and the container build. Vitest runs on Node while the application runs on Bun. Before installation, choose a Node LTS release supported by the current Vitest and Vite requirements in their official documentation; after installation, check it against the resolved packages' engine requirements. The script checks command presence before creating files or installing packages.
 
 ## Scaffold
 
@@ -30,7 +30,7 @@ If installation or verification fails, fix the cause within the scaffold. When a
 
 ## Finish the project
 
-- Check the GitHub Action major versions in `.github/workflows/` against their current releases; Dependabot keeps them current afterwards.
+- Check the GitHub Action major versions in `.github/workflows/` against their current releases; Dependabot keeps them current afterwards. The verification job installs Node with `lts/*`; confirm that it satisfies the resolved test dependencies, and align it with the supported LTS release used locally if a specific release is required.
 - Initialise shadcn/ui in `apps/web` with the current CLI and Base UI; its components go to `src/components/ui/`.
 - Sign-in: replace `authenticate` in `apps/api/src/index.ts` with the chosen variant's token or session check (see [library notes](library-notes.md#sign-in)) and add the variant's services to `compose.yaml`.
 - Write the first stack notes per [notes](notes.md#layout).

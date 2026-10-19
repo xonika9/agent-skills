@@ -59,8 +59,9 @@ not apply the safe findings from a mixed report.
 
 Return `NOT_PROVEN` without edits when the settled contract or evidence is insufficient,
 the target is missing, is a symlink, escapes the repository, more than one target is
-supplied, the source changes during the operation, user-owned changes cannot be
-separated, or readback cannot prove the exact write set.
+supplied, or user-owned changes cannot be separated. If the source changes during the
+operation or readback cannot prove the exact write set, stop and report the actual
+remaining changes under the result contract below.
 
 ## Write and verify
 
@@ -95,9 +96,12 @@ summary: <short outcome>
 
 `PASS` means no edit was needed. `UPDATED` requires `changed_paths` to contain the target
 and, only when required, its mechanical companion log, with every applicable
-repository-mandated check passing. `NEEDS_HUMAN_DECISION` and
-`NOT_PROVEN` require no edit by this mode and `changed_paths: []` unless an unexpected
-foreign change was observed and must be reported honestly.
+repository-mandated check passing. `NEEDS_HUMAN_DECISION` requires no edit by this mode
+and `changed_paths: []`. For `NOT_PROVEN`, list this mode's actual remaining changes in
+`changed_paths` and its applied finding IDs, or use empty lists when nothing was applied.
+Explain failed or unavailable verification in the existing evidence and verification
+fields; an applied finding is not thereby verified. Report unexpected foreign changes
+honestly without claiming them as this mode's edits or rolling them back.
 
 ## Manual-mode compatibility
 

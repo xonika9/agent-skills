@@ -37,6 +37,43 @@ class RuleBlockTests(unittest.TestCase):
                 self.assertIn('execution: current', result.stdout)
                 self.assertNotIn('execution: duplicate', result.stdout)
 
+    def test_reports_ordinary_rules_after_marked_blocks(self):
+        for rule in ('- Never deploy without owner approval.', 'Keep generated files local.', '> Preserve secrets.'):
+            with self.subTest(rule=rule):
+                result = self.check(BLOCK + '\n' + rule + '\n')
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn('order: repository rules after the first marked block', result.stdout)
+                self.assertNotIn('order: repository rules precede marked blocks', result.stdout)
+
+    def test_comment_openers_in_code_cannot_hide_later_rules(self):
+        for snippet in ('```html\n<!--\n```\n', '    <!--\n'):
+            with self.subTest(snippet=snippet):
+                result = self.check(BLOCK + '\n' + snippet + '\n# Real repository rules\n'
+                                    '- Preserve data.\n\n<!-- trailing comment -->\n')
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn('order: repository rules after the first marked block', result.stdout)
+                self.assertNotIn('order: repository rules precede marked blocks', result.stdout)
+
+    def test_reports_own_blocks_out_of_table_order(self):
+        documentation = (SCRIPT.parent.parent / 'references/rule-blocks/documentation.md').read_text()
+        result = self.check(documentation + '\n' + BLOCK)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("order: this skill's blocks are not in table order", result.stdout)
+        self.assertNotIn('order: repository rules precede marked blocks', result.stdout)
+        ordered = self.check(BLOCK + '\n' + documentation)
+        self.assertIn('order: repository rules precede marked blocks', ordered.stdout)
+
+    def test_examples_and_comments_after_blocks_do_not_reorder_rules(self):
+        for suffix in (
+            '```markdown\n- An example rule.\n```\n',
+            '    - An example rule.\n',
+            '<!-- An internal comment.\nContinued comment. -->\n\n---\n',
+        ):
+            with self.subTest(suffix=suffix):
+                result = self.check(BLOCK + '\n' + suffix)
+                self.assertIn('order: repository rules precede marked blocks', result.stdout)
+                self.assertNotIn('order: repository rules after', result.stdout)
+
     def test_real_duplicate_still_blocks(self):
         result = self.check(BLOCK + '\n' + BLOCK)
         self.assertEqual(result.returncode, 1, result.stdout)
@@ -56,7 +93,7 @@ class RuleBlockTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertIn('execution: current', result.stdout)
                 self.assertNotIn('duplicate', result.stdout)
-                self.assertNotIn('order: repository sections after', result.stdout)
+                self.assertIn('order: repository rules precede marked blocks', result.stdout)
 
     def test_indented_unclosed_marker_is_only_example_content(self):
         result = self.check(BLOCK + '\n    ' + BLOCK.splitlines()[0] + '\n')

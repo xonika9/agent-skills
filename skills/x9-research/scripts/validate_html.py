@@ -222,17 +222,96 @@ class ReportParser(HTMLParser):
             self.runtime_dependencies.append("<link>")
 
 
+def markdown_without_code(markdown: str) -> str:
+    """Exclude code without letting inline spans cross Markdown blocks."""
+    lines = []
+    fence = None
+    paragraph = False
+    quote_depth = 0
+    list_indents = []
+    for line in markdown.splitlines(keepends=True):
+        expanded = line.expandtabs(4)
+        quote = re.match(r"^(?: {0,3}> ?)+", expanded)
+        depth = quote[0].count(">") if quote else 0
+        container = expanded[quote.end():] if quote else expanded
+        indent = len(container) - len(container.lstrip(" "))
+        if fence:
+            char, length, margin, fence_quote = fence
+            if depth == fence_quote and (not container.strip() or indent >= margin):
+                if re.fullmatch(r" {0,3}" + re.escape(char) + r"{" + str(length) + r",}[ \t]*\n?", container[margin:]):
+                    fence = None
+                lines.append("\n")
+                continue
+            fence = None
+        left_list_item = False
+        if container.strip():
+            while list_indents and indent < list_indents[-1]:
+                list_indents.pop()
+                left_list_item = True
+        margin = list_indents[-1] if list_indents else 0
+        content = container[margin:]
+        item = re.match(r"^ {0,3}([-+*]|[0-9]{1,9}[.)])( +|$)", content)
+        # Siblings start after leaving the previous item's content margin;
+        # the paragraph-interruption restriction applies within a paragraph.
+        if item and paragraph and not left_list_item and (
+            not content[item.end():].strip()
+            or (item[1][0].isdigit() and int(item[1][:-1]) != 1)
+        ):
+            item = None
+        if item:
+            margin += item.end()
+            list_indents.append(margin)
+            content = container[margin:]
+        heading = bool(re.match(r"^ {0,3}#{1,6}(?:[ \t]|$)", content))
+        separator = bool(re.fullmatch(r" {0,3}(?:(?:- *){3,}|(?:\* *){3,}|(?:_ *){3,})\s*", content)
+                         or (paragraph and re.fullmatch(r" {0,3}(?:-+|=+)\s*", content)))
+        # A plain line can lazily continue quoted prose; headings and new list
+        # items start blocks even when no blank line separates them.
+        active_quote = depth or (quote_depth if paragraph and not (heading or separator or item) else 0)
+        if heading or separator or item or active_quote != quote_depth:
+            lines.append("\n")
+        quote_depth = active_quote if container.strip() else 0
+        opening = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)", content)
+        if opening and not (opening[1][0] == "`" and "`" in opening[2]):
+            fence = opening[1][0], len(opening[1]), margin, depth
+            paragraph = False
+            lines.append("\n\n")
+        elif content.startswith("    ") and not paragraph:
+            lines.append("\n\n")
+        else:
+            lines.append(line)
+            if heading or separator:
+                lines.append("\n")
+            paragraph = bool(container.strip()) and not (heading or separator or re.match(r"^ {0,3}<", content))
+    # Hard block boundaries above become blank lines. Soft line breaks within
+    # the same paragraph, list item, or quote still permit real inline code.
+    return re.sub(r"(?<!`)(`+)(?!`)(?:(?!\n[ \t]*\n)[\s\S])*?(?<!`)\1(?!`)",
+                  lambda match: " " * len(match[0]), "".join(lines))
+
+
 def markdown_urls(markdown: str) -> set[str]:
+    markdown = markdown_without_code(markdown)
     urls = {unescape(url) for url in MARKDOWN_AUTOLINK.findall(markdown)}
-    positions = [match.end() for match in re.finditer(
+    # Mask destinations already parsed below before scanning plain prose. This
+    # keeps Markdown destination delimiters out of bare URL candidates.
+    bare_text = list(markdown)
+    for match in MARKDOWN_AUTOLINK.finditer(markdown):
+        bare_text[match.start():match.end()] = " " * len(match[0])
+    definitions = list(re.finditer(
         r"(?m)^[ \t]{0,3}\[[^\]\n]+\]:[ \t]*(?:\n[ \t]*)?", markdown
-    )]
+    ))
+    positions = [match.end() for match in definitions]
+    for match in definitions:
+        bare_text[match.start():match.end()] = " " * len(match[0])
     cursor = 0
     while True:
         marker = markdown.find("](", cursor)
         if marker < 0:
             break
         positions.append(marker + 2)
+        label_start = markdown.rfind("[", 0, marker)
+        if label_start >= 0:
+            bare_text[label_start:marker + 2] = " " * (marker + 2 - label_start)
         cursor = marker + 2
     for position in positions:
         while position < len(markdown) and markdown[position].isspace():
@@ -244,6 +323,7 @@ def markdown_urls(markdown: str) -> set[str]:
                 candidate = markdown[position + 1 : end]
                 if candidate.startswith(("http://", "https://")):
                     urls.add(unescape(candidate))
+                bare_text[position:end + 1] = " " * (end + 1 - position)
             continue
 
         start = position
@@ -265,6 +345,29 @@ def markdown_urls(markdown: str) -> set[str]:
         candidate = markdown[start:position].replace(r"\(", "(").replace(r"\)", ")")
         if candidate.startswith(("http://", "https://")):
             urls.add(unescape(candidate))
+        bare_text[start:position] = " " * (position - start)
+    for match in re.finditer(r"\[[^\]\n]*\]\[[^\]\n]*\]", markdown):
+        bare_text[match.start():match.end()] = " " * len(match[0])
+    bare_prose = "".join(bare_text)
+    for match in re.finditer(r"https?://[^\s<>\"'`\[\]]+", bare_prose):
+        candidate = unescape(match[0])
+        emphasis = re.search(r"(\*{1,3}|_{1,3}|~~)[({]*$", bare_prose[:match.start()])
+        # Peel paired Markdown emphasis and surrounding sentence punctuation
+        # in either nesting order, preserving balanced URL path parentheses.
+        while candidate:
+            previous = candidate
+            candidate = candidate.rstrip(".,;:!?")
+            if emphasis and candidate.endswith(emphasis[1]):
+                candidate = candidate[:-len(emphasis[1])]
+                emphasis = None
+            if candidate and candidate[-1] in ")}":
+                closing = candidate[-1]
+                opening = {")": "(", "}": "{"}[closing]
+                if candidate.count(closing) > candidate.count(opening):
+                    candidate = candidate[:-1]
+            if candidate == previous:
+                break
+        urls.add(candidate)
     return urls
 
 

@@ -85,6 +85,14 @@ def main() -> int:
         root = Path(temporary)
         cases = {
             "valid report": (report(), True),
+            "valid report without optional Tailwind": (report().replace(f'<script src="{TAILWIND_URL}"></script>', ''), True),
+            "Tailwind module is forbidden": (report().replace(f'<script src="{TAILWIND_URL}">', f'<script type="module" src="{TAILWIND_URL}">'), False),
+            "duplicate Tailwind is forbidden": (report(extra=f'<script src="{TAILWIND_URL}"></script>'), False),
+            "missing required Mermaid module": (report().replace(f'<script type="module">import mermaid from "{MERMAID_URL}"; mermaid.initialize({{ startOnLoad: true }});</script>', ''), False),
+            "string image-set resource": (report(extra='<style>body { background-image:image-set("https://example.invalid/pixel.png" 1x); }</style>'), False),
+            "prefixed string image-set resource": (report(extra="<style>body { background-image:-webkit-image-set('pixel.png' 1x); }</style>"), False),
+            "inline mixed-case image-set resource": (report(extra_body='<p style="background-image:ImAgE-SeT(&quot;//example.invalid/pixel.png&quot; 1x)">Note</p>'), False),
+            "comment-obfuscated image-set resource": (report(extra='<style>body { background-image:im/**/age-set("pixel.png" 1x); }</style>'), False),
             "vertical overflow cannot imply horizontal scroll outside diagram": (report(extra='<style>p { overflow-y:auto; width:1px; }</style>'), False),
             "explicit hidden x permits vertical-only scrolling": (report(extra='<style>p { overflow-y:auto; overflow-x:hidden; }</style>'), True),
             "overflow shorthand axes obey computed rule": (report(extra='<style>p { overflow:visible auto; width:1px; }</style>'), False),

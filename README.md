@@ -118,6 +118,8 @@ It also compares the current harness's user configuration with sanitized, opinio
 
 A template for TypeScript web applications that has been run end to end: Bun, React with TanStack Router, Query, and Form, Hono with an OpenAPI contract, PostgreSQL with Drizzle, Biome, Vitest, and Docker Compose behind Caddy. A new project starts from a verified scaffold with current package versions, a reference module, module boundaries enforced by the linter, and one `verify` command.
 
+Starting a new project requires Python 3, Bun, Node, Git, and Docker. The application runs on Bun; its Vitest tests run on Node, which bootstrap checks before creating files.
+
 For an existing project the skill maps each layer against the template. Where the tools match, it checks the template's rules and known library pitfalls; where they differ, it applies only the underlying principles and suggests replacing a tool only for a concrete defect. It can also keep a marked rules block in the project's `AGENTS.md`, so agents follow the rules without invoking the skill. Each audit is saved in `docs/stack/` with a numbered list of findings, so the next audit shows what was fixed, what is new, and how the stack changed, and does not raise again what you deliberately chose.
 
 ### Application security
@@ -150,9 +152,11 @@ It works with any language and test runner, takes commands from the project itse
 
 Agents tend to "optimize" by rule: add a cache, memoize a component, delete a pause, and report a speed-up nobody measured. This skill makes the agent prove where time, memory, CPU, size, or money actually go, and keep a change only when repeated before-and-after runs show it helped. It works on any stack and any metric: a slow page or request, a cold start, a server that cannot hold its load, memory that keeps growing, or a cloud or model bill.
 
-When you don't know what is wrong, ask for an audit. The agent maps the product's main paths, measures them locally, and returns a ranked report in plain words: local fixes, decisions that are yours to make with their payoff and price, and places where data is missing. Ask it to fix as well, and it checks every guess it can measure on your machine, asks all your decisions once right after the audit, and then fixes everything in one pass; only what you decline or what would exceed the budget stays open. Anything that costs money, touches shared systems, or changes what users see waits for your choice. When you name a problem in your own words, the agent turns it into a metric, confirms it with you, and proposes sensible defaults if you don't know the numbers.
+When you don't know what is wrong, ask for an audit. The agent maps the product's main paths, measures them locally, and returns a ranked report in plain words: local fixes, decisions that are yours to make with their payoff and price, and places where data is missing. Ask it to fix as well, and it checks every guess it can measure on your machine, asks all your decisions once right after the audit, and then fixes everything in one pass; only what you decline or what would exceed the budget stays open. Anything that costs money, touches shared systems, or changes what users see waits for your choice. When you name a problem in your own words, the agent turns it into a metric and proposes sensible defaults if you don't know the numbers. Already agreed metrics, guards, and budgets need no further confirmation.
 
 A pause or retry is replaced by the condition it was waiting for, never just deleted, and stale data is never served as fresh. Load tests, profilers, and paid runs against anything but your own machine need your permission. Reading and searching go to subagents so the main conversation stays clear, while measurements run one at a time so they don't distort each other. Every attempt, including reverted ones, goes into `docs/performance/` in the project, so the next agent does not repeat a dead end, and each audit opens with what was fixed, what is new, and what came back since the previous one.
+
+The notes are saved as part of the audit. Adding or updating their `AGENTS.md` block requires authorization to change repository instructions.
 
 ### Personal notes and Obsidian
 
@@ -262,6 +266,8 @@ The result counts only when a real PNG with readable dimensions exists at the re
 Recorded a dozen videos and can no longer remember which one covers what? This skill transcribes your own video and audio files locally with whisper.cpp, from a single clip to a whole folder, and later finds the moment you said something, with the file and timestamp. Recognition runs in a script on your machine, so a batch costs the agent a progress line per file and a short summary, not the transcript text, and nothing is uploaded anywhere.
 
 Each recording gets `<name>.transcript.srt` for players and editors and `<name>.transcript.txt` with one `[hh:mm:ss]` line per phrase beside it, or in a separate library folder mirroring the same layout. Your own `.srt` files stay untouched, a rerun transcribes only new, changed, or previously failed files, and search tolerates letter case, ё/е, and Russian word endings. The default is Whisper large-v3-turbo with voice-activity detection, chosen after comparing five local models on Russian speech; source media are never modified.
+
+An interrupted output publication is retried by an ordinary rerun. A mixed pair left by an older version needs an explicitly requested `--force`.
 
 It needs `python3`, `ffmpeg`, and `whisper-cli`; the script downloads the two models, about 875 MB, on first use. It was verified on macOS with Apple Silicon.
 

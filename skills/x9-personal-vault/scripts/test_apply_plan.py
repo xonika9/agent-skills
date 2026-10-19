@@ -92,6 +92,41 @@ class ApplyPlanTest(unittest.TestCase):
         self.assertEqual((source / "кофе.md").read_text(encoding="utf-8"), "сценарий")
         self.assertFalse((self.vault / "Сценарии").exists())
 
+    def test_cross_device_undo_refuses_replaced_source_directories_before_writing(self):
+        for replaced in (".", "nested", "nested/deeper"):
+            with self.subTest(replaced=replaced):
+                fixture = self.outside / replaced.replace("/", "-")
+                source = fixture / "source"
+                (source / "nested" / "deeper").mkdir(parents=True)
+                (source / "private.md").write_bytes(b"private root")
+                (source / "nested" / "private.md").write_bytes(b"private nested")
+                (source / "nested" / "deeper" / "private.md").write_bytes(b"private deep")
+                target = fixture / "unrelated"
+                target.mkdir()
+                (target / "user.md").write_bytes(b"unrelated user data")
+                destination = "moved-" + replaced.replace("/", "-")
+                with mock.patch.object(apply_plan, "same_device", return_value=False):
+                    code, result = self.run_main(self.manifest([
+                        {"op": "move", "from": str(source), "to": destination}
+                    ]), "--apply")
+                self.assertEqual(code, 0, result)
+                link = source if replaced == "." else source / replaced
+                link.parent.mkdir(parents=True, exist_ok=True)
+                link.symlink_to(target, target_is_directory=True)
+
+                code, undone = self.run_main("--undo", result["journal"])
+
+                self.assertEqual(sorted(path.name for path in target.iterdir()), ["user.md"])
+                self.assertEqual((target / "user.md").read_bytes(), b"unrelated user data")
+                self.assertTrue(link.is_symlink())
+                self.assertFalse((source / "private.md").exists(), "preflight must precede every restore write")
+                self.assertEqual(code, 2, undone)
+                self.assertIn("link", undone["skipped"][0])
+                recovery = self.vault / destination
+                self.assertEqual((recovery / "private.md").read_bytes(), b"private root")
+                self.assertEqual((recovery / "nested" / "private.md").read_bytes(), b"private nested")
+                self.assertEqual((recovery / "nested" / "deeper" / "private.md").read_bytes(), b"private deep")
+
     def test_refuses_existing_destination(self):
         (self.vault / "занято.md").write_text("моё", encoding="utf-8")
         code, result = self.run_main(
@@ -247,6 +282,8 @@ class ApplyPlanTest(unittest.TestCase):
 
     def test_interrupted_cross_device_move_is_restored(self):
         source = self.outside / "Сценарии"
+        original_link = source / "original-link"
+        original_link.symlink_to(self.vault / "старое.md")
         original_remove = apply_plan.remove_tree
 
         def half_remove(path):
@@ -265,6 +302,8 @@ class ApplyPlanTest(unittest.TestCase):
             code, undone = self.run_main("--undo", journal)
         self.assertEqual(code, 0, undone)
         self.assertEqual((source / "кофе.md").read_text(encoding="utf-8"), "сценарий")
+        self.assertTrue(original_link.is_symlink(), "an original leaf link is restored without traversing it")
+        self.assertEqual(os.readlink(original_link), str(self.vault / "старое.md"))
         self.assertFalse((self.vault / "Сценарии").exists())
         code, again = self.run_main("--undo", journal)
         self.assertEqual(code, 1)

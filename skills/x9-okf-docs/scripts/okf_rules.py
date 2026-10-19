@@ -123,6 +123,16 @@ def load_scope(root: Path, extra_excludes=(), include_readme: bool = False):
 def markdown_files(scope: Scope):
     """Return {nfc relative path: Path} for Markdown files in scope; links are never followed."""
     found = {}
+    seen = {}
+
+    def register(path):
+        rel = nfc(path.relative_to(scope.root).as_posix())
+        previous = seen.get(rel)
+        if previous is not None and previous != path:
+            raise SystemExit(f"ambiguous Unicode-normalized path: {previous} and {path}")
+        seen[rel] = path
+        return rel
+
     for current, dirs, files in os.walk(scope.root, followlinks=False):
         base = Path(current)
         rel_base = [nfc(part) for part in base.relative_to(scope.root).parts]
@@ -130,6 +140,8 @@ def markdown_files(scope: Scope):
             name for name in dirs
             if not (base / name).is_symlink() and not scope.excluded_dir(rel_base + [nfc(name)])
         )
+        for name in dirs:
+            register(base / name)
         for name in sorted(files):
             path = base / name
             if (
@@ -142,7 +154,7 @@ def markdown_files(scope: Scope):
                 or scope.excluded_file(rel_base + [nfc(name)])
             ):
                 continue
-            found["/".join(rel_base + [nfc(name)])] = path
+            found[register(path)] = path
     return dict(sorted(found.items()))
 
 

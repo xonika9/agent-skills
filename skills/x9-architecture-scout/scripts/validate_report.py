@@ -478,8 +478,8 @@ def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inlin
     if "\\" in all_css:
         errors.append("CSS must not contain backslash escapes")
     compact = re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
-    if re.search(r"@import\b|url\s*\(", re.sub(r"/\*.*?\*/", "", all_css, flags=re.DOTALL), re.IGNORECASE):
-        errors.append("CSS must not load resources or use url()")
+    if re.search(r"@import\b|url\s*\(|(?:-webkit-)?image-set\s*\(", re.sub(r"/\*.*?\*/", "", all_css, flags=re.DOTALL), re.IGNORECASE):
+        errors.append("CSS must not load resources or use url()/image-set()")
     for selector, declarations in re.findall(r"([^{}]+)\{([^{}]*)\}", compact, re.DOTALL):
         if any(re.search(rf"\b{re.escape(class_name)}\b", selector) for class_name in FALLBACK_CLASSES) and re.search(
             r"(?:display\s*:\s*none|visibility\s*:\s*hidden)", declarations, re.IGNORECASE
@@ -674,11 +674,11 @@ def validate(path: Path) -> list[str]:
     if parser.counts["section"] and "diagrams" in parser.ids and not diagram_figures:
         errors.append("#diagrams must contain at least one .diagram figure")
 
-    if len(parser.scripts) != 2:
-        errors.append("report must contain exactly Tailwind and Mermaid scripts")
     tailwind_scripts = [script for script in parser.scripts if script.get("src") == TAILWIND_URL]
+    if len(parser.scripts) != 1 + len(tailwind_scripts):
+        errors.append("report must contain only Mermaid and optional Tailwind scripts")
     mermaid_scripts = [script for script in parser.scripts if script.get("type", "").lower() == "module"]
-    if len(tailwind_scripts) != 1 or tailwind_scripts[0].get("type", "") not in {"", "text/javascript", "application/javascript"}:
+    if len(tailwind_scripts) > 1 or any(script.get("type", "") not in {"", "text/javascript", "application/javascript"} for script in tailwind_scripts):
         errors.append("Tailwind must use its exact pinned URL in one classic script")
     if len(mermaid_scripts) != 1:
         errors.append("Mermaid must use one module script")

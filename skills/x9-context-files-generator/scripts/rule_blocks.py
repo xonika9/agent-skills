@@ -152,14 +152,26 @@ def main():
 
     if outer:
         first_block = outer[0][1]
-        late = [n for n, line in enumerate(lines, 1) if n > first_block and n not in inside and line.startswith("#")]
+        # Strip code before comments: a literal <!-- in an example must not
+        # consume repository rules up to the next real comment's closing token.
+        prose = "\n".join("" if n in code else line for n, line in enumerate(lines, 1))
+        uncommented = re.sub(r"<!--.*?-->", lambda match: "\n" * match[0].count("\n"),
+                             prose, flags=re.DOTALL).splitlines()
+        late = [n for n, line in enumerate(uncommented, 1)
+                if n > first_block and n not in inside and line.strip()
+                and not re.fullmatch(r"\s*(?:(?:- *){3,}|(?:\* *){3,}|(?:_ *){3,})\s*", line)]
         if late:
-            print(f"order: repository sections after the first marked block at lines {', '.join(map(str, late))}")
+            print(f"order: repository rules after the first marked block at lines {', '.join(map(str, late))}")
         own = [r[1] for r in outer if r[0].startswith(f"{SKILL}:")]
         foreign_after = [r[1] for r in outer if not r[0].startswith(f"{SKILL}:") and own and r[1] > min(own)]
         if foreign_after:
             print(f"order: other marked blocks after this skill's blocks at lines {', '.join(map(str, foreign_after))}")
-        if not late and not foreign_after:
+        own_names = [name.removeprefix(f"{SKILL}:") for name, _, _ in outer if name.startswith(f"{SKILL}:")]
+        own_order = [ORDER.index(name) for name in own_names if name in ORDER]
+        misordered = own_order != sorted(own_order)
+        if misordered:
+            print("order: this skill's blocks are not in table order")
+        if not late and not foreign_after and not misordered:
             print("order: repository rules precede marked blocks")
 
     sys.exit(1 if failed else 0)

@@ -46,14 +46,14 @@ Keep this layout hook in that supported CSS subset: descendant, sibling, attribu
 
 The winning `.comparison-table` display at `390px` must be `block` or `grid` and include a matching narrow media hook. Reflow and horizontal-overflow declarations stay in style blocks. `all` resets on comparison tables and diagram containers are rejected. Its display and horizontal-overflow declarations use the same simple compound selectors and pixel max-width media subset as the grid hook; unsupported selectors/conditions fail closed. Resolve declaration order, specificity, and `!important`, including both axes of `overflow` shorthand and the cross-axis computed-value rule. Overflow values use the concrete `visible`, `hidden`, `clip`, `auto`, and `scroll` keywords; unsupported values fail closed. Only actual `.diagram-container` elements may resolve to horizontal `auto`/`scroll`, and each must resolve to `overflow-x: auto`; keep diagram labels and the textual equivalent outside that overflow region.
 
-The only network-loaded resources are these exact pinned URLs:
+Mermaid is required; Tailwind is optional when its utilities are useful. The only allowed network-loaded resources are these exact pinned URLs:
 
 ```text
 https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3
 https://cdn.jsdelivr.net/npm/mermaid@11.17.1/dist/mermaid.esm.min.mjs
 ```
 
-Load Tailwind with a `script src`. The sole `script type="module"` must normalize to this exact body, with whitespace differences only:
+If used, load Tailwind once with a classic `script src` at its exact URL; omit it when inline CSS supplies the styling. The sole `script type="module"` must normalize to this exact body, with whitespace differences only:
 
 ```js
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.17.1/dist/mermaid.esm.min.mjs";
@@ -62,7 +62,7 @@ mermaid.initialize({ startOnLoad: true });
 
 Initial report source must not contain SVG, MathML, legacy `<image>` aliases, or animation/foreign-content elements. Mermaid may generate SVG only after loading the approved module.
 
-Do not use `latest`, a URL alias, `fetch`, dynamic imports, extra module statements, `@import`, CSS `url(...)` in any form, CSS backslash escapes, external fonts, images, trackers, iframes, resource hints, forms, controls, refresh redirects, or extra scripts/styles. The only allowed network-capable attributes are Tailwind's exact `script src` and evidence `a href` values; anchors must not use `ping`. Ordinary source links in `<a href>` are evidence links, not loaded resources, but must be either `https://…` or a fragment beginning with `#`; protocol-relative, `http:`, `ftp:`, and other schemes are rejected.
+Do not use `latest`, a URL alias, `fetch`, dynamic imports, extra module statements, `@import`, CSS `url(...)`, `image-set(...)`, or `-webkit-image-set(...)` in any form, CSS backslash escapes, external fonts, images, trackers, iframes, resource hints, forms, controls, refresh redirects, or extra scripts/styles. The only allowed network-capable attributes are Tailwind's exact `script src` and evidence `a href` values; anchors must not use `ping`. Ordinary source links in `<a href>` are evidence links, not loaded resources, but must be either `https://…` or a fragment beginning with `#`; protocol-relative, `http:`, `ftp:`, and other schemes are rejected.
 
 Mermaid source must be valid-looking text beginning with a supported diagram declaration such as `flowchart`, `sequenceDiagram`, `classDiagram`, `stateDiagram`, `erDiagram`, `C4Context`, `C4Container`, `C4Component`, or `architecture-beta`. Prefer the simplest view that makes the audited relation legible; split diagrams before labels become prose cards.
 

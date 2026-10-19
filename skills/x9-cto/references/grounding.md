@@ -34,8 +34,8 @@ Enter grounding when any of these is true:
 - proposed work introduces or expands a client, protocol, process, runtime,
   control plane, or infrastructure subsystem outside the accepted reuse and
   architecture decisions; or
-- the next proposal is another mutating repair while the accepted product
-  milestone and load-bearing evidence remain unchanged.
+- the same evidenced cause repeats without a meaningful evidence, input, or method
+  delta, under the [continuation rule](execution-mode.md#supervise-actively).
 
 Choose the context from the actual delivery state, not the trigger wording. If
 implementation is active, freeze it first; when the same request also introduces

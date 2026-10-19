@@ -41,7 +41,7 @@ At the end of an audit, recheck every `open` and `hypothesis` row inside the run
 
 ## AGENTS.md block
 
-When the notes are first created, add this block to the repository's `AGENTS.md` after the repository's own rules, among the other skills' marked blocks, changing only the path when the project keeps its notes elsewhere. On later runs, replace only the text between the markers. When `AGENTS.md` is missing, do not create it here: offer to create it through x9-context-files-generator, and name the pending block in the report.
+Add or update this block only when the user has authorized changes to repository instructions; an audit or locating request alone does not grant that authority. Otherwise include the proposed block in the report without changing `AGENTS.md`. For an authorized first insertion, place it after the repository's own rules, among the other skills' marked blocks, changing only the path when the project keeps its notes elsewhere. On later authorized updates, replace only the text between the markers. When `AGENTS.md` is missing, do not create it here: offer to create it through x9-context-files-generator, and name the pending block in the report.
 
 ```markdown
 <!-- x9-performance:start -->

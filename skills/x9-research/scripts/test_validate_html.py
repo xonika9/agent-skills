@@ -134,6 +134,89 @@ class ValidateHtmlTests(unittest.TestCase):
             any("missing Markdown source URLs" in error for error in self.errors())
         )
 
+    def test_requires_bare_source_urls(self) -> None:
+        source = "https://example.com/article_(research)?item=1&view=full"
+        for text in (
+            f"Primary source: {source}\n",
+            f"Primary source: ({source}).\n",
+            f"- Primary source: {source};\n",
+            f"- Primary source:\n\n    {source}\n",
+            f"> Primary source:\n    {source}\n",
+            f"**{source}**\n",
+            f"**({source})**\n",
+            f"(**{source}**)\n",
+            f"*{source}*\n",
+            f"_{source}_\n",
+            f"__{source}__\n",
+            f"~~{source}~~\n",
+        ):
+            with self.subTest(text=text):
+                self.markdown.write_text(text, encoding="utf-8")
+                self.html.write_text(valid_html(), encoding="utf-8")
+                self.assertIn(f"HTML is missing Markdown source URLs: {source}", self.errors())
+                self.html.write_text(valid_html().replace(SOURCE.replace("&", "&amp;"), source.replace("&", "&amp;")), encoding="utf-8")
+                self.assertEqual(self.errors(), [])
+
+    def test_isolated_backticks_cannot_hide_sources_in_later_blocks(self) -> None:
+        literal = "A literal backtick: `."
+        for source in (SOURCE, f"[Source]({SOURCE})"):
+            for opening, before, after in (
+                (literal, "\n\n", "\n\n"),
+                (literal, "\n# Sources\n", "\n# Other\n"),
+                (literal, "\n- Source: ", "\n- Other: "),
+                (literal, "\n1. Source: ", "\n1. Other: "),
+                (literal, "\n\n2. Source: ", "\n\n2. Other: "),
+                (literal, "\n> Source: ", "\n> Other: "),
+                (literal, "\n>> Source: ", "\n> Other: "),
+                (literal, "\n---\n", "\n---\n"),
+                (literal, "\n-\n", "\n=\n"),
+                ("1. " + literal, "\n2. ", "\n3. "),
+                ("1. Outer:\n   1. " + literal, "\n   2. ", "\n   3. "),
+            ):
+                with self.subTest(source=source, opening=opening, before=before, after=after):
+                    text = f"{opening}{before}{source}{after}Another literal backtick: `.\n"
+                    self.markdown.write_text(text, encoding="utf-8")
+                    self.html.write_text(valid_html().replace(SOURCE.replace("&", "&amp;"), "https://example.com"), encoding="utf-8")
+                    self.assertIn(f"HTML is missing Markdown source URLs: {SOURCE}", self.errors())
+                    self.html.write_text(valid_html(), encoding="utf-8")
+                    self.assertEqual(self.errors(), [])
+
+    def test_link_labels_are_not_additional_sources(self) -> None:
+        for text in (
+            f"[https://example.invalid/label]({SOURCE})\n",
+            f"[Claim][https://example.invalid/label]\n\n[https://example.invalid/label]: {SOURCE}\n",
+        ):
+            with self.subTest(text=text):
+                self.markdown.write_text(text, encoding="utf-8")
+                self.assertEqual(self.errors(), [])
+
+    def test_code_urls_are_not_source_links(self) -> None:
+        for snippet in (
+            "`https://example.invalid/example`",
+            "``code ` https://example.invalid/example ``",
+            "`code spanning\nhttps://example.invalid/example`",
+            "Example `one\n2. https://example.invalid/example`",
+            "1. Example `one\n   2. https://example.invalid/example`",
+            "Example `one\n1. \nhttps://example.invalid/example`",
+            "Example `one\n+ \nhttps://example.invalid/example`",
+            "```python\nurl = 'https://example.invalid/example'\n```",
+            "~~~text\n[Example](https://example.invalid/example)\n~~~",
+            "    https://example.invalid/example\n",
+            "> # Example\n    https://example.invalid/example\n",
+            "# Example `https://example.invalid/example`\n",
+            "- Example `https://example.invalid/example`\n",
+            "> Example `https://example.invalid/example`\n",
+            "- Example `wrapped\n  https://example.invalid/example`\n",
+            "> Example `wrapped\n> https://example.invalid/example`\n",
+            "> ```text\n> https://example.invalid/example\n> ```\n",
+            ">     https://example.invalid/example\n",
+            "- Example:\n\n      https://example.invalid/example\n",
+            "```text\n<https://example.invalid/example>\n[example]: https://example.invalid/reference\n```",
+        ):
+            with self.subTest(snippet=snippet):
+                self.markdown.write_text(f"[Source]({SOURCE})\n\n{snippet}\n", encoding="utf-8")
+                self.assertEqual(self.errors(), [])
+
     def test_rejects_chat_citation_marker(self) -> None:
         self.html.write_text(
             valid_html().replace("Checked finding", "Checked finding turn1search2"),

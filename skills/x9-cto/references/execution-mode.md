@@ -72,9 +72,8 @@ adaptive:
 - before the first implementation write or dispatch, `architecture_gate` is
   recorded as `NOT_APPLICABLE — <reason>` or points to a durable decision packet
   and its current recommendation;
-- feasibility is recorded as `NOT_APPLICABLE` with current matching
-  product-artifact evidence or `EXPERIMENT_ONLY` with the falsifiable assumption
-  and authority boundary;
+- feasibility records the current state and its matching evidence or falsifiable
+  assumption and authority boundary under [feasibility admission](feasibility-gate.md);
 - when the path would own a commodity capability or add a language, process, or
   protocol boundary, the same admission input contains the applicable
    `reuse_decision` from [feasibility admission](feasibility-gate.md), recorded as admitted or

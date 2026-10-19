@@ -18,6 +18,14 @@
       "guidance_id": "install-command"
     },
     {
+      "id": "node-test-runtime",
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Running the project's Vitest tests on Node.",
+      "check": {"type": "command-present", "command": "node"},
+      "guidance_id": "install-command"
+    },
+    {
       "id": "git-command",
       "kind": "command",
       "level": "required",

@@ -378,18 +378,26 @@ class EndToEnd(unittest.TestCase):
                     self.assertFalse(os.path.samefile(destination, unrelated))
                     self.assertIn("Пространствус", destination.read_text())
 
-    def test_failed_publication_cleans_its_temporary_file_only(self):
+    def test_failed_publication_preserves_user_files_and_resumes_consistently(self):
         replace = os.replace
-        for suffix in (t.SRT_SUFFIX, t.TXT_SUFFIX):
+        for suffix, done, skipped, phrase in (
+            (t.SRT_SUFFIX, 0, 1, "Пространствус пришёл."),
+            (t.TXT_SUFFIX, 1, 0, "Новая расшифровка."),
+        ):
             with self.subTest(suffix=suffix):
                 folder = self.tmp / suffix
                 folder.mkdir()
                 source = folder / "clip.mp4"
                 source.write_bytes(b"source recording")
+                write_exec(self.tmp / "bin" / "whisper-cli", STUB_WHISPER)
+                code, out = self.call("run", str(source))
+                self.assertEqual((code, json.loads(out)["done"]), (0, 1))
                 destination = folder / ("clip" + suffix)
-                destination.write_bytes(b"previous transcript")
+                previous = destination.read_bytes()
                 old_partial = folder / (destination.name + ".part")
                 old_partial.write_bytes(b"user-owned partial file")
+                write_exec(self.tmp / "bin" / "whisper-cli",
+                           STUB_WHISPER.replace("Пространствус пришёл.", "Новая расшифровка."))
 
                 def fail_selected_publication(src, dest):
                     if dest == destination:
@@ -401,8 +409,17 @@ class EndToEnd(unittest.TestCase):
 
                 self.assertEqual((code, json.loads(out)["status"]), (1, "partial"))
                 self.assertIn("publication denied", json.loads(out)["failed"][0]["error"])
-                self.assertEqual(destination.read_bytes(), b"previous transcript")
+                self.assertEqual(destination.read_bytes(), previous)
                 self.assertTrue(old_partial.exists())
+                self.assertEqual(old_partial.read_bytes(), b"user-owned partial file")
+                self.assertEqual(set(folder.glob("*.part")), {old_partial})
+
+                code, out = self.call("run", str(source))
+                summary = json.loads(out)
+                self.assertEqual((code, summary["done"], summary["skipped"]), (0, done, skipped))
+                for output_suffix in (t.SRT_SUFFIX, t.TXT_SUFFIX):
+                    self.assertIn(phrase, (folder / ("clip" + output_suffix)).read_text())
+                self.assertEqual(source.read_bytes(), b"source recording")
                 self.assertEqual(old_partial.read_bytes(), b"user-owned partial file")
                 self.assertEqual(set(folder.glob("*.part")), {old_partial})
 

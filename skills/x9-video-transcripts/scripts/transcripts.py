@@ -237,7 +237,7 @@ def _last_line(text: str, fallback: str) -> str:
 
 
 def transcribe_one(source: Path, base: Path, lang: str, model: Path, vad: Path, cli: str, seconds: float) -> int:
-    """Write both outputs atomically; return the number of transcript segments."""
+    """Publish each output atomically; an incomplete pair stays stale for a rerun."""
     timeout = max(MIN_TIMEOUT, 3 * seconds)
     with tempfile.TemporaryDirectory(prefix="x9-transcripts-") as tmp:
         wav = Path(tmp) / "audio.wav"
@@ -263,18 +263,32 @@ def transcribe_one(source: Path, base: Path, lang: str, model: Path, vad: Path, 
         detected = LANG_RE.search(r.stderr or "")
         srt_text = produced.read_text(encoding="utf-8", errors="replace")
         srt, txt = Path(str(base) + SRT_SUFFIX), Path(str(base) + TXT_SUFFIX)
-        for dest, content in ((srt, srt_text),
-                              (txt, srt_to_txt(srt_text, source, detected.group(1) if detected else lang))):
-            # Keep the exclusive handle: reopening a predictable .part could follow a user-owned link.
-            # A bounded prefix also keeps valid long destination names publishable.
-            temporary = tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=dest.parent,
-                                                    prefix=".x9-transcript-", suffix=".part", delete=False)
-            part = Path(temporary.name)
-            try:
+        staged: list[tuple[Path, Path]] = []
+        try:
+            for dest, content in ((srt, srt_text),
+                                  (txt, srt_to_txt(srt_text, source, detected.group(1) if detected else lang))):
+                # Keep the exclusive handle: reopening a predictable .part could follow a user-owned link.
+                # A bounded prefix also keeps valid long destination names publishable.
+                temporary = tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=dest.parent,
+                                                        prefix=".x9-transcript-", suffix=".part", delete=False)
+                part = Path(temporary.name)
+                staged.append((part, dest))
                 with temporary:
                     temporary.write(content)
+
+            # Freshness is the completion marker. Make the new SRT stale before it can
+            # replace an old one; only promote it after TXT is published too. A failed
+            # second rename or interrupted process therefore cannot make a mixed pair current.
+            source_mtime = source.stat().st_mtime
+            srt_part = staged[0][0]
+            os.utime(srt_part, (source_mtime - 2, source_mtime - 2))
+            if srt_part.stat().st_mtime >= source_mtime:
+                raise RuntimeError("cannot mark incomplete transcript publication as stale")
+            for part, dest in staged:
                 os.replace(part, dest)
-            finally:
+            os.utime(srt, None, follow_symlinks=False)
+        finally:
+            for part, _dest in staged:
                 part.unlink(missing_ok=True)
         return len(parse_srt(srt_text))
 

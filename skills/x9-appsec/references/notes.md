@@ -23,7 +23,7 @@ Statuses:
 - `open` — a confirmed finding, not fixed;
 - `hypothesis` — unconfirmed, with the decisive missing fact;
 - `fixed` — a check on the current code or configuration shows it gone; name the check;
-- `accepted` — the owner accepts the risk, with who accepted it as a role or handle, the reason, and a review date; on or after that date, the next run rechecks it and sets it back to `open` unless the owner renews it with a new date;
+- `accepted` — the owner accepts the risk, with who accepted it as a role or handle, the reason, and a review date; on or after that date, the next run rechecks it. A confirmed remaining risk returns to `open` unless the owner renews it with a new date; use `fixed` or `obsolete` when current evidence supports that state. If evidence is insufficient, keep the previous status and last-checked date and report the missing check without claiming a confirmed open finding or renewed acceptance;
 - `declined` — the owner judged it not a problem, with the reason; do not raise it again without new evidence;
 - `obsolete` — the code or setup it concerned no longer exists.
 

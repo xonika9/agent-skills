@@ -4,6 +4,12 @@
 
 ### Highlights
 
+- Vault undo stops before writing through a replaced directory link and keeps its recovery copy. Transcript retries recover from a partially published result pair, and OKF refuses ambiguous Unicode-normalized document paths instead of silently omitting one.
+- Report checks reject CSS image-set resource loads, preserve plain-text source URLs, allow architecture reports without unused Tailwind, and verify ordinary rules and block order in agent instruction files.
+- CTO document corrections report their actual remaining edits when verification fails, allow a new supported repair method without an unnecessary freeze, and use the canonical feasibility states. Performance work uses already agreed metrics and changes persistent repository instructions only when authorized.
+- Diagram conversion reads complete labels and omitted elements when a digest is shortened. Wildberries search declares its existing Opus prerequisite and avoids a duplicate card pass; image generation distinguishes an alpha channel from a verified transparent background.
+- Readiness checks accept the browser fallback declaration and include Node for the web stack's test runner. Migration checks describe schema-upgrade coverage accurately, security findings follow current evidence after risk acceptance expires, and global recovery guidance uses the active runtime's continuation controls.
+
 - Skill audits identify existing workflow and context complexity to remove, weigh fixes against recurring cost, and preserve credible rare serious risks. Reviews distinguish useful local reminders from unnecessary duplication and do not invent fixes for inapplicable criteria; audit completion no longer requires a defect-free target, and scoped fixes report unrelated existing issues without expanding the work.
 
 - Transcript publication preserves pre-existing partial files and unrelated data behind symbolic or hard links. The browser fallback checks profile switches using Chromium's argument rules and keeps each task in a named controller session with a pinned tab; a lost tab stops the command.
@@ -24,12 +30,17 @@
 
 ### Install / update
 
+- The web-stack starter requires Node for its selected test runner alongside Bun, Git, Docker, and Python. Its bootstrap checks Node before creating the project; CI sets up Node explicitly.
+
 - Update an installed `agent-edge` wrapper from `skills/x9-browser-session/scripts/agent_edge.py` when applying the browser adapter update, and confirm that the installed `agent-browser` supports `--session` and `--pin-tab`. The verified macOS fallback now requires Python 3 alongside `curl`, `lsof`, and `agent-browser`; native and MCP routes do not gain that dependency.
 
 - Install `x9-cto` through the existing skill or plugin route. It replaces a repository-specific CTO skill when migrating; verify discovery before removing the old source. The explicit `auto` mode requires the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`; decision support uses `ce-pov`, `ce-bakeoff`, `ce-brainstorm`, and `ce-ideate` when they are installed. Basic CTO consultation needs none of them.
 - In OpenCode, the `x9-idea-critic` scout needs a separate subagent without a configured model whose permissions allow only reading, searching, and listing files; ask the agent to set it up. Without it, code ideas are critiqued with project facts gathered by the proposing agent, and the answer says so.
 
 ### Compatibility
+
+- Performance audits still save their notes, but adding or updating their AGENTS.md block requires authorization to change repository instructions. Architecture reports may omit Tailwind when their styling does not use it; an included Tailwind script must still use the pinned allowed URL.
+- Mixed transcript pairs left by an older version are not detected retroactively; rerun them with an explicitly requested `--force`. New interrupted publications remain stale until both outputs are published.
 
 - `x9-codex-imagegen` returns `status: incomplete` and exit code 1 when a verified PNG exists but its final prompt is unavailable. Consumers must deliver the existing `out` file and report the missing metadata rather than retrying generation.
 

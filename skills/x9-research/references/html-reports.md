@@ -53,7 +53,7 @@ python3 <x9-research-directory>/scripts/validate_html.py \
   <research.md> <research.html>
 ```
 
-Completion requires exit status `0`. The validator owns pair identity, HTML structure, internal anchors, placeholder and chat-citation markers, external runtime dependencies, language metadata, UTF-8, viewport metadata, inline light-theme CSS, responsive/print rules, and preservation of Markdown source URLs.
+Completion requires exit status `0`. The validator owns pair identity, HTML structure, internal anchors, placeholder and chat-citation markers, external runtime dependencies, language metadata, UTF-8, viewport metadata, inline light-theme CSS, responsive/print rules, and preservation of Markdown source URLs, including bare `http(s)` addresses in prose. URLs inside fenced, indented, or inline code are examples rather than required source links.
 
 Then perform the checks that require judgment:
 

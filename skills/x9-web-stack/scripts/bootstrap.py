@@ -232,9 +232,9 @@ def main() -> int:
     if not re.fullmatch(r"[a-z0-9][a-z0-9._-]*", name):
         parser.error("--name must be a lowercase npm package name")
 
-    bun, git = shutil.which("bun"), shutil.which("git")
-    if not bun or not git:
-        print("bun and git must be on PATH", file=sys.stderr)
+    bun, node, git = shutil.which("bun"), shutil.which("node"), shutil.which("git")
+    if not bun or not node or not git:
+        print("bun, node, and git must be on PATH", file=sys.stderr)
         return 2
     local = subprocess.run([bun, "--version"], capture_output=True, text=True).stdout.strip()
     if local != args.bun_version:

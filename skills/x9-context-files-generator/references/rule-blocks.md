@@ -21,7 +21,7 @@ After the regular Create, Update, or Audit result, check the repository. Do not 
 python3 <skill-directory>/scripts/rule_blocks.py <repository>/AGENTS.md
 ```
 
-It reports each block as `current`, `outdated`, `absent`, or `duplicate`, names a same-heading section or the predecessor above, and reports whether repository rules precede the marked blocks. `absent` does not mean the rules are absent: compare the template with sections under other headings before offering it. Show one line per block whose condition holds or that is already present, with its status and any older section that covers it, and ask once which to insert or update. A request that names blocks authorizes them without that question. In Audit, report the status only. A declined block is not offered again in the same run. On `duplicate` or a script error, stop work on that file and report it.
+It reports each block as `current`, `outdated`, `absent`, or `duplicate`, names a same-heading section or the predecessor above, and reports whether repository rules precede the marked blocks. `absent` does not mean the rules are absent: compare the template with sections under other headings before offering it. Show one line per block whose condition holds or that is already present, with its status and any older section that covers it, and ask once which to insert or update. A request that names blocks authorizes them without that question. In Audit, offer applicable block insertions or updates even when the audit has no findings. Combine block selection with any question about applying audit fixes. The audit remains read-only until the user selects or explicitly authorizes blocks. A declined block is not offered again in the same run. On `duplicate` or a script error, stop work on that file and report it.
 
 ## Write
 
@@ -33,7 +33,7 @@ The shared part is copied, not written: apply `x9-agent-instructions` and the de
 
 ## Order
 
-The file holds the repository's own rules first, then other skills' marked blocks, then this skill's blocks in table order. When the script reports repository sections after a marked block, propose moving those sections above the first marked block. For that move, another skill's block may be relocated as a whole, byte for byte, with its markers.
+The file holds the repository's own rules first, then other skills' marked blocks, then this skill's blocks in table order. The checker treats substantive text outside marked blocks and Markdown code examples as repository rules, including ordinary paragraphs and lists. When it reports repository rules after a marked block or marked blocks out of order, propose restoring that order; move repository rules above the first marked block. For that move, another skill's block may be relocated as a whole, byte for byte, with its markers.
 
 ## Done
 

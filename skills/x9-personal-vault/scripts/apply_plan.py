@@ -579,6 +579,12 @@ def restore_move(entry: dict) -> str | None:
     restored: list[dict] = []
     new_directories = []
     try:
+        # Check the whole restoration tree before creating even an unrelated missing file.
+        for rel, item in walk_entries(dst):
+            back = src if rel == Path(".") else src / rel
+            guard_parent(back)
+            if is_link(back) and not is_link(item):
+                raise PlanError(f"restore path was replaced by a link: {back}")
         if not lexists(src):
             src.parent.mkdir(parents=True, exist_ok=True)
             restored = fresh_copy(dst, src)

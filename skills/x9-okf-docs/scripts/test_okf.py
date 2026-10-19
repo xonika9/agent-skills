@@ -52,6 +52,42 @@ def fails_with(root: Path, text: str, *args):
     return result.returncode != 0 and text in result.stdout, result
 
 
+def scope_collision_checks():
+    from unittest import mock
+    import okf_rules
+
+    root = Path("/synthetic-vault")
+    scope = okf_rules.Scope(root, [], False, None)
+    cases = [
+        ("file names", [(str(root), [], ["Йога.md", "И\u0306ога.md"])],
+         "Йога.md", "И\u0306ога.md"),
+        ("parent directory names with different children", [
+            (str(root), ["Йога", "И\u0306ога"], []),
+            (str(root / "Йога"), [], ["first.md"]),
+            (str(root / "И\u0306ога"), [], ["second.md"]),
+        ], "Йога", "И\u0306ога"),
+    ]
+    for label, entries, first, second in cases:
+        # Supply filesystem enumeration only: this volume aliases the two Unicode names.
+        with mock.patch.object(okf_rules.os, "walk", return_value=entries), \
+                mock.patch.object(Path, "is_symlink", return_value=False):
+            try:
+                okf_rules.markdown_files(scope)
+            except SystemExit as exc:
+                message = str(exc)
+            else:
+                raise AssertionError(f"{label}: Unicode-normalized collisions must stop enumeration")
+        expect(f"{label}: failure identifies both original paths",
+               "ambiguous Unicode-normalized path" in message and first in message and second in message)
+
+    with mock.patch.object(okf_rules.os, "walk", return_value=[(str(root), [], ["И\u0306ога.md"])]), \
+            mock.patch.object(Path, "is_symlink", return_value=False):
+        files = okf_rules.markdown_files(scope)
+    expect("one decomposed name keeps its physical path and normalized lookup",
+           files == {"Йога.md": root / "И\u0306ога.md"}
+           and okf_rules.resolve_named(files, ["Йога.md"], root) == ["Йога.md"])
+
+
 def writer_checks():
     import insert_frontmatter
 
@@ -593,6 +629,7 @@ def main():
 
     writer_checks()
     data_safety_checks()
+    scope_collision_checks()
     print("PASS: x9 OKF contract, scope, adoption, and cleanup scenarios")
 
 
