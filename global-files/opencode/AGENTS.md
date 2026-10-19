@@ -54,6 +54,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Write worker briefs in English and user-facing results in the user's language. Include the goal, non-derivable context, scope and authority, required evidence, and expected output; preserve load-bearing source wording and the active skill's specialist prompt and output contract.
 - Give a worker the goal and completion bar, not a prescribed fix, and leave investigation open: it may read live state, logs, and real data and run non-mutating experiments wherever the task reaches. Fence only destructive, external, costly, or shared-state actions, each with its reason. When the worker cannot reach live data, supply real samples instead of described formats.
 - The parent owns task decomposition, integration, and final acceptance, and checks decisive findings against primary evidence.
+- Multi-model work (bake-off candidates, oracle panels, cross-model review) uses only Claude and GPT model families unless the user asks otherwise.
 - A GPT worker that stops with a capacity error such as `Selected model is at capacity` is interrupted, not failed: resume the same thread with `continue` (in T3 Code, `t3_thread_send` to its `childThreadId`). Switch model or report failure only after two resumptions fail.
 
 ## Shared tool routing
