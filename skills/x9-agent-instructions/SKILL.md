@@ -41,7 +41,7 @@ Completeness of the specification helps; completeness of the path hurts. Describ
 
 - **A prescribed path** derivable from the goal and the constraints. It adds no knowledge and removes the executor's room to deviate. A sequence that appears in the request is not evidence that the order is load-bearing: before writing any numbered step, name the invariant that makes a wrong order impossible and write that instead.
 - **Generic verification instructions** — "add a final check", "double-check yourself", "re-read before sending". Extra passes do not establish quality; retain a targeted behavioral cue only when an observed failure or current model guidance supports it in the receiving runtime, naming the specific failure it addresses. Keep the required evidence and any reviewer that is part of the task's design, judging the artifact rather than the executor's account of it. Once required evidence passes, further checks need new changes, failures, or unresolved risks.
-- **Anything said twice.** One rule, one place.
+- **Unnecessary repetition.** Keep one canonical owner for each rule. A short local reminder may stay when it helps a branch run correctly without loading unrelated material; repeated words alone do not justify fragmentation or another reference.
 - **Contradictions.** Reconciling conflicting requirements consumes reasoning, and two rules that cannot both hold are worse than neither.
 - **Retellings of what the executor will load anyway** — a skill, plan, spec, contract, or repository instruction file its runtime already injects. Name the owner or artifact and supply only the deltas; do not tell an agent to read `AGENTS.md` or equivalent context when the target runtime loads it automatically.
 - **Pressure formatting** — caps, "CRITICAL", "you MUST" used for emphasis. State the actual condition and boundary; retain explicit prohibitions where safety or preservation requires them.
@@ -69,6 +69,7 @@ Lead a plan with the decisions most likely to change — data models, interfaces
 ## Checks
 
 - A reader with no context could follow it.
+- Judge language by correctness, clarity, and operational meaning. A valid alternative wording or layout is not a defect merely because the reviewer prefers another style.
 - Apply [what the prompt carries](#what-the-prompt-carries), [what to leave out](#what-to-leave-out), and [where prescription belongs](#where-prescription-belongs); these sections own the content and prescription checks.
 
 ## Review handoff
@@ -102,7 +103,7 @@ python3 <skill-directory>/scripts/check_globals.py
 
 ## Done
 
-- In Write, every check above passes on the delivered prompt. In Review, failed checks become retained recommendations; after approved edits, every applicable check passes or the remaining exception is explicit.
+- In Write, every applicable check above passes on the delivered prompt. In Review, retain supported defects and useful simplifications; a missing inapplicable rule is not a defect. After approved edits, every applicable check passes or the remaining exception is explicit.
 - `check_globals.py` passes from an unrelated working directory whenever the global files changed.
 - The handoff names the targets reviewed and what was verified; after approved edits, it also names the files changed.
 

@@ -36,6 +36,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 - Flexible judgment stays in outcome-oriented prose.
 - Fragile repeated transformations use deterministic scripts.
+- Review the whole procedure against the required outcome, explicit user requirements, authority boundaries, and external constraints. Existing stages, tools, gates, schemas, and review loops are choices to assess, not requirements merely because the skill prescribes them. Recommend removing or collapsing unnecessary mechanisms, even when internally consistent, and name what still delivers the result. Do not invent deletions when none are justified.
 
 ## 4. Authority and preservation `[j+b]`
 
@@ -46,7 +47,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 ## 5. Context cost and freshness `[s+j]`
 
-- Every paragraph carries non-obvious behavior; details live in linked references.
+- Assess context loaded on actual execution routes. Propose deleting unnecessary material; moving it to a reference saves context only when the agent can skip loading it.
 - Volatile models, flags, schemas, tool versions, rankings, and performance claims use live discovery before they become load-bearing. A freshness date is not a substitute for current validation.
 - No junk, placeholders, secrets, or temporary experiment state in the skill.
 
@@ -98,11 +99,11 @@ Severity is assigned here. Finding lifecycle, filtering, status recomputation, a
 
 ## Judge checklist
 
-Answer yes/no with a concrete fix:
+Answer yes/no or not applicable for every item against the declared scope and selected evidence tier. Explain negative and not-applicable answers; missing evidence is not non-applicability. Apply the [finding lifecycle](audit-reporting.md#finding-lifecycle) before recommending fixes for retained defects:
 
 1. Are triggers and near-misses precise?
 2. Are runtime-specific facts isolated and fresh?
-3. Does rigidity match fragility?
+3. Does rigidity match fragility, and is the workflow free of unnecessary machinery?
 4. Are authority, preservation, and secrets handled?
 5. Is context lean and progressively disclosed?
 6. Is Done externally observable?
@@ -110,5 +111,5 @@ Answer yes/no with a concrete fix:
 8. Are stopping and ambiguity rules unambiguous?
 9. Is invocation classified separately for every claimed runtime, with consumption and runtime mechanics kept separate?
 10. Does a new owner meet the ownership boundary, and is shared `user-only` material directly accessible to every consumer?
-11. Does every rule appear exactly once, with no pair that cannot both hold?
+11. Does each rule have one canonical owner, without conflicting or unnecessary duplication?
 12. Was `x9-agent-instructions` applied to every agent-facing instruction in scope, or was its absence recorded as `not applicable` or `degraded`?

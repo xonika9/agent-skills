@@ -71,7 +71,7 @@ For every assigned target, the worker must:
 4. Read `references/quality-rubric.md` completely. When the selected tier is `Behavioral`, also read and follow `references/evals.md`.
 5. Read the target `SKILL.md` completely and inspect every reachable resource relevant to its declared contract.
 6. Run `python3 <resolved-x9-skill-creator-directory>/scripts/validate.py --runtime <target-runtime> <absolute-target-skill-directory>` with one `--runtime` per claimed target runtime, and record the command, exit status, and relevant output.
-7. Audit all rubric dimensions and complete every item in the judge checklist from [quality-rubric.md](quality-rubric.md).
+7. Audit all rubric dimensions and complete every item in the judge checklist from [quality-rubric.md](quality-rubric.md), including existing complexity that can be removed. Use the [finding lifecycle](audit-reporting.md#finding-lifecycle) to choose proportionate remedies; preserve supported concerns for orchestrator QA.
 8. Keep claims within the selected evidence tier. Under `Static`, mark behavioral claims `NOT_PROVEN` where relevant without treating the absence of live evaluation as a finding by itself. Under `Behavioral`, record scenarios, assertions, and evidence paths; report an unavailable required route as `DEGRADED`.
 9. Do not modify the audited skill or any of its resources. Describe proposed fixes only in the report and put irreversible or load-bearing choices under `Needs your decision`.
 10. Write the full report and return its path, report-language tag, severity counts, instruction-rubric result, and final Verdict block in chat.
@@ -94,7 +94,7 @@ Each report must record `Report language: <tag>`, identify the project-relative 
 - one section for each of the 10 rubric dimensions, containing a localized no-finding statement or concrete findings;
 - severity, evidence, impact, and a concrete proposed fix for every finding;
 - a localized `Why these changes help` section, with the concise explanation required by [audit reporting](audit-reporting.md) for every retained finding;
-- the complete judge checklist from [quality-rubric.md](quality-rubric.md), with localized yes/no answers and a concrete fix for every negative answer;
+- the complete judge checklist from [quality-rubric.md](quality-rubric.md), with localized answers and explanations under its answer rules, and concrete fixes for retained findings;
 - the localized persistent-report verdict block defined by [audit reporting](audit-reporting.md).
 
 Use the status meanings defined by [audit reporting](audit-reporting.md). Failed required structural validation is a blocker, and a target cannot be `clean` when required evidence or the required instruction rubric could not be collected.

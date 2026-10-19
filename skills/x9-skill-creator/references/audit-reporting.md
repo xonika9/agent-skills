@@ -28,13 +28,17 @@ End every persistent per-target report with localized labels for exactly these f
 
 A finding begins as a raw auditor or worker claim. Before the final response, the responsible main agent must review its cited evidence, impact, severity, proposed fix, and fit with the skill's declared intent and current user or repository policy.
 
+Ground a retained issue in a concrete source defect, unnecessary complexity or context, or a credible failure path in declared use. Static evidence may establish the path without an observed incident; name its source and assumptions. A forced test proves a mechanism, but may not establish its relevance to the skill's use. Unsupported hypothetical conditions do not justify a standing procedure.
+
+Judge the issue separately from the remedy. Recommend the least burdensome change that resolves it while preserving the intended result and user or repository requirements. Added branches, checks, dependencies, approvals, and recurring work need a concrete benefit that justifies their context and maintenance cost. Use the existing report fields.
+
 Classify each raw finding as:
 
 - **Retained — fix recommended:** evidence and impact hold; no load-bearing choice is required.
 - **Retained — user decision:** evidence holds, but intent or policy must be chosen before a fix is safe.
-- **Filtered out:** the claim is unsupported, duplicate, outside scope, contradicted by an explicit intentional contract, only a style preference without operational impact, or claims behavior beyond the selected evidence tier.
+- **Filtered out:** the claim is unsupported, duplicate, outside scope, contradicted by the intended result or user or repository requirements (existing implementation choices remain reviewable), only a style preference without operational impact, or claims behavior beyond the selected evidence tier.
 
-Do not filter a finding merely because it is Minor, inconvenient, or expensive. Merge duplicate findings into the clearest evidence-backed formulation and keep the strongest justified severity. Audit never implies that a retained recommendation was applied.
+Do not filter a finding merely because it is Minor, inconvenient, or expensive. If the remedy is disproportionate, revise it rather than discard the supported issue. Rarity alone does not dismiss a credible risk of data loss, secret exposure, unauthorized action, or irreversible consequences. Merge duplicate findings into the clearest evidence-backed formulation and keep the strongest justified severity. Audit never implies that a retained recommendation was applied.
 
 ## Required findings table
 
@@ -85,7 +89,7 @@ Workers produce raw per-target reports. The orchestrator does not repeat every f
 
 1. Read every complete worker report.
 2. Check each finding against its cited source and the declared skill intent, current user decisions, and repository policy.
-3. Challenge every proposed Blocker and Important severity; verify Minor evidence rather than dropping it.
+3. Challenge every proposed Blocker and Important severity and the proportionality of its remedy; verify Minor evidence rather than dropping it.
 4. Merge duplicates and filter unsupported or non-operational recommendations.
 5. Recompute every target status from retained findings.
 6. Write the consolidated report required by [batch-audit.md](batch-audit.md).

@@ -20,6 +20,12 @@ Bad: a prose agent computes byte offsets and rewrites line endings.
 
 Better: a deterministic script owns byte-sensitive insertion; the agent chooses semantic metadata.
 
+## Audit simplification
+
+Bad: a simple read-only summarizer requires a plan, approval, two critics, and a status journal. The audit checks each step for clarity and reports no defects because the steps agree.
+
+Better: unless an actual requirement needs those mechanisms, propose replacing them with a direct summary and source check. Name the removed stages and retain the required result and authority boundaries.
+
 ## Authority
 
 Bad: "Research the topic and update the repository" when the user only asked for an answer.

@@ -10,7 +10,7 @@ Create and audit skills through one cross-runtime quality contract: precise trig
 
 The [machine-readable onboarding contract](references/onboarding.json) lists external prerequisites.
 
-The body of a skill and some reachable resources are agent instructions. For every Create, Audit, or Fix, load and apply `x9-agent-instructions` before writing or judging any agent-facing instructional prose in `SKILL.md` or reachable resources. It is a subordinate rubric, not the primary skill-authoring workflow, and it owns language, prescription, duplication, and what earns a line. This skill owns what makes the instruction a skill: triggering metadata, placement and runtime adapters, resource layout and progressive disclosure, evidence tier, structural validation, and the audit handoff.
+The body of a skill and some reachable resources are agent instructions. For every Create, Audit, or Fix, load and apply `x9-agent-instructions` before writing or judging any agent-facing instructional prose in `SKILL.md` or reachable resources. It is a subordinate rubric, not the primary skill-authoring workflow, and it owns language, prescription, duplication, and what earns a line. This skill owns what makes the instruction a skill: triggering metadata, whole-workflow design and complexity, placement and runtime adapters, resource layout and progressive disclosure, evidence tier, structural validation, and the audit handoff.
 
 If `x9-agent-instructions` is unavailable, continue only the remaining skill checks, record the instruction rubric as `degraded`, and do not claim that instruction quality was reviewed. A full skill audit cannot be `clean` in that state. Work whose explicit scope contains no agent-facing prose may record the rubric as `not applicable`.
 
@@ -19,7 +19,7 @@ If `x9-agent-instructions` is unavailable, continue only the remaining skill che
 Choose the action first:
 
 - **Create:** the target skill does not exist or the user requests a new one.
-- **Audit:** inspect an existing skill, read the complete skill and reachable resources, validate structure, and report findings without changing files.
+- **Audit:** inspect the complete skill and reachable resources for defects and opportunities to remove existing complexity, validate structure, and report findings without changing files.
 - **Fix:** apply explicitly authorized improvements to an existing skill, then recheck the changed contract.
 
 Choose the evidence tier separately:
@@ -59,8 +59,9 @@ Use one `--runtime` per target runtime; repeat it to require one file to satisfy
 
 ## Done
 
-- Structural validation exits 0 without unexplained warnings.
-- The judge checklist in the rubric passes.
+- For Create, structural validation exits 0 without unexplained warnings and the judge checklist passes.
+- For Fix, run structural validation and require the changed contract to pass applicable structural and checklist checks within the authorized scope. Introduced regressions block completion; unrelated pre-existing findings are reported without expanding the fix or blocking its completion.
+- For Audit, every required check and rubric item is accounted for, including failed or unavailable checks and evidence limits. Completing an audit does not require a clean target.
 - The handoff states the action and evidence tier, does not claim evidence outside that scope, and follows the single or batch table contract in [audit reporting](references/audit-reporting.md).
 - In batch mode, the orchestrator has quality-checked worker findings and removed unsupported or duplicate recommendations before presenting them.
-- If behavioral evidence was selected, representative scenarios show correct trigger, boundary, failure, and completion behavior.
+- If behavioral evidence was selected, Create or Fix requires representative scenarios to show correct trigger, boundary, failure, and completion behavior; Audit reports actual results, including failed assertions and unavailable routes.

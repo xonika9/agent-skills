@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- Skill audits identify existing workflow and context complexity to remove, weigh fixes against recurring cost, and preserve credible rare serious risks. Reviews distinguish useful local reminders from unnecessary duplication and do not invent fixes for inapplicable criteria; audit completion no longer requires a defect-free target, and scoped fixes report unrelated existing issues without expanding the work.
+
 - Transcript publication preserves pre-existing partial files and unrelated data behind symbolic or hard links. The browser fallback checks profile switches using Chromium's argument rules and keeps each task in a named controller session with a pinned tab; a lost tab stops the command.
 - Research HTML checks reject resource-bearing attributes, SVG presentation URLs, and string-based `image-set` dependencies. Diagram summaries flag unrepresented SVG text for direct reading and preserve literal draw.io labels outside HTML mode. Rule-block inspection distinguishes indented Markdown examples from active rules, including underlined headings, separators, and fenced examples inside lists.
 - Skill fixes preserve existing vault memory, account for instruction-file changes when adopting OKF, check preparation authority before handing off to `ce-optimize`, and use each runtime adapter's own scout transport. Diagram and architecture checks resolve their scripts from the loaded skill directory; Codex's duplicate-task protection discovers current tools instead of relying on old names.
