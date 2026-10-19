@@ -13,7 +13,13 @@ are present) and the user asks for subagents on a model or provider other than
 the head agent's, for example "orchestrate on Opus, subagents on GPT". The
 chosen route covers every delegated unit, including research and review,
 until the user changes it, and overrides the default subagent model policy.
-Choose the provider, model, and options from `orchestrator_capabilities`. The
+Choose the provider, model, and options from `orchestrator_capabilities`.
+When the user asks for subagents on OpenCode without naming a model, use the
+`opencode` provider instance with `opencode-go/deepseek-v4.1-flash` at the
+`high` reasoning variant; a model or variant the user names replaces this
+default. If the catalog does not list the chosen
+model or marks the instance unable to run child tasks, report that instead of
+substituting another model. The
 T3 orchestration instructions and its tool descriptions own the delegation,
 continuation, and review-round mechanics; follow them rather than this file.
 A child result is text: verify its files, checks, and commits in the tree
