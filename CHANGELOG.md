@@ -5,6 +5,7 @@
 ### Highlights
 
 - Claude Code global instructions now delegate self-contained implementation from settled plans to Sonnet at high effort by default. Opus remains responsible for planning and review, and can handle implementation when complexity, impact, or demonstrated Sonnet limitations warrant it. Failed checks prompt diagnosis rather than an automatic model switch.
+- Claude Code worker routing is now unambiguous at the edges: models outside the listed Opus and Sonnet routes, including Fable and Haiku, are used only on explicit request; forks are used only when the parent's model and effort already match the role; and small changes stay in the main session when a brief would cost as much as the change.
 
 ### Install / update
 
