@@ -4,7 +4,11 @@
 
 ### Highlights
 
+- Claude Code global instructions now delegate self-contained implementation from settled plans to Sonnet at high effort by default. Opus remains responsible for planning and review, and can handle implementation when complexity, impact, or demonstrated Sonnet limitations warrant it. Failed checks prompt diagnosis rather than an automatic model switch.
+
 ### Install / update
+
+- Update the installed Claude Code global instructions to adopt the revised worker routing. Explicit user model choices and skill-assigned models retain their existing priority.
 
 ### Compatibility
 

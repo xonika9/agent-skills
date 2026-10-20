@@ -71,9 +71,11 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 ### Subagent routing
 
 - Check the live subagent interface before selecting controls. On non-fork `Agent` calls that expose both fields, set explicit `model` and `effort` values together. Apply the same rule to another subagent tool only for the controls it actually exposes. A fork inherits the parent model and does not provide independent model routing; use a non-fork worker when this policy requires another model or effort. If the required controls are unavailable, report that limit rather than claiming the selected values took effect. Do not claim control over a command's internal model routing unless its current interface exposes a model override.
+- Delegate self-contained implementation units from a settled plan to non-fork workers with clear acceptance checks. Keep trivial changes in the primary session when delegation would add unnecessary overhead.
 - Route non-fork workers by what they return:
-  - `opus` at `high` — analysis or research of unfamiliar code, products, or sources; diagnosis; planning; reviews; user-facing work; orchestration.
-  - `opus` at `medium` — implementation from a settled plan or a clearly bounded change.
-  - `sonnet` at `high` — only bounded search and fact extraction that return located facts.
-  When a task combines fact gathering with judgment, use `opus` at `high`.
+  - `opus` at `high` — analysis or research of unfamiliar code, products, or sources; standalone diagnosis; planning; reviews; direct communication with the user; orchestration.
+  - `opus` at `medium` — implementation when the orchestrator identifies a concrete complexity or impact reason to prefer Opus, or when Sonnet has demonstrated a limitation on the assigned task.
+  - `sonnet` at `high` — bounded search and fact extraction; the default for other implementation from a settled plan or a clearly bounded change, including fixes, tests, refactoring, and technical documentation accompanying the change.
+- Sonnet implementation workers may investigate code, debug, and choose implementation details within the agreed scope. Return unresolved requirements or necessary changes to architecture or scope to the orchestrator.
+- A failed acceptance check alone is not a reason to change models. Identify the cause, let the same worker repair implementation errors within scope, and change the plan, environment, or executor when the evidence warrants it.
 - An explicit model or effort choice from me takes precedence. Otherwise, a model that an applicable skill assigns to a role it defines takes precedence over this routing; the routing above governs every worker whose model the skill leaves to the orchestrator.
