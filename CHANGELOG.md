@@ -4,10 +4,21 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 26.10.21.1 - 2026-10-21
+
+### Highlights
+
 - Browser work respects any explicitly selected browser or controller, and setup checks the Codex extension only for its own route. The one-shot write-capable Codex example now follows the existing ephemeral-session policy.
 - Architecture reports reject empty or incorrectly placed diagram explanations, context-block checks reject stray closing markers, and combined skill validation enforces each selected runtime's metadata types. Onboarding accepts equivalent runtime lists in either order, and OpenCode session timeouts reject non-finite values before dispatch.
 - OKF proposals consistently distinguish document metadata from their addressing and evidence fields. Instruction-file creation agrees with completion criteria, the shared block excludes `GEMINI.md`, and readiness declares the instruction-writing rubric required by OKF and personal-vault setup.
 - Test and security audits keep saving their notes, while changes to persistent repository instructions require authority to edit those instructions. Performance fixes continue independently of pending owner decisions, readers cover only relevant areas, and CTO and idea-critic handoffs retain every material mismatch or evidence question without arbitrary count limits. Diagram corrections can change a faulty relationship within the requested fix; research presentation updates reuse their Markdown evidence without requiring a new research pass.
+- Web-stack cleanup removes example tables through a new migration and preserves applied migration history.
 - Transcription rejects a source that changes during recognition before replacing previous outputs, instead of marking an outdated transcript current.
 - Global instruction examples delegate only through Codex or Claude Code, preserve two supported retry attempts for GPT capacity errors before switching, report an unavailable option before using the other, and stop delegated work when neither is available. OpenCode and Terra delegation exceptions are removed. Idea critiques can use a permitted orchestrator route that applies the configured model and reasoning effort.
 - Claude Code global instructions now delegate self-contained implementation from settled plans to Sonnet at high effort by default. Opus remains responsible for planning and review, and can handle implementation when complexity, impact, or demonstrated Sonnet limitations warrant it. Failed checks prompt diagnosis rather than an automatic model switch.
@@ -24,10 +35,13 @@
 
 ### Compatibility
 
+- CTO handoffs use `opencode-go/deepseek-v4.1-flash` at `high` when the user explicitly selects OpenCode subagents without naming a model. An explicit model or variant overrides that default; an unavailable selection is reported without substitution. Global instruction examples otherwise restrict delegation to Codex and Claude Code.
 - Bundled diagram checks require Python 3.9 or newer. OKF and personal-vault readiness now require `x9-agent-instructions` for writing local instruction rules; this reflects their existing workflow requirement.
 - Test and security audit notes remain part of the audit result; their `AGENTS.md` blocks are proposed when instruction-file changes are not authorized.
 
 ### Breaking changes
+
+None.
 
 ## 26.10.19.1 - 2026-10-19
 

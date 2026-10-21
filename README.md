@@ -33,7 +33,7 @@ You talk to the agent in your own words; the matching skill takes over.
 - **They check instead of guessing.** Facts, tests, and speed-ups are backed by evidence, and anything unverified is called out as such.
 - **They ask before anything risky.** Deleting, spending money, publishing, or changing your settings waits for your approval.
 - **They remember earlier work.** Audits leave notes in the project, so the next run shows what was fixed and what is new, and does not raise again what you deliberately declined.
-- **They work in any compatible agent.** Every skill is checked in OpenCode, Claude Code, and Codex.
+- **They declare compatibility.** Package checks cover OpenCode, Claude Code, and Codex; runtime-specific skills state their restrictions in [Compatibility](#compatibility).
 
 ## Install
 
@@ -77,7 +77,8 @@ Some skills rely on others, and the installer does not add them automatically. I
 | `x9-wb-product-search` | `x9-browser-session` |
 | `x9-architecture-scout` | `x9-diagrams` |
 | `x9-context-files-generator`, `x9-skill-creator`, `x9-okf-docs` | `x9-agent-instructions` |
-| `x9-personal-vault` | `x9-okf-docs`, `x9-agent-instructions`; `x9-context-files-generator` to tidy an existing `CLAUDE.md` |
+| `x9-personal-vault` | `x9-okf-docs`, `x9-agent-instructions`; `x9-obsidian` for Obsidian work; `x9-context-files-generator` to tidy an existing `CLAUDE.md` |
+| `x9-cto`, `x9-codex-delegation`, `x9-web-stack` | `x9-agent-instructions` (optional) for prompts or instruction blocks |
 | `x9-idea-critic` in Claude Code | `x9-codex-delegation` for the GPT critic |
 | `x9-appsec`, `x9-test-quality` | `x9-context-files-generator` (optional) when the project has no `AGENTS.md` |
 
@@ -109,9 +110,9 @@ research X and give me an HTML report
 #### [Work in your own browser · `x9-browser-session`](skills/x9-browser-session/SKILL.md)
 
 - **When:** the result depends on your account, region, cart, or feed, so a clean test browser would give the wrong answer.
-- **You get:** the agent works in your logged-in browser through a separate automation profile, in its own tab, without touching yours. It stops at a CAPTCHA instead of trying to get around it.
+- **You get:** the agent keeps the browser or controller you explicitly selected; otherwise it follows the runtime's default route. Logged-in Edge work uses a separate automation profile and a task-owned tab. The agent leaves your tabs alone and does not solve CAPTCHAs.
 
-**Needs:** one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; a tested recipe covers Edge on macOS.
+**Needs:** for logged-in Edge work, one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; a tested recipe covers Edge on macOS.
 
 **Ask:**
 
@@ -153,6 +154,8 @@ where in my videos did I talk about pricing?
 
 - **When:** your notes and documents are scattered across folders.
 - **You get:** one vault with an inbox, an archive, and a folder per matter. The agent first shows a plan listing every move and changes nothing without your approval; after that, ordinary agent sessions keep the vault in order.
+
+**Needs:** Python 3 for verified file moves and undo; companion skills are listed under selective installation.
 
 **Ask:**
 
@@ -207,6 +210,8 @@ I didn't get that, explain it differently
 
 - **When:** you need a diagram of a process, an architecture, or relationships, or want to convert a diagram to another format.
 - **You get:** an editable source in Excalidraw, Mermaid, draw.io, or SVG, checked by actually rendering it. If a table would explain it better, the skill says so.
+
+**Needs:** a renderer or editor for the chosen format; Python 3.9 or newer for the bundled checks.
 
 **Ask:**
 
@@ -313,7 +318,7 @@ audit this codebase's architecture
 - **When:** you need a call on product scope, architecture, or a large technical commitment.
 - **You get:** a CTO's view grounded in your repository. It can also lead delivery to a working user outcome and check executors' reports against real evidence.
 
-**Needs:** nothing extra for a consultation; the autonomous `auto` mode needs the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`.
+**Needs:** nothing extra for a consultation; the autonomous `auto` mode needs the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`. Independent review modes need subagents.
 
 **Ask:**
 
@@ -349,6 +354,8 @@ turn this approved plan into work items
 
 - **When:** you have just installed or updated the skills.
 - **You get:** a list of what is ready and what is still missing: a command-line tool, an account, or another component. Optionally, a comparison of your Claude Code, Codex, or OpenCode settings with the author's profile and a merge of the differences you choose, with a backup.
+
+**Needs:** Python 3.11 or newer.
 
 **Ask:**
 
@@ -405,6 +412,8 @@ update the README
 - **When:** you want to turn a repeated process into a skill or check one you already have.
 - **You get:** a skill with clear trigger conditions, structure, safety boundaries, and checks for Claude Code, Codex, and the portable format. Every audit also suggests what can be removed.
 
+**Needs:** Python 3 and Ruby with Psych for structural validation; `x9-agent-instructions` for instruction review.
+
 **Ask:**
 
 ```text
@@ -430,6 +439,8 @@ design an agent loop for this workflow
 
 - **When:** there are so many Markdown documents that the agent struggles to find the right one.
 - **You get:** a short [OKF](https://github.com/GoogleCloudPlatform/open-knowledge-format) header on each document: type, title, a one-line description, and tags. Headers are added as documents are written, and a whole folder can be converted in one step without changing any text.
+
+**Needs:** Python 3.9 or newer and Ruby with Psych for scripts; `x9-agent-instructions` for local instruction rules.
 
 **Ask:**
 

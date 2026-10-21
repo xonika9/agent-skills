@@ -92,14 +92,14 @@ class SkillContractTests(unittest.TestCase):
             self.assertIn(b"Intermediate checks do not replace the requested end-to-end result", core, path)
             self.assertNotIn(b"configured lower-cost subagents execute", core, path)
 
-    def test_codex_and_opencode_inherit_models_for_substantive_delegation(self):
-        opencode = PUBLISHED_GLOBAL_FILES[0].read_text(encoding="utf-8")
+    def test_delegation_runtime_restrictions_and_codex_model_inheritance(self):
         codex = PUBLISHED_GLOBAL_FILES[2].read_text(encoding="utf-8")
-        self.assertIn("Use `inherit` for substantive delegated work", opencode)
-        self.assertIn("Inherit the primary session's model and reasoning effort", codex)
-        for text in (opencode, codex):
-            self.assertIn("only for bounded search and fact extraction", text)
-            self.assertIn("not complex diagnosis, implementation, or final acceptance", text)
+        for path in PUBLISHED_GLOBAL_FILES:
+            core = extract(path)
+            self.assertIn(b"Use only Codex and Claude Code for delegated model work", core, path)
+            self.assertIn(b"Do not use OpenCode, direct model APIs, or other runtimes for delegation.", core, path)
+        self.assertIn("inherit the primary session's model and reasoning effort", codex)
+        self.assertIn("do not configure a lower-cost subagent default", codex)
         self.assertIn("stop or archive them only when that cleanup is explicitly authorized", codex)
 
     def test_context_creator_uses_one_bounded_instruction_rubric(self):
