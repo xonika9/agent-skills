@@ -91,9 +91,10 @@ Clone or fork the repository only when you want to maintain your own variants; y
 
 ### Everyday work
 
-#### [`x9-research`](skills/x9-research/SKILL.md)
+#### [Research from current sources · `x9-research`](skills/x9-research/SKILL.md)
 
-Agents often pass off a plausible answer from memory as research. This skill makes them open current sources, check the claims the conclusion rests on, look for counter-evidence, and say plainly what could not be confirmed. X/Twitter is read through your logged-in browser; Reddit and forums count as lived experience, not proof. On request, the result is saved as a Markdown note or a readable HTML report and can be updated later.
+- **When:** you need an answer built on current sources, not on the agent's memory.
+- **You get:** a conclusion with links: the key claims are checked, counter-evidence was searched for, and anything that could not be confirmed is named plainly. On request the research is saved as Markdown, with an HTML report as well if you want one.
 
 **Ask:**
 
@@ -105,9 +106,12 @@ research this
 research X and give me an HTML report
 ```
 
-#### [`x9-browser-session`](skills/x9-browser-session/SKILL.md)
+#### [Work in your own browser · `x9-browser-session`](skills/x9-browser-session/SKILL.md)
 
-For a personal task the result depends on your account, region, cart, or feed, so a clean test browser gives the wrong answer. This skill lets the agent work in your logged-in browser through a separate automation profile, in its own tab, without touching yours. It stops at a CAPTCHA instead of trying to get around it.
+- **When:** the result depends on your account, region, cart, or feed, so a clean test browser would give the wrong answer.
+- **You get:** the agent works in your logged-in browser through a separate automation profile, in its own tab, without touching yours. It stops at a CAPTCHA instead of trying to get around it.
+
+**Needs:** one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; a tested recipe covers Edge on macOS.
 
 **Ask:**
 
@@ -115,15 +119,12 @@ For a personal task the result depends on your account, region, cart, or feed, s
 open this in my browser
 ```
 
-```text
-use my logged-in session
-```
+#### [Product picks on Wildberries · `x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
 
-**Needs:** one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; a tested recipe covers Edge on macOS.
+- **When:** you are choosing a product on Wildberries and do not want to rely on the rating alone.
+- **You get:** a short list made after checking the exact variant, the seller, the price per unit, fresh low ratings, recurring complaints, and buyer photos.
 
-#### [`x9-wb-product-search`](skills/x9-wb-product-search/SKILL.md)
-
-A Wildberries rating rarely tells the whole story: reviews may belong to another variant, the seller may be questionable, and the price depends on your account and region. The skill checks the exact variant, seller, price per unit, fresh low ratings, recurring complaints, and buyer photos, and only then gives you a short list.
+**Needs:** `x9-browser-session`; in Claude Code, a session running on Opus.
 
 **Ask:**
 
@@ -131,11 +132,12 @@ A Wildberries rating rarely tells the whole story: reviews may belong to another
 find a good kettle on Wildberries under 3,000 ₽
 ```
 
-**Needs:** `x9-browser-session`; in Claude Code, a session running on Opus.
+#### [Transcripts of your videos · `x9-video-transcripts`](skills/x9-video-transcripts/SKILL.md)
 
-#### [`x9-video-transcripts`](skills/x9-video-transcripts/SKILL.md)
+- **When:** you have recorded many videos and no longer remember which one covers what.
+- **You get:** subtitles and timestamped text for one file or a whole folder, and later a search for the moment you said something. Everything runs on your machine; nothing is uploaded.
 
-Recorded a dozen videos and can no longer remember which one covers what? The skill transcribes your video and audio on your own machine, from one file to a whole folder, into subtitles and timestamped text, and later finds the moment you said something. Nothing is uploaded, and a rerun processes only new or changed files.
+**Needs:** `python3`, `ffmpeg`, and `whisper-cli`; about 875 MB of models download on first use. Tested on macOS with Apple Silicon.
 
 **Ask:**
 
@@ -147,11 +149,10 @@ transcribe these videos
 where in my videos did I talk about pricing?
 ```
 
-**Needs:** `python3`, `ffmpeg`, and `whisper-cli`; about 875 MB of models download on first use. Tested on macOS with Apple Silicon.
+#### [A personal notes vault · `x9-personal-vault`](skills/x9-personal-vault/SKILL.md)
 
-#### [`x9-personal-vault`](skills/x9-personal-vault/SKILL.md)
-
-Gathers notes and documents scattered across folders into one personal vault: an inbox, an archive, and one folder per matter, whether that is your health or a single tax question. The agent shows one plan listing every move and changes nothing until you approve it; copies are verified, and everything except a separately confirmed deletion can be undone. After that, ordinary agent sessions keep the vault in order without calling the skill.
+- **When:** your notes and documents are scattered across folders.
+- **You get:** one vault with an inbox, an archive, and a folder per matter. The agent first shows a plan listing every move and changes nothing without your approval; after that, ordinary agent sessions keep the vault in order.
 
 **Ask:**
 
@@ -160,12 +161,13 @@ organize my notes folder
 ```
 
 ```text
-merge these folders into one vault
+check my vault
 ```
 
-#### [`x9-obsidian`](skills/x9-obsidian/SKILL.md)
+#### [Working with Obsidian notes · `x9-obsidian`](skills/x9-obsidian/SKILL.md)
 
-Finds, checks, and edits notes in an Obsidian vault: keeps links intact when files move, repairs broken ones, and works with properties, Bases, and Canvas. Audits are kept separate from fixes, and the skill follows your folder structure.
+- **When:** you need to find, check, or edit notes in an Obsidian vault.
+- **You get:** edits that keep links intact, repaired broken links, and work with properties, Bases, and Canvas. Checks are kept separate from fixes, and your folder structure stays yours.
 
 **Ask:**
 
@@ -177,9 +179,12 @@ find broken links in my vault
 rename this note and keep its links
 ```
 
-#### [`x9-idea-critic`](skills/x9-idea-critic/SKILL.md)
+#### [Pushback on an idea · `x9-idea-critic`](skills/x9-idea-critic/SKILL.md)
 
-For when you want pushback, not another cheerful brainstorm. Independent Claude and GPT critics review the idea, and you get a recommendation, every problem that matters, a stronger version of the idea, and one next step with a clear go or stop signal. When the idea concerns your code, a separate scout reads the repository first, so the critics see facts nobody mentioned.
+- **When:** you want objections before investing time in an idea, not another cheerful brainstorm.
+- **You get:** a review by independent Claude and GPT critics: a recommendation, every problem that matters, a stronger version of the idea, and one next step. When the idea concerns your code, the critics also see facts from the repository.
+
+**Needs:** access to Claude and GPT; with one provider it still works, but says there was no independent review.
 
 **Ask:**
 
@@ -187,15 +192,10 @@ For when you want pushback, not another cheerful brainstorm. Independent Claude 
 criticize this idea
 ```
 
-```text
-red-team this plan
-```
+#### [Explain it another way · `x9-explain-again`](skills/x9-explain-again/SKILL.md)
 
-**Needs:** works with one provider too, and then says there was no independent review.
-
-#### [`x9-explain-again`](skills/x9-explain-again/SKILL.md)
-
-Say you did not understand the previous answer, and the skill explains that same point differently: plainer words, an example, an analogy, or a step-by-step chain of causes. It does not restart the topic or inflate the answer.
+- **When:** you did not understand the agent's last answer in this chat.
+- **You get:** the same point explained differently: in plainer words, with an example, or through an analogy.
 
 **Ask:**
 
@@ -203,9 +203,10 @@ Say you did not understand the previous answer, and the skill explains that same
 I didn't get that, explain it differently
 ```
 
-#### [`x9-diagrams`](skills/x9-diagrams/SKILL.md)
+#### [Diagrams · `x9-diagrams`](skills/x9-diagrams/SKILL.md)
 
-Picks the right kind of diagram, or tells you a table would work better, and produces an editable source in Excalidraw, Mermaid, draw.io, or SVG. When a diagram grows too dense, it splits it into an overview and detailed views instead of shrinking the text, and checks the result by actually rendering it.
+- **When:** you need a diagram of a process, an architecture, or relationships, or want to convert a diagram to another format.
+- **You get:** an editable source in Excalidraw, Mermaid, draw.io, or SVG, checked by actually rendering it. If a table would explain it better, the skill says so.
 
 **Ask:**
 
@@ -217,9 +218,12 @@ draw a diagram of this flow
 convert this Mermaid diagram to draw.io
 ```
 
-#### [`x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md)
+#### [Images through Codex · `x9-codex-imagegen`](skills/x9-codex-imagegen/SKILL.md)
 
-Lets Claude Code, OpenCode, or another agent generate images through your Codex subscription, with no separate image API key. Codex writes the image prompt itself, so quality does not depend on the model you are working with. You get a verified PNG together with the final prompt.
+- **When:** you work in Claude Code, OpenCode, or another agent and need a picture.
+- **You get:** an image made through your Codex subscription, with no separate image API key. Codex writes the image prompt itself, and you get a verified PNG together with that prompt.
+
+**Needs:** Codex with a ChatGPT login. Inside Codex itself the skill is not needed.
 
 **Ask:**
 
@@ -227,13 +231,14 @@ Lets Claude Code, OpenCode, or another agent generate images through your Codex 
 generate an illustration for this article with Codex
 ```
 
-**Needs:** Codex with a ChatGPT login. Inside Codex itself the skill is not needed.
-
 ### Building software
 
-#### [`x9-web-stack`](skills/x9-web-stack/SKILL.md)
+#### [A well-structured web project · `x9-web-stack`](skills/x9-web-stack/SKILL.md)
 
-A template for TypeScript web apps: the tools, how the code is organized, and the rules that keep the project in shape. Code is split into modules by product area, each with its own entry point, its own tables, and one-way dependencies, and the linter enforces these boundaries. A new project starts from a scaffold that has been built and run end to end (Bun, React, Hono, PostgreSQL), and an existing project on any stack gets an audit of its structure and rules. The rules can be written into `AGENTS.md`, so agents follow them in everyday work.
+- **When:** you are starting a TypeScript web app or want to check how an existing project on any stack is organized.
+- **You get:** a project on Bun, React, Hono, and PostgreSQL, split into modules whose boundaries the linter enforces, or an audit of an existing project's structure and rules with the most important findings first. The rules can be written into `AGENTS.md`.
+
+**Needs:** Python 3, Bun, Node, Git, and Docker for a new project.
 
 **Ask:**
 
@@ -245,11 +250,10 @@ create a project on our stack
 audit this project's structure and stack
 ```
 
-**Needs:** Python 3, Bun, Node, Git, and Docker for a new project.
+#### [Web app security · `x9-appsec`](skills/x9-appsec/SKILL.md)
 
-#### [`x9-appsec`](skills/x9-appsec/SKILL.md)
-
-Follows trust boundaries through the whole application: browser, API, background jobs, data stores, integrations, and deployment. During development it checks the changed path; before release it runs an audit and reports each finding with evidence, possible harm, priority, and the smallest fix. It never sends attack requests to a running service without your explicit permission and a named target.
+- **When:** you are building a public site or API, or preparing one for release.
+- **You get:** a check of trust boundaries across the whole application (browser, API, data stores, and deployment), with evidence, possible harm, priority, and the smallest fix for each problem. The agent attacks a running service only with your explicit permission.
 
 **Ask:**
 
@@ -261,9 +265,10 @@ check this change for security issues
 run a security audit before release
 ```
 
-#### [`x9-test-quality`](skills/x9-test-quality/SKILL.md)
+#### [Tests that catch bugs · `x9-test-quality`](skills/x9-test-quality/SKILL.md)
 
-Agents happily add tests that raise the count but catch nothing. The skill stops such tests before they land, finds redundant and flaky ones in an existing suite, and advises how to organize testing for a project of your size. Tests, configuration, and CI change only after your approval.
+- **When:** the agent writes tests that prove nothing, the suite collects duplicates and flaky tests, or you are unsure how testing should be organized.
+- **You get:** useless tests are kept out of the project, redundant and flaky ones are found with evidence, and testing advice fits the size of your project. Tests, configuration, and CI change only with your approval.
 
 **Ask:**
 
@@ -272,12 +277,13 @@ review our tests
 ```
 
 ```text
-our tests are flaky
+how should we set up testing here?
 ```
 
-#### [`x9-performance`](skills/x9-performance/SKILL.md)
+#### [Finding slowdowns and waste · `x9-performance`](skills/x9-performance/SKILL.md)
 
-Instead of adding a cache just in case, the agent measures where time, memory, or money actually go and keeps a change only when repeated before-and-after measurements prove it helped. An audit returns a ranked list: what can be fixed now, which decisions are yours along with their payoff and price, and where data is missing.
+- **When:** something is slow, cannot hold its load, or spends too much memory or money.
+- **You get:** measurements of where resources actually go and a list of causes with the most important first. A fix stays only when repeated before-and-after measurements show it helped.
 
 **Ask:**
 
@@ -289,9 +295,12 @@ why is this page slow?
 run a performance audit
 ```
 
-#### [`x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md)
+#### [Architecture review · `x9-architecture-scout`](skills/x9-architecture-scout/SKILL.md)
 
-A read-only architecture review delivered as an HTML report: component boundaries, dependencies, ownership, risky change hotspots, and a comparison of possible directions with evidence and confidence. The code stays untouched.
+- **When:** you need to understand a repository's architecture or choose between several directions.
+- **You get:** an HTML report with no code changes: component boundaries, dependencies, risky change hotspots, and a comparison of directions with evidence.
+
+**Needs:** `python3` and `x9-diagrams`.
 
 **Ask:**
 
@@ -299,11 +308,12 @@ A read-only architecture review delivered as an HTML report: component boundarie
 audit this codebase's architecture
 ```
 
-**Needs:** `python3` and `x9-diagrams`.
+#### [CTO-level decisions · `x9-cto`](skills/x9-cto/SKILL.md)
 
-#### [`x9-cto`](skills/x9-cto/SKILL.md)
+- **When:** you need a call on product scope, architecture, or a large technical commitment.
+- **You get:** a CTO's view grounded in your repository. It can also lead delivery to a working user outcome and check executors' reports against real evidence.
 
-A CTO's call on product scope, architecture, or a large technical commitment, grounded in your repository. It can also lead delivery to a working user outcome and check executors' reports against real evidence instead of taking them on trust.
+**Needs:** nothing extra for a consultation; the autonomous `auto` mode needs the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`.
 
 **Ask:**
 
@@ -311,15 +321,10 @@ A CTO's call on product scope, architecture, or a large technical commitment, gr
 should we move to X?
 ```
 
-```text
-look at this as a CTO
-```
+#### [A decision map before planning · `x9-decision-map`](skills/x9-decision-map/SKILL.md)
 
-**Needs:** nothing extra for a consultation; the autonomous `auto` mode needs the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`.
-
-#### [`x9-decision-map`](skills/x9-decision-map/SKILL.md)
-
-A large initiative stalls when open choices, missing facts, and nice-to-have work are mixed together. Before planning, the skill builds one decision map: what is decided, which questions remain, what depends on what, and what to find out next. A later session picks it up without starting over.
+- **When:** a large initiative stalls because open choices, missing facts, and nice-to-have work are mixed together.
+- **You get:** one decision map: what is decided, which questions remain, what depends on what, and what to find out next. A later session picks it up without starting over.
 
 **Ask:**
 
@@ -327,9 +332,10 @@ A large initiative stalls when open choices, missing facts, and nice-to-have wor
 map the decisions before we plan
 ```
 
-#### [`x9-task-graph`](skills/x9-task-graph/SKILL.md)
+#### [Breaking a plan into work items · `x9-task-graph`](skills/x9-task-graph/SKILL.md)
 
-Turns an approved plan into connected work items ready for a tracker: dependencies, what can start right away, and a check that every requirement of the plan landed in some item. It does not reopen decisions or invent work.
+- **When:** you have an approved plan and need to move it into a tracker.
+- **You get:** connected work items with dependencies, a list of what can start right away, and a check that every requirement of the plan landed in some item. It does not reopen decisions.
 
 **Ask:**
 
@@ -339,9 +345,10 @@ turn this approved plan into work items
 
 ### Working with agents
 
-#### [`x9-onboarding`](skills/x9-onboarding/SKILL.md)
+#### [Post-install check · `x9-onboarding`](skills/x9-onboarding/SKILL.md)
 
-After an install or update, checks which skills are ready and what is still missing: a command-line tool, an account, or another component. It can also compare your Claude Code, Codex, or OpenCode settings with the author's profile and merge the differences you choose, keeping a backup.
+- **When:** you have just installed or updated the skills.
+- **You get:** a list of what is ready and what is still missing: a command-line tool, an account, or another component. Optionally, a comparison of your Claude Code, Codex, or OpenCode settings with the author's profile and a merge of the differences you choose, with a backup.
 
 **Ask:**
 
@@ -349,9 +356,10 @@ After an install or update, checks which skills are ready and what is still miss
 check whether my x9 skills are ready
 ```
 
-#### [`x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md)
+#### [Prompts and agent instructions · `x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md)
 
-Describe a task in your own words, even by dictation, and get a ready prompt: goal, constraints, sources, authority, deliverable, and what counts as done. It also reviews prompts and instruction files you already have, including global `AGENTS.md` and `CLAUDE.md`, and explains what each suggested change gives you.
+- **When:** you need a prompt for a task or a second look at instructions you already wrote.
+- **You get:** a ready prompt from your own description, even a dictated one: goal, constraints, sources, authority, deliverable, and what counts as done. For existing instructions, suggested edits with what each one gives you.
 
 **Ask:**
 
@@ -377,9 +385,10 @@ review these instructions
 
 </details>
 
-#### [`x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md)
+#### [README and AGENTS.md for a repository · `x9-context-files-generator`](skills/x9-context-files-generator/SKILL.md)
 
-Creates or updates a repository's `README.md`, `AGENTS.md`, and `CLAUDE.md` from its real commands, structure, and CI, not from a generated file tree and generic advice. Ready-made rule blocks for working discipline, documentation, dependency updates, and more can be added on request.
+- **When:** a repository lacks `README.md`, `AGENTS.md`, or `CLAUDE.md`, or they are out of date.
+- **You get:** files based on the project's real commands, structure, and CI, not a generated file tree with generic advice. Ready-made rule blocks can be added on request.
 
 **Ask:**
 
@@ -391,9 +400,10 @@ create AGENTS.md for this repository
 update the README
 ```
 
-#### [`x9-skill-creator`](skills/x9-skill-creator/SKILL.md)
+#### [Building and auditing skills · `x9-skill-creator`](skills/x9-skill-creator/SKILL.md)
 
-Turns a repeated process into an Agent Skill or audits one you already have: when it triggers, how it is structured, its safety boundaries, and its checks for Claude Code, Codex, and the portable format. Every audit also suggests what can be removed.
+- **When:** you want to turn a repeated process into a skill or check one you already have.
+- **You get:** a skill with clear trigger conditions, structure, safety boundaries, and checks for Claude Code, Codex, and the portable format. Every audit also suggests what can be removed.
 
 **Ask:**
 
@@ -405,9 +415,10 @@ turn this process into a skill
 audit this skill
 ```
 
-#### [`x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md)
+#### [Agent loops for repeated work · `x9-loop-engineering`](skills/x9-loop-engineering/SKILL.md)
 
-If you keep walking the agent through the same cycle by hand (explore, plan, do, check, fix), this skill designs a bounded agent loop with saved state, checkpoints, and stop conditions. `x9-skill-creator` can then package it as a skill.
+- **When:** you keep walking the agent through the same cycle by hand: explore, plan, do, check, fix.
+- **You get:** the design of a bounded agent loop with saved state, checkpoints, and stop conditions. `x9-skill-creator` can then package it as a skill.
 
 **Ask:**
 
@@ -415,9 +426,10 @@ If you keep walking the agent through the same cycle by hand (explore, plan, do,
 design an agent loop for this workflow
 ```
 
-#### [`x9-okf-docs`](skills/x9-okf-docs/SKILL.md)
+#### [Headers for Markdown documents · `x9-okf-docs`](skills/x9-okf-docs/SKILL.md)
 
-Gives each Markdown document a short [OKF](https://github.com/GoogleCloudPlatform/open-knowledge-format) header (type, title, a one-line description, and tags), so an agent can pick the right file without opening it. Headers are added as documents are written, and a whole folder can be converted in one step without changing any document text.
+- **When:** there are so many Markdown documents that the agent struggles to find the right one.
+- **You get:** a short [OKF](https://github.com/GoogleCloudPlatform/open-knowledge-format) header on each document: type, title, a one-line description, and tags. Headers are added as documents are written, and a whole folder can be converted in one step without changing any text.
 
 **Ask:**
 
@@ -429,9 +441,12 @@ add OKF metadata
 migrate this folder to OKF
 ```
 
-#### [`x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md)
+#### [Handing work from Claude Code to Codex · `x9-codex-delegation`](skills/x9-codex-delegation/SKILL.md)
 
-Lets Claude Code hand a well-defined part of the work to Codex and then check the actual diff instead of trusting the report. Useful when Codex suits a task better or to spread work across subscription limits.
+- **When:** you work in Claude Code and want Codex to take a well-defined part of the task, for example to spread work across subscription limits.
+- **You get:** the result from Codex, checked by Claude against the actual diff rather than the report.
+
+**Needs:** Claude Code with Codex installed.
 
 **Ask:**
 
@@ -439,11 +454,12 @@ Lets Claude Code hand a well-defined part of the work to Codex and then check th
 hand this part to Codex
 ```
 
-**Needs:** Claude Code with Codex installed.
+#### [Managing OpenCode chats · `x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md)
 
-#### [`x9-opencode-sessions`](skills/x9-opencode-sessions/SKILL.md)
+- **When:** work in OpenCode has spread across several chats.
+- **You get:** finding, reading, and continuing other chats, waiting for them to finish, and collecting the results. A message is sent only after you see a preview.
 
-Finds, reads, continues, and coordinates other OpenCode chats, waits for them to finish, and collects the results. A message is sent only after you see a preview.
+**Needs:** OpenCode V2.
 
 **Ask:**
 
@@ -454,9 +470,6 @@ find the OpenCode session about the migration
 ```text
 wait for that session to finish
 ```
-
-**Needs:** OpenCode V2.
-
 ## Compatibility
 
 The skills use the open Agent Skills format and are checked in OpenCode, Claude Code, and Codex. Three are tied to specific agents by design: `x9-codex-delegation` runs only in Claude Code, `x9-codex-imagegen` is for agents other than Codex, and `x9-opencode-sessions` runs only in OpenCode V2.

@@ -54,8 +54,9 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Write worker briefs in English and user-facing results in the user's language. Include the goal, non-derivable context, scope and authority, required evidence, and expected output; preserve load-bearing source wording and the active skill's specialist prompt and output contract. Add a rule, check, or contingency only for a situation the task, its sources, or an observed failure gives reason to expect; a merely conceivable one does not earn a line. Rarity alone does not dismiss a credible risk of data loss, secret exposure, or an irreversible action.
 - Give a worker the goal and completion bar, not a prescribed fix, and leave investigation open: it may read live state, logs, and real data and run non-mutating experiments wherever the task reaches. Fence only destructive, external, costly, or shared-state actions, each with its reason. When the worker cannot reach live data, supply real samples instead of described formats.
 - The parent owns task decomposition, integration, and final acceptance, and checks decisive findings against primary evidence.
-- Multi-model work (bake-off candidates, oracle panels, cross-model review) uses only Claude and GPT model families unless the user asks otherwise.
+- Use only Codex and Claude Code for delegated model work, including subagents and reviews. Follow the applicable model-selection instructions within those runtimes. Do not use OpenCode, direct model APIs, or other runtimes for delegation.
 - A GPT worker that stops with a capacity error such as `Selected model is at capacity` is interrupted, not failed: retry through the current runtime's documented lifecycle, continuing the same thread when supported or creating a fresh bounded replacement when required after the prior attempt stops. Switch model or report failure only after two supported retry attempts fail.
+- If the selected option is unavailable (after the two supported retry attempts for a GPT capacity error), tell me in the chat and use the other permitted option if available. If neither is available, report the blocker and stop that delegated work. Do not search for alternative runtimes or providers.
 
 ## Shared tool routing
 
@@ -65,9 +66,3 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory.
 - Resolve a selected skill from its catalog-provided location and read that exact `SKILL.md`. Skill directories may be symlinked, so before reporting one missing, verify the exact path or use symlink-aware traversal; an empty result from `rg --files` or `find ... -type f` does not prove absence.
 <!-- END SHARED PERSONAL CORE -->
-
-## OpenCode runtime
-
-### Subagent coordination
-
-- Use `inherit` for substantive delegated work so the child inherits the primary session's model and reasoning level. Use `explore` or a Terra profile only for bounded search and fact extraction, not complex diagnosis, implementation, or final acceptance. An explicit user or applicable skill model choice takes precedence.
