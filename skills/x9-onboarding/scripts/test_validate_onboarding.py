@@ -141,6 +141,17 @@ def main() -> None:
             result.returncode == 0 and "PASS: 1 declaration file(s)" in result.stdout,
             result.stdout + result.stderr,
         )
+        agent_alternative["runtimes"] = ["claude", "codex"]
+        command_alternative["runtimes"] = ["codex", "claude"]
+        write_declaration(
+            skills_root, "x9-demo", declaration([agent_alternative, command_alternative]),
+        )
+        result = run(skills_root)
+        expect(
+            "alternative routes accept the same runtimes in a different order",
+            result.returncode == 0,
+            result.stdout + result.stderr,
+        )
         write_declaration(
             skills_root,
             "x9-subset",

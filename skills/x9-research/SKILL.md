@@ -39,7 +39,7 @@ Return a sourced answer in chat unless the request conveys persistence, update, 
 
 ## Done
 
-- Every load-bearing current claim traces to a source opened in this run.
+- When researching or refreshing evidence, every load-bearing current claim traces to a source opened in this run; HTML-only work uses the current Markdown evidence and states its freshness.
 - Evidence strength matches claim risk; contradictions and freshness are visible.
 - The applicable completion contract passes in [delivery modes](references/delivery-modes.md), [HTML reports](references/html-reports.md), and [source selection](references/sources.md).
 - High-stakes or durable conclusions include the independent-review disposition required by [the methodology](references/methodology.md).

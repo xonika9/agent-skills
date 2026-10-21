@@ -164,6 +164,29 @@ class EndToEnd(unittest.TestCase):
         self.call("run", str(self.videos / "a.mp4"), "--force")
         self.assertEqual(len(self.calls()), 3)
 
+    def test_source_changed_during_recognition_preserves_previous_outputs(self):
+        source = self.videos / "a.mp4"
+        self.call("run", str(source))
+        srt = self.videos / "a.transcript.srt"
+        txt = self.videos / "a.transcript.txt"
+        previous_srt, previous_txt = srt.read_bytes(), txt.read_bytes()
+        real_run = t.subprocess.run
+
+        def change_source_after_recognition(command, **kwargs):
+            result = real_run(command, **kwargs)
+            if Path(command[0]).name == "whisper-cli":
+                source.write_bytes(b"recording changed while recognition was running")
+            return result
+
+        with patch.object(t.subprocess, "run", side_effect=change_source_after_recognition):
+            code, out = self.call("run", str(source), "--force")
+
+        summary = json.loads(out)
+        self.assertEqual((code, summary["done"]), (1, 0), out)
+        self.assertIn("source changed during transcription", summary["failed"][0]["error"])
+        self.assertEqual((srt.read_bytes(), txt.read_bytes()), (previous_srt, previous_txt))
+        self.assertEqual(list(self.videos.glob(".x9-transcript-*.part")), [])
+
     def test_out_dir_mirrors_layout_and_reports_collisions(self):
         lib = self.tmp / "lib"
         (self.tmp / "other").mkdir()

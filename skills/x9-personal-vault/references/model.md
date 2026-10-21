@@ -76,7 +76,7 @@ Each topic keeps `log.md` in the OKF log format: `## YYYY-MM-DD` headings, newes
 
 ## Agent root
 
-Usually the agent starts in the vault root and reads its `AGENTS.md`. Some users start it in a parent folder that holds more than the vault, such as shared notes. The vault keeps its own `AGENTS.md` and `CLAUDE.md` either way, with paths relative to the vault root, so the vault works the same when opened alone. The parent's `AGENTS.md` gets a short marked pointer to them, because Codex never reads instruction files below its starting folder, and Claude Code and OpenCode read them only after opening a file there.
+Usually the agent starts in the vault root and reads its `AGENTS.md`. Some users start it in a parent folder that holds more than the vault, such as shared notes. The vault keeps its own `AGENTS.md` and `CLAUDE.md` either way, with paths relative to the vault root, so the vault works the same when opened alone. The parent's `AGENTS.md` gets a short marked pointer so a session started there explicitly loads the vault rules before touching its contents.
 
 ## External folders
 

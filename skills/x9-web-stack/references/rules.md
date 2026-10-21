@@ -84,5 +84,5 @@ Rules tagged **(convention)** state one reasonable choice among several. On anot
 ## Verification
 
 - **V1 One verify command.** Principle: one command runs lint, typecheck, tests, migration check, and build; CI, people, and agents run it before merging. The bundler does not type-check, so typecheck is its own step. Template: `bun run verify`. Enforced: CI.
-- **V2 Generated files.** Principle: generated files are regenerated, never edited: applied migrations, `routeTree.gen.ts`, `openapi.json`, `bun.lock`. Enforced: prose.
+- **V2 Generated files.** Principle: generated files are regenerated, never edited: `routeTree.gen.ts`, `openapi.json`, `bun.lock`. Enforced: prose.
 - **V3 Lint over prose.** Principle: a rule a linter can check is configured in the linter, not written as an instruction. Enforced: this pool.

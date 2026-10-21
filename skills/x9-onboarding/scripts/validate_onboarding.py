@@ -381,7 +381,14 @@ def validate_declaration(path: Path, skills_root: Path) -> list[str]:
             continue
         expected_runtimes = members[0][1].get("runtimes")
         for index, member in members[1:]:
-            if member.get("runtimes") != expected_runtimes:
+            actual_runtimes = member.get("runtimes")
+            if (
+                isinstance(expected_runtimes, list) and isinstance(actual_runtimes, list)
+                and all(runtime in actual_runtimes for runtime in expected_runtimes)
+                and all(runtime in expected_runtimes for runtime in actual_runtimes)
+            ):
+                continue
+            if actual_runtimes != expected_runtimes:
                 error(errors, f"requirements[{index}].runtimes", "alternative group members must use identical runtimes")
     return errors
 

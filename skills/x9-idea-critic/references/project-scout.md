@@ -21,7 +21,7 @@ Within this repository only:
 1. For each claim, return verified, contradicted, or not found, with excerpts and the searches you tried.
 2. Find facts that would change whether or how to do this: repository instructions; validators, tests, CI, and scripts that read what the proposal changes; existing or competing mechanisms; callers and consumers; prior decisions in changelogs, ADRs, and design docs; overriding configuration. Search with the codebase's own vocabulary, not only the proposal's.
 
-Quote; do not judge, recommend, or review code quality. Return at most 12 facts, each with a one-line claim, path:line, a verbatim excerpt of at most 8 lines, and what it bears on. Then list "Searched, not found" with the queries used; an empty search shows only that this search found nothing. Never open credential files or reproduce secret values.
+Quote; do not judge, recommend, or review code quality. Return facts covering every claim or evidence question, each with a one-line claim, path:line, a verbatim excerpt of at most 8 lines, and what it bears on. Then list "Searched, not found" with the queries used; an empty search shows only that this search found nothing. Never open credential files or reproduce secret values.
 ```
 
 ## Gap pass brief

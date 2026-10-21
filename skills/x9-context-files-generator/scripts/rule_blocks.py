@@ -36,6 +36,7 @@ def shared_part(lines):
 
 def marked_regions(lines):
     regions, stack, fence, code = [], [], None, set()
+    unmatched = []
     list_indents = []
     paragraph = None
     for number, line in enumerate(lines, 1):
@@ -98,11 +99,13 @@ def marked_regions(lines):
         elif end and stack and (end.group(1) or end.group(2)) == stack[-1][0]:
             name, opened = stack.pop()
             regions.append((name, opened, number))
+        elif end:
+            unmatched.append((end.group(1) or end.group(2), number))
         if not line.strip() or re.match(r"^ {0,3}(?:#{1,6}(?: |$)|>|<)", line):
             paragraph = None
         else:
             paragraph = tuple(list_indents)
-    return sorted(regions, key=lambda region: region[1]), stack, code
+    return sorted(regions, key=lambda region: region[1]), stack + unmatched, code
 
 
 def main():
@@ -115,10 +118,10 @@ def main():
         lines = args.agents_file.read_text(encoding="utf-8").splitlines()
     except OSError as error:
         sys.exit(f"cannot read {args.agents_file}: {error.strerror}")
-    regions, unclosed, code = marked_regions(lines)
+    regions, unpaired, code = marked_regions(lines)
     failed = False
-    for name, opened in unclosed:
-        print(f"unclosed marker {name!r} at line {opened}")
+    for name, opened in unpaired:
+        print(f"unpaired marker {name!r} at line {opened}")
         failed = failed or name.startswith(f"{SKILL}:")
 
     outer = [r for r in regions if not any(o[1] < r[1] and r[2] < o[2] for o in regions)]

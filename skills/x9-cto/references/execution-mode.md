@@ -229,7 +229,7 @@ resumption.
 Before dispatching a large, costly, or architecture-bearing unit, inspect only
 the contract seams that have caused material false conclusions: plan against
 acceptance, decision against authority, and evidence against claim. Put each
-actual mismatch directly into the executor brief, with at most three mismatches;
+actual mismatch directly into the executor brief;
 when none exists, the preflight creates no separate checklist or durable status.
 Skip this preflight for routine narrow work.
 

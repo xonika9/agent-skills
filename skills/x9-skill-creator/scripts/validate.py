@@ -304,7 +304,7 @@ def validate(root: Path, runtimes=("portable",)):
                     ("portable" in runtimes or key != "internal") and not isinstance(value, str)
                 ):
                     errors.append("frontmatter: metadata keys and values must be strings")
-                elif key == "internal" and "portable" not in runtimes and type(value) is not bool:
+                elif key == "internal" and any(runtime != "portable" for runtime in runtimes) and type(value) is not bool:
                     errors.append("frontmatter: metadata.internal must be boolean")
 
     hooks = fm.get("hooks")

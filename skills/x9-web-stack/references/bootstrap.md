@@ -35,7 +35,7 @@ If installation or verification fails, fix the cause within the scaffold. When a
 - Sign-in: replace `authenticate` in `apps/api/src/index.ts` with the chosen variant's token or session check (see [library notes](library-notes.md#sign-in)) and add the variant's services to `compose.yaml`.
 - Write the first stack notes per [notes](notes.md#layout).
 - `AGENTS.md`, `CLAUDE.md`, and the README run path: create them with `x9-context-files-generator`, then write the rules block as described in [agents-block.md](agents-block.md). Without that skill, create `AGENTS.md` with a one-line project summary and the block, and report the context files as degraded.
-- New modules copy `orders` on both server and client; delete `orders` once a real module exists, together with its error code, migration, and client messages.
+- New modules copy `orders` on both server and client; delete `orders` once a real module exists, together with its error code and client messages. Remove its tables through a new migration; preserve applied migrations and their history.
 
 ## Done
 

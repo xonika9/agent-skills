@@ -124,6 +124,8 @@ def main() -> int:
             "extra external resource": (report(extra='<script src="https://example.test/extra.js"></script>'), False),
             "unsafe raw repository HTML": (report(evidence="const html = <script>alert(1)</script>;"), False),
             "missing text fallback": (report().replace('<p class="diagram-text-equivalent">Client depends on Service; no reverse dependency exists.</p>', ''), False),
+            "empty text fallback before other content": (report().replace('<p class="diagram-text-equivalent">Client depends on Service; no reverse dependency exists.</p>', '').replace('<figcaption>', '<p class="diagram-text-equivalent"></p><figcaption>'), False),
+            "text fallback inside scrolling container": (report().replace('<p class="diagram-text-equivalent">Client depends on Service; no reverse dependency exists.</p>', '').replace('</div>', '<p class="diagram-text-equivalent">Client depends on Service.</p></div>'), False),
             "missing Mermaid source": (report(diagram="plain text without a declaration"), False),
             "missing Mermaid-renderable element": (report(diagram_contents=diagram_figure("flowchart LR\n  A[Client] --> B[Service]", include_renderable=False)), False),
             "Mermaid-renderable element outside container": (report(diagram_contents=diagram_figure("flowchart LR\n  A[Client] --> B[Service]", renderable_in_container=False)), False),

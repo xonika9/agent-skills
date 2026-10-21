@@ -43,7 +43,7 @@ At the end, recheck every `open` row inside the run's scope, set its status, and
 
 ## AGENTS.md block
 
-When the notes are first created, add this block to the repository's `AGENTS.md` after the repository's own rules, among the other skills' marked blocks, changing only the paths when the project keeps these files elsewhere and dropping the policy-file clause when it does not exist. On later runs, replace only the text between the markers. When `AGENTS.md` is missing, do not create it here: offer to create it through x9-context-files-generator, and name the pending block in the report.
+Add or refresh this block only when the task authorizes changing repository instructions; otherwise include the proposed block in the report. When the notes are first created under that authority, add this block to the repository's `AGENTS.md` after the repository's own rules, among the other skills' marked blocks, changing only the paths when the project keeps these files elsewhere and dropping the policy-file clause when it does not exist. On later runs, replace only the text between the markers. When `AGENTS.md` is missing, do not create it here: offer to create it through x9-context-files-generator, and name the pending block in the report.
 
 ```markdown
 <!-- x9-test-quality:start -->

@@ -27,7 +27,7 @@ For a new diagram or an explicitly authorized redesign, remove or merge any node
 
 Before drawing a new diagram, state in one short message the view, the format, the delivery mode, and anything the [complexity budget](#respect-the-complexity-budget) forces out. If a cut removes content the user asked for and the user is reachable, let them redirect before drawing; otherwise proceed and list the cuts beside the deliverable.
 
-For a revision, preserve the existing view type, dominant reading direction, canvas orientation, major topology, node identity, and meaningful boundaries. A request to review, fix, polish, or improve does not authorize changing them; only an explicit redesign request does.
+For a revision, preserve the existing view type, dominant reading direction, canvas orientation, major topology, node identity, and meaningful boundaries except where a requested correction or a verified defect requires changing them. Broader redesign still requires explicit authorization; review-only work remains report-only.
 
 Choose one entry point and one dominant reading direction. Left-to-right suits pipelines and causality; top-to-bottom suits long processes and layered flows; radial layouts suit one center with independent branches; matched columns suit comparison. A direction change needs a visible boundary or phase transition.
 

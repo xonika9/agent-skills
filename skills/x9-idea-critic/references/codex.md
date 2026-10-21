@@ -8,7 +8,7 @@ Follow [the shared Claude CLI route](claude-cli.md).
 
 ## GPT route
 
-Follow the active global subagent contract, then use the native worker interface with `fork_turns: "none"`. Confirm `gpt_model` and `gpt_effort` from the core configuration in the live model catalog and worker schema, and set both explicitly rather than inheriting the parent model or effort. Pass only the sealed packet and require direct execution without tools or delegation. `fork_turns: "none"` removes the parent conversation, not system, developer, or repository instructions. Record accepted selectors under the core telemetry rules. If either selector is unavailable or rejected, the route failed rather than falling back to another model, effort, or provider.
+Follow the active global subagent contract and discover the permitted worker interfaces and live model catalog. Confirm `gpt_model` and `gpt_effort` from the core configuration and apply both as explicit execution settings. Use a native worker with `fork_turns: "none"` only when that route is permitted and can apply both settings; otherwise use an available permitted orchestrator-owned fresh worker route. Pass only the sealed packet and require direct execution without tools or delegation. A fresh worker omits the parent conversation, not necessarily system, developer, or repository instructions. Record accepted selectors under the core telemetry rules. If no permitted route can apply both settings, the GPT route failed rather than falling back to another model, effort, or provider.
 
 ## Project scout
 

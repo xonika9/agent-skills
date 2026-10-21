@@ -79,6 +79,14 @@ class RuleBlockTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn('execution: duplicate', result.stdout)
 
+    def test_unmatched_own_closing_marker_blocks(self):
+        closing = BLOCK.splitlines()[-1] + "\n"
+        for text in (closing, BLOCK + "\n" + closing):
+            with self.subTest(text=text):
+                result = self.check(text)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn("unpaired marker", result.stdout)
+
     def test_indented_examples_do_not_duplicate_or_reorder_real_blocks(self):
         for prefix, indent in (
             ('# Example\n\n', '    '),

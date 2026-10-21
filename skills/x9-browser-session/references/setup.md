@@ -36,9 +36,9 @@ Choose these values for the target machine instead of copying the Edge-specific 
 | OpenCode primary | Uses the live `chrome-devtools` MCP in the current tool catalog and creates a background page; do not assume a configuration path, flags, or in-app browser |
 | Last fallback | Attaches to the same endpoint; it must not launch a clean browser |
 
-Before adding runtime configuration, verify that the Codex extension is connected and
-that the browser's local CDP discovery endpoint responds. In OpenCode, verify that the
-live tool catalog exposes `chrome-devtools`; a missing tool is not evidence for a
+Before adding runtime configuration, verify that the browser's local CDP discovery
+endpoint responds. Verify the Codex extension only for its route. In OpenCode, verify
+that the live tool catalog exposes `chrome-devtools`; a missing tool is not evidence for a
 particular configuration or restart. If the browser exposes only a WebSocket endpoint,
 configure a controller that accepts that endpoint directly; do not assume
 `http://127.0.0.1:9223` works for every Chromium version. Keep the endpoint local, open

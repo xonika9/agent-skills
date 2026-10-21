@@ -30,8 +30,6 @@ not applied. The CTO adds only these:
   authority from this chat.
 - A prompt for a chat that already holds the task context is a delta. A prompt
   for a new chat is self-contained for what the linked sources do not supply.
-- List document edits as edits, without the reasons; the reasons go to the
-  user outside the prompt.
 - If a previous prompt was wrong, cancel that instruction explicitly in the new
   one.
 

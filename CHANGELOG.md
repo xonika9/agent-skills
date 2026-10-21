@@ -4,6 +4,12 @@
 
 ### Highlights
 
+- Browser work respects any explicitly selected browser or controller, and setup checks the Codex extension only for its own route. The one-shot write-capable Codex example now follows the existing ephemeral-session policy.
+- Architecture reports reject empty or incorrectly placed diagram explanations, context-block checks reject stray closing markers, and combined skill validation enforces each selected runtime's metadata types. Onboarding accepts equivalent runtime lists in either order, and OpenCode session timeouts reject non-finite values before dispatch.
+- OKF proposals consistently distinguish document metadata from their addressing and evidence fields. Instruction-file creation agrees with completion criteria, the shared block excludes `GEMINI.md`, and readiness declares the instruction-writing rubric required by OKF and personal-vault setup.
+- Test and security audits keep saving their notes, while changes to persistent repository instructions require authority to edit those instructions. Performance fixes continue independently of pending owner decisions, readers cover only relevant areas, and CTO and idea-critic handoffs retain every material mismatch or evidence question without arbitrary count limits. Diagram corrections can change a faulty relationship within the requested fix; research presentation updates reuse their Markdown evidence without requiring a new research pass.
+- Transcription rejects a source that changes during recognition before replacing previous outputs, instead of marking an outdated transcript current.
+- Global instruction examples recover capacity-interrupted workers through the current runtime's supported lifecycle and limit native Codex lifecycle controls to native workers. Idea critiques can use a permitted orchestrator route that applies the configured model and reasoning effort.
 - Claude Code global instructions now delegate self-contained implementation from settled plans to Sonnet at high effort by default. Opus remains responsible for planning and review, and can handle implementation when complexity, impact, or demonstrated Sonnet limitations warrant it. Failed checks prompt diagnosis rather than an automatic model switch.
 - Claude Code worker routing is now unambiguous at the edges and about a fifth shorter: only the listed Opus and Sonnet routes are used unless the user or an applicable skill chooses another model; forks are used only when the parent's model and effort already match the role; and small changes stay in the main session when a brief would cost as much as the change.
 - Prompt, instruction-file, `AGENTS.md`/`CLAUDE.md`, README, and skill reviews no longer pad artifacts with rules for merely conceivable failures: a change needs a concrete defect or a credible failure in actual use, the smallest fix wins, re-reviewing an unchanged text applies the same bar rather than hunting for something new, and "no changes needed" is a valid result. Prompt and instruction-file reviews report the net line change of proposed edits. CTO and Codex delegation briefs now follow the same instruction rules instead of their own copies, and skill audits flag skills that restate them.
@@ -11,10 +17,14 @@
 
 ### Install / update
 
+- Update through the existing skill or plugin route to receive these audit fixes. Review and merge the updated global instruction examples through the existing installation process.
 - Update the installed Claude Code global instructions to adopt the revised worker routing. Explicit user model choices and skill-assigned models retain their existing priority.
 - Update the installed global instructions for Claude Code, Codex, and OpenCode to adopt the revised shared rule for subagent briefs.
 
 ### Compatibility
+
+- Bundled diagram checks require Python 3.9 or newer. OKF and personal-vault readiness now require `x9-agent-instructions` for writing local instruction rules; this reflects their existing workflow requirement.
+- Test and security audit notes remain part of the audit result; their `AGENTS.md` blocks are proposed when instruction-file changes are not authorized.
 
 ### Breaking changes
 

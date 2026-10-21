@@ -13,7 +13,7 @@ codex exec --disable hooks -s read-only --skip-git-repo-check --ephemeral "<self
 Write-capable:
 
 ```bash
-codex exec -s workspace-write - <"$DELEGATION_PROMPT_FILE"
+codex exec -s workspace-write --ephemeral - <"$DELEGATION_PROMPT_FILE"
 ```
 
 The last-message output normally returns through stdout; do not create a separate output artifact unless the caller explicitly needs one.

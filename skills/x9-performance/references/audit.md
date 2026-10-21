@@ -17,7 +17,7 @@ Without a named complaint, judge against:
 
 ## Sweep
 
-Reading workers run in parallel, one per area: server and database; client; startup and infrastructure; background jobs and the development loop; resources and money. Each returns candidates in the reply format from SKILL.md. Then one measuring worker runs each main path 3–5 times, cold and warm, on a production build, and records memory and size, inside the budget.
+Reading workers cover only areas present in the product: server and database; client; startup and infrastructure; background jobs and the development loop; resources and money. Combine areas when one worker can inspect them completely; independent reads may run in parallel. Each returns candidates in the reply format from SKILL.md. Then one measuring worker runs each main path 3–5 times, cold and warm, on a production build, and records memory and size, inside the budget.
 
 ## Select
 
@@ -56,7 +56,7 @@ The chat reply lets an owner who does not read profiles choose the next step wit
 
 When the request also asks to fix, every local fix is in scope, not only the cheapest. Before the report is final, measure each candidate whose missing evidence can be produced locally within the budget, and place it by that result.
 
-When the report has owner decisions or the fixes need a fact without a safe default, stop once after the audit with the reply above, so the fixes run as one pass that includes the owner's choices; otherwise go straight to the fixes. Take the local fixes and the chosen options one at a time through Optimize, largest payoff first, within the authority in SKILL.md; the audit's scope and defaults stand in for the metric confirmation. After several kept changes, re-measure the main paths, because the picture shifts.
+Take the independent authorized local fixes and the chosen options one at a time through Optimize, largest payoff first, within the authority in SKILL.md; the audit's scope and defaults stand in for the metric confirmation. A pending decision or missing fact defers only dependent fixes. After several kept changes, re-measure the main paths, because the picture shifts. When no independent authorized work remains, stop once with the reply above for the unresolved owner decisions or facts without safe defaults.
 
 The run is done when every item in the report is kept, reverted with its reason, declined by the owner, or stopped by the budget with what it would need, and the register shows each item's resulting status. The audit file ends with a before-and-after table per item, including reverted attempts and why; the reply gives the fix result from SKILL.md.
 

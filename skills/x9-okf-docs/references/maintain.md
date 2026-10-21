@@ -21,4 +21,4 @@ python3 <skill-directory>/scripts/validate_okf.py <root> --paths <path> [<path> 
 
 ## Completion
 
-Only the documents this task worked on changed, plus the `AGENTS.md` block and `.x9-okf.json` when they needed it, and the check passes for those documents.
+Only the documents this task worked on changed, plus `.x9-okf.json` when needed and the instruction-file changes allowed by [the block template](agents-block.md#writing-and-updating), and the check passes for those documents.

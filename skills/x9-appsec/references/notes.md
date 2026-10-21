@@ -49,7 +49,7 @@ At the end, recheck every `open`, `hypothesis`, and past-review `accepted` row i
 
 ## AGENTS.md block
 
-When the notes are first created, add this block to the repository's `AGENTS.md` after the repository's own rules, among the other skills' marked blocks, changing only the paths when the notes live elsewhere. When they are not under version control, the location line says so and that they may be absent from a given copy; the rules then apply wherever the notes are present. On later runs, replace only the text between the markers. When `AGENTS.md` is missing, do not create it here: offer to create it through x9-context-files-generator, and name the pending block in the report.
+Add or refresh this block only when the task authorizes changing repository instructions; otherwise include the proposed block in the report. When the notes are first created under that authority, add this block to the repository's `AGENTS.md` after the repository's own rules, among the other skills' marked blocks, changing only the paths when the notes live elsewhere. When they are not under version control, the location line says so and that they may be absent from a given copy; the rules then apply wherever the notes are present. On later runs, replace only the text between the markers. When `AGENTS.md` is missing, do not create it here: offer to create it through x9-context-files-generator, and name the pending block in the report.
 
 ```markdown
 <!-- x9-appsec:start -->

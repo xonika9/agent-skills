@@ -9,7 +9,7 @@ import os
 import subprocess
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from unittest.mock import patch
 
 import opencode_sessions
@@ -409,6 +409,15 @@ class OpenCodeSessionsTests(unittest.TestCase):
         self.assertEqual(preview_code, 2)
         self.assertEqual(preview_output["error"], "preview-id-already-exists")
         preview_runner.assert_not_called()
+
+    def test_nonfinite_timeout_is_rejected_before_dispatch(self) -> None:
+        for value in ("nan", "inf", "-inf"):
+            with self.subTest(timeout=value):
+                with patch.object(opencode_sessions.subprocess, "run", return_value=Result("{}")) as runner:
+                    with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as rejected:
+                        opencode_sessions.main(["wait", "ses_1", "--timeout=" + value])
+                self.assertEqual(rejected.exception.code, 2)
+                runner.assert_not_called()
 
     def test_wait_accepts_empty_successful_response(self) -> None:
         with patch.object(opencode_sessions.subprocess, "run", return_value=Result()):

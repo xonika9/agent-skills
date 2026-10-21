@@ -48,6 +48,10 @@ parent task. Avito work is sequential even when the rest of the research is dele
 
 ## Choose the surface
 
+An explicitly selected browser or controller takes precedence over the defaults
+below. Resolve its binding through live tool instructions; if it is unavailable,
+report the missing prerequisite and do not switch browsers without approval.
+
 1. Prefer a purpose-built connector, API, or CLI when it can perform the semantic
    operation. An explicit request to open, inspect, or operate a browser UI overrides
    this preference.
@@ -66,7 +70,7 @@ parent task. Avito work is sequential even when the rest of the research is dele
    another browser after an authentication or connection failure unless the user
    approves the switch.
 4. In Claude Code or Codex, use the runtime's in-app browser for local web development
-   and previews unless the user explicitly requests Edge:
+   and previews unless the user explicitly selects another browser or controller:
    - Codex: its in-app browser;
    - Claude Code: its Browser pane.
 5. For every other browser-control task, use the runtime-specific default:

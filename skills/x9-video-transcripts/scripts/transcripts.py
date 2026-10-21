@@ -238,6 +238,7 @@ def _last_line(text: str, fallback: str) -> str:
 
 def transcribe_one(source: Path, base: Path, lang: str, model: Path, vad: Path, cli: str, seconds: float) -> int:
     """Publish each output atomically; an incomplete pair stays stale for a rerun."""
+    source_state = source.stat()
     timeout = max(MIN_TIMEOUT, 3 * seconds)
     with tempfile.TemporaryDirectory(prefix="x9-transcripts-") as tmp:
         wav = Path(tmp) / "audio.wav"
@@ -279,7 +280,11 @@ def transcribe_one(source: Path, base: Path, lang: str, model: Path, vad: Path, 
             # Freshness is the completion marker. Make the new SRT stale before it can
             # replace an old one; only promote it after TXT is published too. A failed
             # second rename or interrupted process therefore cannot make a mixed pair current.
-            source_mtime = source.stat().st_mtime
+            current_state = source.stat()
+            if any(getattr(current_state, field) != getattr(source_state, field)
+                   for field in ("st_dev", "st_ino", "st_size", "st_mtime_ns")):
+                raise RuntimeError("source changed during transcription; retry after it stops changing")
+            source_mtime = source_state.st_mtime
             srt_part = staged[0][0]
             os.utime(srt_part, (source_mtime - 2, source_mtime - 2))
             if srt_part.stat().st_mtime >= source_mtime:

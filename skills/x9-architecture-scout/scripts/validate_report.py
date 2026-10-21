@@ -245,6 +245,7 @@ class ReportParser(HTMLParser):
         self.diagram_container_tags: list[str] = []
         self.mermaid_source_stack: list[tuple[str, dict[str, object]]] = []
         self.mermaid_renderable_stack: list[tuple[str, dict[str, object]]] = []
+        self.text_equivalent_stack: list[tuple[int, dict[str, object]]] = []
         self.repo_depth = 0
         self.repo_bad_tags: list[str] = []
         self.repo_evidence_count = 0
@@ -374,7 +375,9 @@ class ReportParser(HTMLParser):
                 figure["renderable"].append(renderable)
                 self.mermaid_renderable_stack.append((tag, renderable))
             if "diagram-text-equivalent" in classes:
-                figure["fallback"].append([])
+                equivalent = {"parts": [], "outside_container": not self.diagram_container_tags}
+                figure["fallback"].append(equivalent)
+                self.text_equivalent_stack.append((len(self.stack), equivalent))
             if "diagram-container" in classes:
                 self.diagram_container_tags.append(tag)
 
@@ -420,6 +423,8 @@ class ReportParser(HTMLParser):
             self.mermaid_source_stack.pop()
         if self.mermaid_renderable_stack and self.mermaid_renderable_stack[-1][0] == tag:
             self.mermaid_renderable_stack.pop()
+        while self.text_equivalent_stack and self.text_equivalent_stack[-1][0] > len(self.stack):
+            self.text_equivalent_stack.pop()
         if self.diagram_container_tags and self.diagram_container_tags[-1] == tag:
             self.diagram_container_tags.pop()
         if tag == "figure" and self.figure_stack:
@@ -446,10 +451,8 @@ class ReportParser(HTMLParser):
             source["parts"].append(data)
         for _, renderable in self.mermaid_renderable_stack:
             renderable["parts"].append(data)
-        if self.figure_stack:
-            figure = self.figure_stack[-1]
-            if figure["fallback"]:
-                figure["fallback"][-1].append(data)
+        for _, equivalent in self.text_equivalent_stack:
+            equivalent["parts"].append(data)
 
 
 def fallback_visibility_errors(css: str, ancestors: list[tuple[str, dict[str, str]]]) -> list[str]:
@@ -649,7 +652,9 @@ def validate(path: Path) -> list[str]:
             errors.append("each figure.diagram must be inside #diagrams")
         if not figure["caption"] or not figure["container"]:
             errors.append("each .diagram figure needs figcaption and .diagram-container")
-        fallback_text = " ".join("".join(parts).strip() for parts in figure["fallback"])
+        fallback_text = " ".join("".join(item["parts"]).strip() for item in figure["fallback"])
+        if any(not item["outside_container"] for item in figure["fallback"]):
+            errors.append("diagram text equivalents must be outside .diagram-container")
         if len(figure["source"]) != 1:
             errors.append("each diagram needs exactly one Mermaid source")
         if len(figure["renderable"]) != 1:

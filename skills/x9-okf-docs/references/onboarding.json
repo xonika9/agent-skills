@@ -26,6 +26,14 @@
       "guidance_id": "complete-user-action"
     },
     {
+      "id": "agent-instructions-rubric",
+      "kind": "skill",
+      "level": "required",
+      "needed_for": "Writing local agent instructions in the OKF block.",
+      "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
+      "guidance_id": "install-skill"
+    },
+    {
       "id": "context-files-generator",
       "kind": "skill",
       "level": "optional",

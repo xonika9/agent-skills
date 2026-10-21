@@ -174,6 +174,13 @@ def main():
             result.returncode == 0,
             result.stdout,
         )
+        for runtime in ("claude", "codex"):
+            result = run(internal_string, "portable", runtime)
+            expect(
+                f"portable plus {runtime} enforces native metadata.internal type",
+                result.returncode != 0 and "metadata.internal must be boolean" in result.stdout,
+                result.stdout,
+            )
 
         non_internal_boolean = base / "non-internal-boolean"
         skill(

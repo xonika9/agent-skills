@@ -1,7 +1,7 @@
 ---
 name: x9-diagrams
 description: Use when the user explicitly invokes x9-diagrams, needs a choice between diagram formats, converts or reviews diagrams across formats, or needs one visual method with native creation and verification in Excalidraw, Mermaid, draw.io/diagrams.net, or standalone SVG with an optional HTML preview. Also use for requests such as “choose the right diagram format”, “convert this Mermaid diagram to editable draw.io”, «выбери формат схемы», «проверь и улучши диаграмму». A Mermaid-only syntax request may remain with an installed specialized Mermaid skill. Do not use for data charts, UI mockups, illustration, or unsupported diagram formats.
-compatibility: Python 3 runs the bundled Excalidraw and SVG checks and the source summary. Rendering proof needs the target format's tool - a compatible Excalidraw renderer, Mermaid renderer, or diagrams.net tool, or a browser engine for SVG.
+compatibility: Python 3.9 or newer runs the bundled Excalidraw and SVG checks and the source summary. Rendering proof needs the target format's tool - a compatible Excalidraw renderer, Mermaid renderer, or diagrams.net tool, or a browser engine for SVG.
 ---
 
 # Diagrams

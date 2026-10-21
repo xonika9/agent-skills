@@ -36,8 +36,8 @@
     {
       "id": "agent-instructions-rubric",
       "kind": "skill",
-      "level": "optional",
-      "needed_for": "Reviewing the vault rules written into AGENTS.md.",
+      "level": "required",
+      "needed_for": "Writing the vault rules into AGENTS.md.",
       "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
       "guidance_id": "install-skill"
     }

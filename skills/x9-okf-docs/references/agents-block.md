@@ -16,7 +16,7 @@ Markdown documents in scope start with a YAML header so an agent can pick the ri
 - Write the header when you create a document. After a substantive edit, correct the fields that no longer match the content.
 - In a document you are working on anyway, add a missing header and delete the retired fields `generated`, `timestamp`, `verified`, `status`, `stale_after`, `sources`, `usage_window`, and `resource`; keep every other field. Leave documents you are not working on as they are: a repository-wide pass runs only on request, through `x9-okf-docs`.
 - Reading, fixing links, and formatting never change a header.
-- Not documents, never given a header: `AGENTS.md`, `CLAUDE.md`, `index.md`, `log.md`, and everything outside the scope in `.x9-okf.json`. A `log.md` uses `## YYYY-MM-DD` headings, newest first.
+- Not documents, never given a header: `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `index.md`, `log.md`, and everything outside the scope in `.x9-okf.json`. A `log.md` uses `## YYYY-MM-DD` headings, newest first.
 - After writing a header, run the `x9-okf-docs` check when that skill is available.
 
 ### Local
@@ -45,4 +45,4 @@ Never change text between another skill's markers. A rule outside the block that
 
 ## Done
 
-The shared part matches the template exactly, every Local line states a fact of this repository, `.x9-okf.json` holds the scope the old section described, and nothing outside the block changed except the replaced OKF section or the agreed insertion point.
+The shared part matches the template exactly, every Local line states a fact of this repository, `.x9-okf.json` holds the scope the old section described, and no other repository instruction text changed beyond the replaced OKF section, the agreed insertion point, or creation of the missing `AGENTS.md` and `CLAUDE.md` specified above.
