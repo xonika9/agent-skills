@@ -7,7 +7,7 @@ description: Write or review prompts, task briefs, and agent-instruction files �
 
 Judge behavioral guidance for the actual receiving model and runtime, including delegated workers; the author's model is not evidence of the executor's behavior.
 
-Repository onboarding files belong to `x9-context-files-generator`, skill authoring to `x9-skill-creator`, and actual Codex delegation in Claude Code to `x9-codex-delegation`. The first two may load this skill as a subordinate instruction-quality rubric.
+Repository onboarding files belong to `x9-context-files-generator`, skill authoring to `x9-skill-creator`, and actual Codex delegation in Claude Code to `x9-codex-delegation`. Skills that write or judge agent-facing prose, including these three, load this skill as a subordinate instruction-quality rubric and keep only their domain contract.
 
 Own the prompt as an artifact: a one-off brief handed to another agent or a new chat, and the instructional content of files that hold prompts or agent instructions. One rubric drives both — writing applies it forward, review applies it backward.
 
@@ -56,6 +56,15 @@ Completeness of the specification helps; completeness of the path hurts. Describ
 - **Safety and irreversibility.** Hard prohibitions stay for destructive, irreversible, and externally visible actions. Reversibility is the dividing line, and a destructive shortcut is never an acceptable way past an obstacle.
 - **A cold start with no history.** "Run `pwd`", "read the progress notes, the test state, and the git log" earn their place when the executor begins with nothing.
 
+## What earns a change
+
+These rules apply when writing, when reviewing, and in every skill that loads this rubric.
+
+- Include an item from [what the prompt carries](#what-the-prompt-carries) only when the executor cannot infer it and its absence would change the result. An item already conveyed in other words is present; a short prompt can be complete.
+- Add or retain a rule or finding only for a concrete defect, content that does not earn its place, or a credible failure path in the artifact's declared use; name the source and any assumptions. A merely conceivable failure does not justify a new rule. Rarity alone does not dismiss a credible risk of data loss, secret exposure, unauthorized action, or irreversible consequences.
+- Judge an issue separately from its remedy and use the smallest change that resolves it while preserving the intended result. Prefer deleting, merging, or rewording to adding; each net addition names the executor behavior it changes. Do not drop a supported issue for being minor; revise a disproportionate remedy instead.
+- A repeated review of an unchanged artifact applies the same bar and does not lower it to find something new; "no changes needed" is a complete result.
+
 ## Unknowns
 
 Over- and under-specifying fail in opposite directions: too specific and the executor follows the letter where it should have turned, too vague and it substitutes an industry default that does not fit. Neither is cured by changing length.
@@ -70,7 +79,7 @@ Lead a plan with the decisions most likely to change — data models, interfaces
 
 - A reader with no context could follow it.
 - Judge language by correctness, clarity, and operational meaning. A valid alternative wording or layout is not a defect merely because the reviewer prefers another style.
-- Apply [what the prompt carries](#what-the-prompt-carries), [what to leave out](#what-to-leave-out), and [where prescription belongs](#where-prescription-belongs); these sections own the content and prescription checks.
+- Apply [what the prompt carries](#what-the-prompt-carries), [what to leave out](#what-to-leave-out), [where prescription belongs](#where-prescription-belongs), and [what earns a change](#what-earns-a-change); these sections own the content, prescription, and change-admission checks.
 
 ## Review handoff
 
@@ -78,7 +87,7 @@ On the report-only first pass, return:
 
 1. A concise list of retained changes labeled `C1`, `C2`, and so on.
 2. `Why these changes help`, with one matching entry for every retained change.
-3. The smallest complete proposed diff that resolves the retained changes and preserves the artifact's intent.
+3. The smallest complete proposed diff that resolves the retained changes and preserves the artifact's intent, with its net line change; justify net growth in `Why these changes help`.
 4. What was and was not verified.
 
 For findings about pauses, permission requests, unfinished work, or divergence from user intent, cite the target file and exact rule. Distinguish observed behavior from predicted risk, and explicit requirements from the reviewer's interpretation.
@@ -103,7 +112,7 @@ python3 <skill-directory>/scripts/check_globals.py
 
 ## Done
 
-- In Write, every applicable check above passes on the delivered prompt. In Review, retain supported defects and useful simplifications; a missing inapplicable rule is not a defect. After approved edits, every applicable check passes or the remaining exception is explicit.
+- In Write, every applicable check above passes on the delivered prompt. In Review, retain only changes that meet [what earns a change](#what-earns-a-change), including useful simplifications; a missing inapplicable rule is not a defect. After approved edits, every applicable check passes or the remaining exception is explicit.
 - `check_globals.py` passes from an unrelated working directory whenever the global files changed.
 - The handoff names the targets reviewed and what was verified; after approved edits, it also names the files changed.
 

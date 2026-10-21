@@ -27,6 +27,14 @@
       "needed_for": "Delegating logged in browser work.",
       "check": {"type": "skill-present", "target_skill": "x9-browser-session"},
       "guidance_id": "install-skill"
+    },
+    {
+      "id": "agent-instructions-rubric",
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Writing the Codex brief.",
+      "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
+      "guidance_id": "install-skill"
     }
   ]
 }

@@ -8,14 +8,14 @@ compatibility: Requires x9-agent-instructions, which owns the quality of agent-f
 
 Create concise, evidence-backed onboarding files for two audiences: agents (`AGENTS.md`/`CLAUDE.md`) and humans (`README.md`). Existing files are user-owned inputs, not blank templates.
 
-For every Create, Audit, or Update that touches agent-facing instructional prose in `AGENTS.md` or an explicitly exceptional `CLAUDE.md`, load and apply `x9-agent-instructions` before writing or judging that prose. It is a subordinate instruction-quality rubric, not the primary context-file workflow, and owns language, prescription, duplication, artifact references, and what earns a line. This skill remains the owner of repository evidence, audience selection, canonical files, merge and preservation behavior, `AGENTS.md`/`CLAUDE.md` normalization, and `README.md`.
+For every Create, Audit, or Update that touches agent-facing instructional prose in `AGENTS.md` or an explicitly exceptional `CLAUDE.md`, load and apply `x9-agent-instructions` before writing or judging that prose. It is a subordinate instruction-quality rubric, not the primary context-file workflow, and owns language, prescription, duplication, artifact references, and what earns a line or a change. This skill remains the owner of repository evidence, audience selection, canonical files, merge and preservation behavior, `AGENTS.md`/`CLAUDE.md` normalization, and `README.md`.
 
 Do not apply the subordinate rubric to `README.md` or to a `CLAUDE.md` that contains only the canonical `@AGENTS.md` import. Fold its findings into this workflow's single report and approval gate rather than producing a second handoff. If `x9-agent-instructions` is unavailable, continue the remaining repository and structural checks, record the instruction rubric as `degraded`, and do not claim a complete or clean agent-file result. README-only work records it as `not applicable`.
 
 ## Select the action
 
 - **Create or update:** an explicit request to create, update, fix, or rewrite a context file authorizes the requested in-scope edits; do not ask for the same permission again.
-- **Audit:** an explicit audit/check request is read-only. Completion is a report accounting for every requested file, with source evidence and impact for each finding, the smallest complete proposed change, validation results, and unverified claims. Ask whether to apply retained fixes, and include any optional rule-block choices defined in [references/rule-blocks.md](references/rule-blocks.md) in the same question round.
+- **Audit:** an explicit audit/check request is read-only. Completion is a report accounting for every requested file, with source evidence and impact for each finding, the smallest complete proposed change, validation results, and unverified claims. Retain every finding by the `What earns a change` section of `x9-agent-instructions`, including README findings where the rest of that rubric is not applicable. Ask whether to apply retained fixes, and include any optional rule-block choices defined in [references/rule-blocks.md](references/rule-blocks.md) in the same question round.
 - **Bare skill invocation:** inspect the current repository read-only by default. If changes would help, show the proposal and ask once before editing.
 
 Infer the action from the whole request, not only trigger words.

@@ -24,7 +24,7 @@ Read [references/codex-cli.md](references/codex-cli.md) and use its one-shot or 
 
 ## Brief contract
 
-Pass a self-contained outcome, relevant files/sources, constraints, authority, deliverable, and completion bar. Add these failure rules when tools or current facts are load-bearing:
+Load `x9-agent-instructions` before writing the first brief and apply its rubric; if it is unavailable, say so and pass a self-contained outcome, relevant files/sources, constraints, authority, deliverable, and completion bar. Add these failure rules when tools or current facts are load-bearing:
 
 - Report failed or cancelled calls exactly; do not substitute memory.
 - Surface an unresolved fork only when it materially changes the result.

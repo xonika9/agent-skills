@@ -233,14 +233,9 @@ actual mismatch directly into the executor brief, with at most three mismatches;
 when none exists, the preflight creates no separate checklist or durable status.
 Skip this preflight for routine narrow work.
 
-Give each owned executor a bounded goal and invariants rather than a dictated
-sequence. Its task should include:
-
-- the concrete outcome it owns;
-- relevant paths and contracts to inspect;
-- boundaries it must not change;
-- observable acceptance evidence;
-- a request to report changed files, checks run, and unresolved risks.
+Write each owned executor's task by the
+[shared prompt rules](prompt-mode.md#shared-prompt-rules) and ask it to report
+changed files, checks run, and unresolved risks.
 
 For a research unit, also name the decision it is meant to unlock, one
 answerable question, its evidence boundary, its effort or cost budget, and its

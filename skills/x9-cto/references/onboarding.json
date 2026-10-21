@@ -24,6 +24,14 @@
       "needed_for": "Running independent architecture criticism and the autonomous delivery tail audit.",
       "check": {"type": "runtime-feature", "feature_id": "native-subagents"},
       "guidance_id": "enable-runtime-feature"
+    },
+    {
+      "id": "agent-instructions-rubric",
+      "kind": "skill",
+      "level": "optional",
+      "needed_for": "Writing executor prompts and handoffs.",
+      "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
+      "guidance_id": "install-skill"
     }
   ]
 }

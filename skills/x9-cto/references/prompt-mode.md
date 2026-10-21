@@ -17,25 +17,23 @@ is not a task description. An inaccessible declared owner is not an absent one.
 ## Shared prompt rules
 
 These rules govern every prompt the CTO writes for another chat or agent: this
-mode, a Judge continuation, and the external handoff in
-[Next action and ownership](../SKILL.md#next-action-and-ownership).
+mode, a Judge continuation, an owned executor's task, and the external handoff
+in [Next action and ownership](../SKILL.md#next-action-and-ownership).
 
-- Write the prompt in the user's language; keep identifiers, commands, paths,
-  and URLs exact.
-- Carry only what the executor cannot load itself: decisions taken in this
-  chat, current state, conflicts with neighboring work, and granted or withheld
-  authority. Do not retell a card, plan, skill, or `AGENTS.md` that the
-  executor reads anyway; point to it.
+Load `x9-agent-instructions` before the first such prompt and apply its rubric;
+it owns what a prompt carries and leaves out. If it is unavailable, state the
+outcome, completion bar, fenced actions with their reasons, and what the
+executor returns, apply the rules below, and say that the instruction rubric was
+not applied. The CTO adds only these:
+
+- Carry conflicts with neighboring work alongside the decisions, state, and
+  authority from this chat.
 - A prompt for a chat that already holds the task context is a delta. A prompt
   for a new chat is self-contained for what the linked sources do not supply.
-- State the outcome and the completion bar, not a path. Fence only actions that
-  are irreversible, externally visible, costly, or touch shared state, and say
-  which.
 - List document edits as edits, without the reasons; the reasons go to the
   user outside the prompt.
 - If a previous prompt was wrong, cancel that instruction explicitly in the new
   one.
-- End by naming what the executor returns.
 
 ## Preparing and launching
 

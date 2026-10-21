@@ -62,6 +62,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 
 - Create a new skill owner only for an independent user intent with a real invocation path in at least one claimed runtime, or for a proven independent consumer.
 - Growing an existing file, a shared reference, or a consumption relationship alone does not establish a new owner; extend the current owner or use the shared file instead.
+- A skill that composes prompts or briefs for another agent at runtime keeps only its domain contract. When it needs general prompt rules beyond that contract, it loads `x9-agent-instructions` before the first prompt instead of restating them. A fixed brief template is skill text, judged when its skill is audited.
 
 ## 7. Observable completion `[j+b]`
 
@@ -112,4 +113,4 @@ Answer yes/no or not applicable for every item against the declared scope and se
 9. Is invocation classified separately for every claimed runtime, with consumption and runtime mechanics kept separate?
 10. Does a new owner meet the ownership boundary, and is shared `user-only` material directly accessible to every consumer?
 11. Does each rule have one canonical owner, without conflicting or unnecessary duplication?
-12. Was `x9-agent-instructions` applied to every agent-facing instruction in scope, or was its absence recorded as `not applicable` or `degraded`?
+12. Was `x9-agent-instructions` applied to every agent-facing instruction in scope, or was its absence recorded as `not applicable` or `degraded`, and does a skill that writes runtime prompts avoid restating it?

@@ -5,11 +5,14 @@
 ### Highlights
 
 - Claude Code global instructions now delegate self-contained implementation from settled plans to Sonnet at high effort by default. Opus remains responsible for planning and review, and can handle implementation when complexity, impact, or demonstrated Sonnet limitations warrant it. Failed checks prompt diagnosis rather than an automatic model switch.
-- Claude Code worker routing is now unambiguous at the edges: models outside the listed Opus and Sonnet routes, including Fable and Haiku, are used only on explicit request; forks are used only when the parent's model and effort already match the role; and small changes stay in the main session when a brief would cost as much as the change.
+- Claude Code worker routing is now unambiguous at the edges and about a fifth shorter: only the listed Opus and Sonnet routes are used unless the user or an applicable skill chooses another model; forks are used only when the parent's model and effort already match the role; and small changes stay in the main session when a brief would cost as much as the change.
+- Prompt, instruction-file, `AGENTS.md`/`CLAUDE.md`, README, and skill reviews no longer pad artifacts with rules for merely conceivable failures: a change needs a concrete defect or a credible failure in actual use, the smallest fix wins, re-reviewing an unchanged text applies the same bar rather than hunting for something new, and "no changes needed" is a valid result. Prompt and instruction-file reviews report the net line change of proposed edits. CTO and Codex delegation briefs now follow the same instruction rules instead of their own copies, and skill audits flag skills that restate them.
+- Global instructions for Claude Code, Codex, and OpenCode keep subagent briefs free of contingencies for merely conceivable situations; credible risks of data loss, secret exposure, or irreversible actions still belong in the brief, however rare.
 
 ### Install / update
 
 - Update the installed Claude Code global instructions to adopt the revised worker routing. Explicit user model choices and skill-assigned models retain their existing priority.
+- Update the installed global instructions for Claude Code, Codex, and OpenCode to adopt the revised shared rule for subagent briefs.
 
 ### Compatibility
 
