@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- Global instructions for Claude Code, Codex, and OpenCode resume a GPT worker interrupted by a capacity error in the same conversation by sending `continue` (in T3 Code, to its child thread) instead of starting a fresh copy, and start a replacement only when the runtime rejects that resume.
+
 ### Install / update
 
 ### Compatibility
