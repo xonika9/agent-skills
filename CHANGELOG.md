@@ -5,6 +5,7 @@
 ### Highlights
 
 - Global instructions for Claude Code, Codex, and OpenCode resume a GPT worker interrupted by a capacity error in the same conversation by sending `continue` (in T3 Code, to its child thread) instead of starting a fresh copy, and start a replacement only when the runtime rejects that resume.
+- Global instructions for Claude Code, Codex, and OpenCode make answers easier to follow: status and next-step replies say what happens next and what the user must do, internal codes and statuses are replaced with plain words or explained first, and re-asked questions are gathered into one numbered block. An answer to a question no longer counts as the go-ahead signal an agent said it would wait for.
 
 ### Install / update
 
