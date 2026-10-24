@@ -88,10 +88,11 @@ class CtoRoutingContractTests(unittest.TestCase):
         self.assertIn("Applicable repository policy owns overrides", auto)
         self.assertIn("do not invent a registry", auto)
 
-    def test_opencode_subagents_default_to_deepseek_flash(self):
+    def test_opencode_subagents_default_to_configured_model(self):
         runtime = " ".join(RUNTIME.read_text(encoding="utf-8").split())
 
-        self.assertIn("`opencode` provider instance with `opencode-go/deepseek-v4.1-flash` at the `high` reasoning variant", runtime)
+        self.assertIn("with the default model of the OpenCode configuration in effect, read from `opencode debug config`", runtime)
+        self.assertNotIn("muse-spark", runtime)
         self.assertIn("a model or variant the user names replaces this default", runtime)
         self.assertIn("report that instead of substituting another model", runtime)
 

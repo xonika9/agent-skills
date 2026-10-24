@@ -82,6 +82,10 @@ force a heavy format onto a light question.
   repository workflow. Read
   [references/execution-mode.md](references/execution-mode.md) before the first
   dispatch; it owns delegation, verification, and closure.
+- **Pilot** — only the exact runtime-native `x9-cto pilot start`, `stop`, or
+  `report` selects it: a standing run that launches ready work, integrates
+  finished work, and reports on a schedule. Follow
+  [references/pilot.md](references/pilot.md).
 
 Grounding takes precedence over autonomous delivery, the autonomous CE run, and Judge. Otherwise,
 autonomous delivery takes precedence over Judge and Prompt unless the user

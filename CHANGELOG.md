@@ -4,6 +4,10 @@
 
 ### Highlights
 
+- Global instructions for Claude Code, Codex, and OpenCode make a worker launched through OpenCode use that OpenCode's configured default model and variant, passed explicitly, unless the user names another model. A parent Claude or Codex agent in T3 Code no longer picks a model from a catalog search or inherits its own model when asked only to "run it through OpenCode", and changing the default no longer requires editing model names in prompts.
+- When the user asks the CTO for OpenCode subagents without naming a model, `x9-cto` now uses the default model of the OpenCode configuration in effect instead of a fixed Muse Spark model, so changing that default no longer requires editing the skill.
+- The CTO pilot ticks every 30 minutes instead of hourly, so finished work is integrated and the next work launched sooner.
+- Each pilot tick hands the reading of executor chats, running checks and branches to a cheaper fact-extraction worker and gets back a short digest, so the CTO chat spends its context and its stronger model only on integration, launches, pushes and owner questions.
 - Global instructions for Claude Code, Codex, and OpenCode resume a GPT worker interrupted by a capacity error in the same conversation by sending `continue` (in T3 Code, to its child thread) instead of starting a fresh copy, and start a replacement only when the runtime rejects that resume.
 - Global instructions for Claude Code, Codex, and OpenCode make answers easier to follow: status and next-step replies say what happens next and what the user must do, internal codes and statuses are replaced with plain words or explained first, and re-asked questions are gathered into one numbered block. An answer to a question no longer counts as the go-ahead signal an agent said it would wait for.
 

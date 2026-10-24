@@ -96,8 +96,8 @@ class SkillContractTests(unittest.TestCase):
         codex = PUBLISHED_GLOBAL_FILES[2].read_text(encoding="utf-8")
         for path in PUBLISHED_GLOBAL_FILES:
             core = extract(path)
-            self.assertIn(b"Use only Codex and Claude Code for delegated model work", core, path)
-            self.assertIn(b"Do not use OpenCode, direct model APIs, or other runtimes for delegation.", core, path)
+            self.assertNotIn(b"Do not use OpenCode", core, path)
+            self.assertIn(b"tell me in the chat and stop that delegated work; do not switch to another model or runtime yourself.", core, path)
         self.assertIn("inherit the primary session's model and reasoning effort", codex)
         self.assertIn("do not configure a lower-cost subagent default", codex)
         self.assertIn("stop or archive them only when that cleanup is explicitly authorized", codex)
