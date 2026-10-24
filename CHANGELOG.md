@@ -10,6 +10,7 @@
 - Each pilot tick hands the reading of executor chats, running checks and branches to a cheaper fact-extraction worker and gets back a short digest, so the CTO chat spends its context and its stronger model only on integration, launches, pushes and owner questions.
 - Global instructions for Claude Code, Codex, and OpenCode resume a GPT worker interrupted by a capacity error in the same conversation by sending `continue` (in T3 Code, to its child thread) instead of starting a fresh copy, and start a replacement only when the runtime rejects that resume.
 - Global instructions for Claude Code, Codex, and OpenCode make answers easier to follow: status and next-step replies say what happens next and what the user must do, internal codes and statuses are replaced with plain words or explained first, and re-asked questions are gathered into one numbered block. An answer to a question no longer counts as the go-ahead signal an agent said it would wait for.
+- Global instructions for Claude Code, Codex, and OpenCode let an agent asked only to design or think something through inspect with read-only commands while still launching, changing, and spending nothing until told to proceed. In Claude Code, the Opus/Sonnet routing now covers only Claude Code workers, so a worker run through OpenCode without a named model keeps that OpenCode's configured default instead of receiving a Claude model.
 
 ### Install / update
 

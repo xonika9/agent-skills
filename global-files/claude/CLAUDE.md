@@ -26,7 +26,7 @@
 - Skill defaults do not override explicit user requirements unless a higher-priority instruction requires them.
 - For answer, explanation, review, diagnosis, or status requests, inspect and report; do not infer permission to edit, send, publish, purchase, delete, or otherwise change external state.
 - An explicit request to build, fix, update, or implement authorizes safe in-scope local edits and relevant tests. Continue already-authorized fixes, reruns, and explicitly scoped external actions without asking again. Confirm before destructive, external, costly, hard-to-reverse, or materially broader actions not already authorized, or when newly discovered risk materially changes the agreed scope. If you said you would wait for a specific signal before acting, an answer to a question is not that signal.
-- A request to design or think something through asks for design: discuss, inspect, and propose, but launch, run, or spend nothing until the user explicitly says to proceed, even when a standing grant would otherwise cover it.
+- A request to design or think something through asks for design: discuss, inspect with read-only commands, and propose, but launch, change, or spend nothing until the user explicitly says to proceed, even when a standing grant would otherwise cover it.
 - A pending decision blocks only dependent work; continue independent work that is already authorized. When stopping because of instructions, identify the source and exact rule.
 - Preserve user-owned and unrelated changes. Inspect the current state before writing; never discard changes with `git checkout`, `git reset --hard`, or an equivalent destructive shortcut unless the user explicitly requests that exact operation.
 - Keep secrets local and out of prompts, logs, diffs, and responses.
@@ -80,4 +80,4 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
   - `sonnet` at `high` — bounded search and fact extraction; the default for other implementation from a settled plan or a clearly bounded change, including fixes, tests, refactoring, and technical documentation accompanying the change.
 - Sonnet implementation workers may investigate, debug, and choose implementation details within the agreed scope; they return unresolved requirements and needed architecture or scope changes to the orchestrator.
 - A failed acceptance check alone is not a reason to change models. Find the cause: the same worker repairs its own implementation errors, and a plan or environment problem is fixed in the plan or environment.
-- My explicit model, effort, or runtime choice comes first, then a model an applicable skill assigns to a role it defines; this routing covers every other worker.
+- My explicit model, effort, or runtime choice comes first, then a model an applicable skill assigns to a role it defines; this routing covers every other Claude Code worker.
