@@ -163,8 +163,26 @@ profile; without it, omit the capture rather than silently switching environment
 
 ## Verified Edge adapter
 
+macOS:
+
 - Profile: `~/Library/Application Support/Microsoft Edge Automation`.
-- Launcher: `~/Applications/Edge (Agent).app` with remote-debugging port `9223`.
+- Launcher: `~/Applications/Edge (Agent).app` with remote-debugging port `9223`;
+  start it in the background with `open -g ~/Applications/"Edge (Agent).app"`.
+- The listener's profile is verified from its argument vector (`KERN_PROCARGS2`).
+
+Linux:
+
+- Edge binary: `/opt/microsoft/msedge/msedge`; profile: `~/.config/microsoft-edge-agent`.
+- Launcher: `~/.local/bin/edge-agent` (desktop entry "Microsoft Edge (Agent)") with
+  remote-debugging port `9223`. It refuses when the port belongs to another profile.
+  Start it in the background without waiting for it to exit.
+- Claude Code MCP wrapper: `~/.local/bin/chrome-devtools-mcp-edge`, which stays alive
+  while Edge is closed and rejects tool calls unless the listener is this profile.
+- The listener's profile is verified from `/proc/<pid>/cmdline`, where `<pid>` owns the
+  listening port (`lsof -nP -tiTCP:9223 -sTCP:LISTEN`).
+
+Both:
+
 - Codex primary outside the exceptions in [Choose the surface](#choose-the-surface):
   the ChatGPT browser extension installed in this Edge.
 - Claude Code primary outside the local-development exception: `chrome-devtools` MCP.
@@ -174,8 +192,12 @@ profile; without it, omit the capture rather than silently switching environment
   profile.
 - Leave pre-existing tabs, windows, downloads, bookmarks, and settings untouched.
 - Re-snapshot after navigation, filtering, modal changes, and redraws because element references become stale.
-- If an Edge route cannot attach, confirm that `Edge (Agent).app` is running before
-  declaring that controller unavailable.
+- When `http://127.0.0.1:9223/json/version` does not answer, start the adapter's launcher
+  in the background, wait up to 30 seconds for that endpoint, verify the profile binding,
+  and attach. Declare a controller unavailable only after this fails. Never substitute a
+  clean profile or another browser. An MCP server that the runtime already marked failed
+  stays without tools for that session even once Edge runs; continue with the next route
+  in the fallback chain and apply [Runtime restart](#runtime-restart).
 
 Read before mutating. Posting, purchasing, sending, deleting, or changing account data still requires authority from the user's request.
 

@@ -32,7 +32,7 @@
       "id": "python3-edge-wrapper",
       "kind": "command",
       "level": "optional",
-      "needed_for": "Installing the verified macOS agent-edge fallback. Native and MCP routes do not need Python.",
+      "needed_for": "Installing the verified macOS or Linux agent-edge fallback. Native and MCP routes do not need Python.",
       "check": {"type": "command-present", "command": "python3"},
       "guidance_id": "install-command"
     },

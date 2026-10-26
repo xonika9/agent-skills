@@ -10,13 +10,22 @@ it launches ready work, integrates finished work, and reports.
   Without one, report pilot as unavailable here and stop.
 - Delete the scheduled tasks of an earlier pilot run in this repository, so
   only one pilot runs.
-- Create two scheduled tasks bound to this chat: a tick every 30 minutes and
+- Create two scheduled tasks bound to this chat: a tick every 2 hours and
   a report at 09:00 local. Their prompts name the tick or the report
   and point here; they list no chats or cards, because state lives on the
   repository's board.
+- Send every chat working on the started work the repository lists,
+  including chats an earlier run launched, this chat's address for its
+  end-of-work messages, so none of them keeps reporting to a stopped pilot.
 - Run the first tick now.
 
 ## Tick
+
+Every chat the pilot launches is told to message this chat when its work
+ends: done, handed over, blocked, waiting for the owner, or stopped on an
+error. Handle such a message at once for that chat, as a tick would. The
+scheduled tick is the fallback for a chat that ended without a message and
+for changes made outside the launched chats.
 
 - Read the end of every chat working on the started work the repository
   lists, including chats an earlier run launched; the start is stale.
@@ -27,9 +36,18 @@ it launches ready work, integrates finished work, and reports.
   questions, and checks each decisive fact against primary evidence.
 - Integrate finished work under the repository's acceptance rules. Answer an
   executor's question when canon settles it; otherwise hold it for the report.
-- Launch what the repository rules allow and record each launch where the
+- Launch what the repository rules allow, on the models chosen under
+  [launch defaults](runtime.md#launch-defaults), and record each launch where the
   repository keeps current state.
 - A tick with nothing to do sends the owner nothing.
+- A reply to a chat's message or a tick is one line naming what happened and
+  what this chat did, when the work goes as planned. It grows to a few lines
+  only when something needs attention: work returned a second time, a stop
+  for an outside cause, a failed deploy or server check, spend near its
+  limit, a stuck chat, or a chat waiting for the owner; those lines say what
+  broke, what was done, and what the owner must do. Unchanged open questions
+  become one line with their count; only new questions are written out. The
+  details go into the next report.
 
 ## Report
 
@@ -39,7 +57,8 @@ what each waits for, spend, and the owner's open questions.
 ## Stop
 
 Delete this run's scheduled tasks, confirm with the task list, leave launched
-chats running, and name them.
+chats running, and name them; until a new pilot starts and sends them its
+address, their messages still arrive here.
 
 ## Boundaries
 

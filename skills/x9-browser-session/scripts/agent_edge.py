@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Attach agent-browser to the verified Microsoft Edge Automation profile on macOS.
+"""Attach agent-browser to the verified Microsoft Edge automation profile on macOS or Linux.
 
 Regression checks: python3 -m unittest discover -s this-directory -p 'test_*.py'
 """
@@ -14,12 +14,31 @@ import sys
 
 
 PORT = 9223
+BROWSER_NAMES = {'Microsoft Edge', 'msedge'}
+
+
+def profile_path():
+    if sys.platform == 'darwin':
+        return Path.home() / 'Library/Application Support/Microsoft Edge Automation'
+    if sys.platform.startswith('linux'):
+        return Path.home() / '.config/microsoft-edge-agent'
+    raise ValueError('this Edge adapter requires macOS or Linux')
 
 
 def process_argv(pid):
-    """Read KERN_PROCARGS2 without flattening argument boundaries or logging them."""
+    """Read the exact argument vector without flattening argument boundaries or logging them."""
+    if sys.platform.startswith('linux'):
+        data = Path(f'/proc/{pid}/cmdline').read_bytes()
+        if not data.endswith(b'\0'):
+            raise ValueError('truncated process arguments')
+        args = [os.fsdecode(arg) for arg in data[:-1].split(b'\0')]
+        if len(args) == 1:
+            # Chromium rewrites its process title, so the vector arrives space-joined.
+            # Splitting can only add or break switches; verify_profile rejects both.
+            args = args[0].split()
+        return args
     if sys.platform != 'darwin':
-        raise ValueError('this Edge adapter requires macOS')
+        raise ValueError('this Edge adapter requires macOS or Linux')
     libc = ctypes.CDLL(None, use_errno=True)
     sysctl = libc.sysctl
     sysctl.argtypes = [ctypes.POINTER(ctypes.c_int), ctypes.c_uint, ctypes.c_void_p,
@@ -53,7 +72,7 @@ def process_argv(pid):
 
 def verify_profile(args, profile, port):
     """Reject missing, duplicate or prefix-matching browser switches."""
-    if not args or Path(args[0]).name != 'Microsoft Edge':
+    if not args or Path(args[0]).name not in BROWSER_NAMES:
         raise ValueError('listener is not the Microsoft Edge browser process')
     expected = {'user-data-dir': str(profile), 'remote-debugging-port': str(port)}
     found = {name: [] for name in expected}
@@ -76,8 +95,8 @@ def verify_profile(args, profile, port):
 
 
 def main():
-    profile = Path.home() / 'Library/Application Support/Microsoft Edge Automation'
     try:
+        profile = profile_path()
         session = os.environ.get('AGENT_BROWSER_SESSION', '')
         if session == 'default' or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,63}', session):
             raise ValueError('set a unique AGENT_BROWSER_SESSION for this task')

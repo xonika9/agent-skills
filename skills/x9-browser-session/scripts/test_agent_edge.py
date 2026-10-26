@@ -15,6 +15,7 @@ import agent_edge
 
 PROFILE = '/tmp/Edge Automation'
 EXE = '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+LINUX_EXE = '/opt/microsoft/msedge/msedge'
 
 
 class ProfileBindingTests(unittest.TestCase):
@@ -66,11 +67,10 @@ class ProfileBindingTests(unittest.TestCase):
             self.assertEqual(run.call_count, 1, 'a bad binding must not reach curl')
 
     def test_verified_profile_dispatches_to_existing_cdp_endpoint(self):
-        with patch.object(agent_edge.Path, 'home', return_value=Path('/tmp/test-home')), \
+        with patch.object(agent_edge, 'profile_path', return_value=Path(PROFILE)), \
              patch.object(agent_edge.subprocess, 'run') as run, \
              patch.object(agent_edge, 'process_argv', return_value=[
-                 EXE, '--user-data-dir=/tmp/test-home/Library/Application Support/Microsoft Edge Automation',
-                 '--remote-debugging-port=9223']), \
+                 EXE, '--user-data-dir=' + PROFILE, '--remote-debugging-port=9223']), \
              patch.object(agent_edge.os, 'execvp') as dispatch, \
              patch.object(sys, 'argv', ['agent-edge', 'snapshot']):
             run.return_value.stdout = '123\n'
@@ -120,10 +120,10 @@ from types import SimpleNamespace
 from unittest.mock import patch
 import agent_edge
 sys.argv = ['agent-edge', 'snapshot', '--json']
-with patch.object(agent_edge.Path, 'home', return_value=Path('/tmp/edge-test-home')), \
+with patch.object(agent_edge, 'profile_path', return_value=Path('/tmp/Edge Automation')), \
      patch.object(agent_edge, 'process_argv', return_value=[
          '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
-         '--user-data-dir=/tmp/edge-test-home/Library/Application Support/Microsoft Edge Automation',
+         '--user-data-dir=/tmp/Edge Automation',
          '--remote-debugging-port=9223']), \
      patch.object(agent_edge.subprocess, 'run', return_value=SimpleNamespace(stdout='123\\n')):
     raise SystemExit(agent_edge.main())
@@ -138,7 +138,27 @@ with patch.object(agent_edge.Path, 'home', return_value=Path('/tmp/edge-test-hom
             self.assertEqual([json.loads(line) for line in log.read_text().splitlines()], [[
                 '--session', 'edge-task-42', '--cdp', '9223', '--pin-tab', 'snapshot', '--json']])
 
-    @unittest.skipUnless(sys.platform == 'darwin', 'KERN_PROCARGS2 is a macOS interface')
+    def test_linux_browser_process_is_accepted(self):
+        agent_edge.verify_profile(
+            [LINUX_EXE, '--user-data-dir=' + PROFILE, '--remote-debugging-address=127.0.0.1',
+             '--remote-debugging-port=9223'], PROFILE, 9223)
+        with self.assertRaises(ValueError):
+            agent_edge.verify_profile(
+                ['/usr/bin/other', '--user-data-dir=' + PROFILE, '--remote-debugging-port=9223'],
+                PROFILE, 9223)
+
+    def test_linux_flattened_process_title_is_split_on_spaces(self):
+        title = f'{LINUX_EXE} --user-data-dir={PROFILE.replace(" ", "")} --remote-debugging-port=9223'
+        with patch.object(agent_edge.sys, 'platform', 'linux'), \
+             patch.object(agent_edge.Path, 'read_bytes', return_value=title.encode() + b'\0'):
+            args = agent_edge.process_argv(1)
+        self.assertEqual(args, title.split())
+        agent_edge.verify_profile(args, PROFILE.replace(' ', ''), 9223)
+        with self.assertRaises(ValueError):
+            agent_edge.verify_profile(args, PROFILE, 9223)
+
+    @unittest.skipUnless(sys.platform in ('darwin',) or sys.platform.startswith('linux'),
+                         'native argument readers exist for macOS and Linux')
     def test_native_argument_reader_preserves_a_spaced_argument(self):
         # Inspect only our own disposable process, never a user browser or its environment.
         import json

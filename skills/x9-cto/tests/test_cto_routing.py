@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+import re
 import unittest
 
 
@@ -92,9 +93,20 @@ class CtoRoutingContractTests(unittest.TestCase):
         runtime = " ".join(RUNTIME.read_text(encoding="utf-8").split())
 
         self.assertIn("with the default model of the OpenCode configuration in effect, read from `opencode debug config`", runtime)
-        self.assertNotIn("muse-spark", runtime)
+        self.assertIsNone(re.search(r"opencode-go/", runtime))
         self.assertIn("a model or variant the user names replaces this default", runtime)
         self.assertIn("report that instead of substituting another model", runtime)
+
+    def test_launch_defaults_come_from_the_repository_file(self):
+        runtime = " ".join(RUNTIME.read_text(encoding="utf-8").split())
+
+        self.assertIn("read `.x9-cto.json` at the repository root", runtime)
+        self.assertIn("a field absent from both inherits the launching agent's value", runtime)
+        self.assertIn("This chat's own subagents keep the runtime's routing", runtime)
+        self.assertIn("runs `ce-bakeoff` and the user named no candidate models, it passes the `bakeoff_*` candidates", runtime)
+        self.assertIn("the highest version in the chosen provider's live catalog at launch", runtime)
+        self.assertIn("report that instead of substituting another model", runtime)
+        self.assertIsNone(re.search(r"claude-[a-z]+-\d", runtime))
 
     def test_low_level_primitive_cannot_validate_its_own_control_plane(self):
         contract = " ".join(

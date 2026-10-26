@@ -19,6 +19,7 @@ supported flags can change.
   - [3. Configure the Claude primary and Codex MCP route](#3-configure-the-claude-primary-and-codex-mcp-route)
   - [4. Add the last-resort wrapper](#4-add-the-last-resort-wrapper)
   - [5. Verify without touching existing tabs](#5-verify-without-touching-existing-tabs)
+- [Linux adapter](#linux-adapter)
 
 ## Portable adapter contract
 
@@ -106,13 +107,13 @@ Existing installations are not migrated automatically. If a live Claude Code or 
 
 ### 4. Add the last-resort wrapper
 
-Install `agent-browser`, load its current workflow with `agent-browser skills get core`, and confirm that its current `--help` includes `--cdp`, `--session`, and `--pin-tab`. If strict tab binding is unavailable, this fallback is unavailable; do not attach through an unpinned shared session. Make Python 3, `curl`, and `lsof` available. Install [the bundled macOS wrapper](../scripts/agent_edge.py) on `PATH` as `agent-edge`, resolving `<skill-directory>` from the loaded `SKILL.md`:
+Install `agent-browser`, load its current workflow with `agent-browser skills get core`, and confirm that its current `--help` includes `--cdp`, `--session`, and `--pin-tab`. If strict tab binding is unavailable, this fallback is unavailable; do not attach through an unpinned shared session. Make Python 3, `curl`, and `lsof` available. Install [the bundled wrapper](../scripts/agent_edge.py) on `PATH` as `agent-edge`, resolving `<skill-directory>` from the loaded `SKILL.md`. On Linux, use the install in [Linux adapter](#linux-adapter) instead:
 
 ```bash
 install -m 755 "<skill-directory>/scripts/agent_edge.py" "<directory-on-PATH>/agent-edge"
 ```
 
-The wrapper reads the listener process's argument vector through macOS `KERN_PROCARGS2`. It follows Chromium's POSIX switch prefixes, ASCII whitespace trimming, `--` terminator, and `=` values, then rejects missing, duplicate, or mismatched profile/port switches. A separate argument after a key is not its value. It never relies on a flattened `ps` command string or launches a browser. An unreadable binding fails closed; preserve the existing profile and report the missing evidence. Replace an installed older wrapper only under the authority to install or update this adapter.
+The wrapper reads the listener process's argument vector through macOS `KERN_PROCARGS2` (on Linux, `/proc/<pid>/cmdline`). It follows Chromium's POSIX switch prefixes, ASCII whitespace trimming, `--` terminator, and `=` values, then rejects missing, duplicate, or mismatched profile/port switches. A separate argument after a key is not its value. It never relies on a flattened `ps` command string or launches a browser. An unreadable binding fails closed; preserve the existing profile and report the missing evidence. Replace an installed older wrapper only under the authority to install or update this adapter.
 
 Before the first browser command of a fallback task, choose a unique controller session. Set it once, keep the value in the task's continuation state, and reuse it for every command and resumed shell; do not regenerate it on each call or share it with another task. For example:
 
@@ -145,3 +146,62 @@ stealing focus. For Claude Code and Codex,
 the setup passes when the configured MCP attaches to the profile, completes the read
 without stealing focus, and all pre-existing tabs remain unchanged; Codex additionally
 verifies its extension route.
+
+## Linux adapter
+
+Verified on Fedora with Microsoft Edge from `/opt/microsoft/msedge/msedge`. The parameters
+follow the portable contract:
+
+| Parameter | Value |
+|---|---|
+| User-data directory | `~/.config/microsoft-edge-agent` |
+| Launcher | `~/.local/bin/edge-agent` (desktop entry `~/.local/share/applications/microsoft-edge-agent.desktop`), which starts Edge with `--user-data-dir=<profile> --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223` and refuses when port `9223` answers but belongs to another profile |
+| Claude Code MCP | `~/.claude.json` runs `~/.local/bin/chrome-devtools-mcp-edge --browserUrl http://127.0.0.1:9223 ...` instead of `npx` |
+| Last fallback | `agent-edge`, below |
+
+Start the launcher in the background; a browser started this way keeps the dedicated
+profile's logins.
+
+### MCP wrapper
+
+`chrome-devtools-mcp --browserUrl` starts without a reachable browser and connects on the
+first tool call that finds one, retrying on every later call (tested against a closed
+port that a browser then opened). A wrapper that exits when Edge is closed therefore
+marks the server failed for the whole session for no reason. The wrapper works in two
+modes:
+
+- Endpoint answers: it checks that the listener belongs to the profile and replaces
+  itself with the controller.
+- Endpoint does not answer: it runs the controller behind
+  [the bundled gate](../scripts/edge_mcp_gate.py), which re-checks the listener's
+  profile before every `tools/call` and answers with an error result instead of
+  forwarding when no browser listens or the port belongs to another profile.
+
+The wrapper reads `EDGE_AGENT_PORT` and `EDGE_AGENT_PROFILE` like the launcher. The gate
+runs only when the browser was not reachable at start; a browser that appears later is
+checked on each call, one that was reachable at start is checked once.
+
+### Fallback wrapper
+
+Install `agent-browser` at user level with a stable prefix so non-interactive shells find
+it (`npm install -g --prefix ~/.local agent-browser@<current-version>`; read the current
+version from `npm view agent-browser version`, because an unpinned install resolved an
+old release in testing). `agent-browser install` is not needed: the wrapper attaches to
+the existing Edge. Then install the scripts side by side, because the gate imports the
+wrapper's verifier:
+
+```bash
+mkdir -p ~/.local/share/x9-browser-session
+install -m 755 "<skill-directory>/scripts/agent_edge.py" "<skill-directory>/scripts/edge_mcp_gate.py" ~/.local/share/x9-browser-session/
+ln -sf ~/.local/share/x9-browser-session/agent_edge.py ~/.local/bin/agent-edge
+```
+
+On Linux the wrapper finds the listener with `lsof -nP -tiTCP:9223 -sTCP:LISTEN` and
+verifies `/proc/<pid>/cmdline`. Chromium rewrites its process title, so the vector arrives
+joined by spaces and is split on spaces; a profile path containing spaces therefore fails
+closed. The session, pinning, and override rules of
+[the last-resort wrapper](#4-add-the-last-resort-wrapper) apply unchanged.
+`agent-browser` creates its own `about:blank` tab when a new session first attaches, and
+`tab new` creates a second one; close both when the task ends. Stop the session's
+background process afterwards (`agent-browser` keeps one per session; its
+`AGENT_BROWSER_SESSION` environment value identifies it).

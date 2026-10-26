@@ -41,7 +41,8 @@ isolation, closure, and authority terms from the task and applicable local
 contract. Point to their owners instead of restating their full instructions.
 
 Preparing prompts is not execution authority. Launch a top-level chat only on
-an explicit request for one, using the active runtime's supported route. An
+an explicit request for one, using the active runtime's supported route and
+the models chosen under [launch defaults](runtime.md#launch-defaults). An
 internal subagent is a different lifecycle; do not create an ordinary chat just
 because the owner asked for delegated work. If launch is unavailable, return
 the prompt and report that no chat was started. Runtime orchestration owns
