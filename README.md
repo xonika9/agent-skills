@@ -112,7 +112,7 @@ research X and give me an HTML report
 - **When:** the result depends on your account, region, cart, or feed, so a clean test browser would give the wrong answer.
 - **You get:** the agent keeps the browser or controller you explicitly selected; otherwise it follows the runtime's default route. Logged-in Edge work uses a separate automation profile and a task-owned tab. The agent leaves your tabs alone and does not solve CAPTCHAs.
 
-**Needs:** for logged-in Edge work, one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; a tested recipe covers Edge on macOS.
+**Needs:** for logged-in Edge work, one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; tested recipes cover Edge on macOS and on Linux (Fedora).
 
 **Ask:**
 

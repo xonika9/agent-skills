@@ -4,6 +4,16 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 26.10.26.1 - 2026-10-26
+
+### Highlights
+
 - Browser work on Linux now reaches the dedicated Edge automation profile even when Edge was closed at session start: the browser skill starts the adapter's launcher, waits up to 30 seconds for the debugging endpoint, verifies the profile, and only then declares a controller unavailable. The skill describes the Linux adapter (profile, launcher, MCP wrapper, profile check through the process arguments) next to the macOS one, and its `agent-edge` fallback and `chrome-devtools` MCP wrapper work on Linux, with the wrapper staying alive while Edge is closed and refusing tool calls when the port belongs to another profile.
 - Global instructions for Claude Code, Codex, and OpenCode make a worker launched through OpenCode use that OpenCode's configured default model and variant, passed explicitly, unless the user names another model. A parent Claude or Codex agent in T3 Code no longer picks a model from a catalog search or inherits its own model when asked only to "run it through OpenCode", and changing the default no longer requires editing model names in prompts.
 - When the user asks the CTO for OpenCode subagents without naming a model, `x9-cto` now uses the default model of the OpenCode configuration in effect instead of a model fixed in the skill, so changing that default no longer requires editing the skill.
@@ -19,9 +29,21 @@
 
 ### Install / update
 
+- Update through the existing skill or plugin route to receive Linux browser support, the CTO pilot and launch defaults, and the revised global instructions.
+- For Linux Edge work, follow the new Linux adapter section in the setup guide to install the launcher, the MCP wrapper, and the fallback; replace an installed older `agent-edge` wrapper.
+- Update the installed global instruction files for Claude Code, Codex, and OpenCode to adopt the revised shared rules.
+- Refresh the Compound Engineering block in existing repositories through `x9-context-files-generator` to pick up the delta review rule; optionally add `.x9-cto.json` at the repository root to pin models for launched chats.
+
 ### Compatibility
 
+- CTO OpenCode subagents without a named model now use the default model and variant of the OpenCode configuration in effect instead of a fixed model; a missing default, an unlisted model, or an unable instance is reported instead of substituting another model.
+- `.x9-cto.json` covers only launched top-level chats and the subagent routes written into their prompts; the launching chat keeps its runtime routing.
+- The Linux adapter is verified on Fedora with Microsoft Edge; a profile path containing spaces fails closed, and an MCP server already marked failed stays without tools for that session while the run continues through the fallback chain.
+- No new mandatory dependencies; the Linux adapter uses the existing `python3`, `curl`, `lsof`, and `agent-browser` with `--cdp`, `--session`, and `--pin-tab`.
+
 ### Breaking changes
+
+None.
 
 ## 26.10.21.1 - 2026-10-21
 
