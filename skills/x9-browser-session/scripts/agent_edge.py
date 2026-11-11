@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Attach agent-browser to the verified Microsoft Edge automation profile on macOS or Linux.
+"""Verify the Microsoft Edge automation profile behind a CDP port on macOS or Linux.
+
+edge_mcp_gate.py imports the verifier; the agent-browser wrapper below is the retired
+agent-edge route.
 
 Regression checks: python3 -m unittest discover -s this-directory -p 'test_*.py'
 """

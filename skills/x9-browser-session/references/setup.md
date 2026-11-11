@@ -1,81 +1,53 @@
-# Authenticated Chromium/CDP setup
+# Authenticated Edge setup
 
-Use the portable contract below for any Chromium browser. The Microsoft Edge/macOS
-recipe uses a dedicated profile, the Codex browser extension as the Codex primary
-outside the exceptions defined in the parent skill, local CDP on port `9223` as the
-Claude Code primary and Codex MCP route, and `agent-edge` as the last fallback attached
-to the same profile. In OpenCode, the live `chrome-devtools` MCP in the current tool
-catalog is the primary surface; verify its available operations rather than copying
-another runtime's configuration. The configuration intentionally follows
-`chrome-devtools-mcp@latest`; check its live help before configuring it because
-supported flags can change.
+The verified recipe uses a dedicated Edge profile with local CDP on port `9223`, the
+Browse extension paired with that profile as the primary controller in every runtime,
+and `chrome-devtools` MCP on the same port for DevTools work and as the fallback.
+Both controllers change over time: check `browse --version`, `browse doctor`, and
+`chrome-devtools-mcp --help` before configuring them instead of trusting the flags
+below.
 
 ## Contents
 
 - [Portable adapter contract](#portable-adapter-contract)
-- [Verified Microsoft Edge adapter on macOS](#verified-microsoft-edge-adapter-on-macos)
-  - [1. Create the automation profile and launcher](#1-create-the-automation-profile-and-launcher)
-  - [2. Verify the Codex extension](#2-verify-the-codex-extension)
-  - [3. Configure the Claude primary and Codex MCP route](#3-configure-the-claude-primary-and-codex-mcp-route)
-  - [4. Add the last-resort wrapper](#4-add-the-last-resort-wrapper)
-  - [5. Verify without touching existing tabs](#5-verify-without-touching-existing-tabs)
+- [1. Create the automation profile and launcher](#1-create-the-automation-profile-and-launcher)
+- [2. Configure `chrome-devtools` MCP](#2-configure-chrome-devtools-mcp)
+- [3. Install Browse and pair the extension](#3-install-browse-and-pair-the-extension)
+- [4. Verify without touching existing tabs](#4-verify-without-touching-existing-tabs)
 - [Linux adapter](#linux-adapter)
 
 ## Portable adapter contract
 
-Choose these values for the target machine instead of copying the Edge-specific paths blindly:
+Choose these values for the target machine instead of copying the Edge paths blindly:
 
 | Parameter | Requirement |
 |---|---|
-| Browser executable | A locally installed Chromium browser that supports remote debugging |
+| Browser executable | A locally installed Chromium browser that supports remote debugging and Chrome Web Store extensions |
 | User-data directory | A dedicated, continuously used agent profile, separate from the browser vendor's default profile; it may also be the user's regular working profile |
-| Codex extension | The installed extension and its local native host |
-| CDP endpoint | A localhost-only port or browser WebSocket endpoint |
+| CDP endpoint | A localhost-only port or browser WebSocket endpoint, used by `chrome-devtools` MCP and for the profile-binding check |
 | Launcher | Starts that executable with the dedicated profile and remote debugging enabled |
-| Codex Edge primary | Outside the exceptions defined in the parent skill, uses the Codex extension and creates a session-owned background tab |
-| Claude primary / Codex MCP route | Attaches to the existing CDP endpoint and creates a background page |
-| OpenCode primary | Uses the live `chrome-devtools` MCP in the current tool catalog and creates a background page; do not assume a configuration path, flags, or in-app browser |
-| Last fallback | Attaches to the same endpoint; it must not launch a clean browser |
+| Browse | The `browse` binary on `PATH`, its relay on localhost, and its extension installed and paired only in the dedicated profile |
+| Runtime configuration | `browse` and `chrome-devtools` MCP servers in each runtime the user works in |
 
-Before adding runtime configuration, verify that the browser's local CDP discovery
-endpoint responds. Verify the Codex extension only for its route. In OpenCode, verify
-that the live tool catalog exposes `chrome-devtools`; a missing tool is not evidence for a
-particular configuration or restart. If the browser exposes only a WebSocket endpoint,
-configure a controller that accepts that endpoint directly; do not assume
-`http://127.0.0.1:9223` works for every Chromium version. Keep the endpoint local, open
-a task-owned background page for verification, and close only pages created by the check.
+If the browser exposes only a WebSocket endpoint, configure a controller that accepts it
+directly; do not assume `http://127.0.0.1:9223` works for every Chromium version.
 
-## Verified Microsoft Edge adapter on macOS
+## 1. Create the automation profile and launcher
 
-### 1. Create the automation profile and launcher
-
-Create `~/Applications/Edge (Agent).app` in Script Editor and save it as an Application with this AppleScript:
+macOS: create `~/Applications/Edge (Agent).app` in Script Editor and save it as an
+Application with this AppleScript:
 
 ```applescript
 do shell script "open -gna \"Microsoft Edge\" --args --user-data-dir=\"$HOME/Library/Application Support/Microsoft Edge Automation\" --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223"
 ```
 
-Launch the app once. Edge creates the profile at:
+Linux: see [Linux adapter](#linux-adapter).
 
-```text
-~/Library/Application Support/Microsoft Edge Automation
-```
+Launch it once and sign in to the services the agent may use. Use this same profile
+continuously so its sessions stay current; keep it distinct from Edge's original
+default profile.
 
-Sign in to the services the agent may use. Use this same profile continuously so its
-sessions stay current. It may be your regular
-working Edge profile; keep it distinct from Edge's original default profile.
-
-### 2. Verify the Codex extension
-
-In the Edge Automation profile, verify that the ChatGPT extension can connect to Codex.
-Follow Codex's current extension troubleshooting instructions; do not replace them with
-copied initialization APIs. The Claude extension is not part of the default Claude Code
-route.
-
-The extension verification passes when it can create and operate a task-owned inactive
-tab without changing the user's visible tab.
-
-### 3. Configure the Claude primary and Codex MCP route
+## 2. Configure `chrome-devtools` MCP
 
 Claude Code, in `~/.claude.json`:
 
@@ -99,76 +71,102 @@ args = ["-y", "chrome-devtools-mcp@latest", "--browserUrl", "http://127.0.0.1:92
 startup_timeout_sec = 120.0
 ```
 
-Restart Claude Code or Codex after changing MCP configuration.
+OpenCode uses the same command and arguments in its `mcp` configuration. On Linux,
+replace `npx -y chrome-devtools-mcp@latest` with the [MCP wrapper](#mcp-wrapper).
 
-These flags disable the controller's usage statistics and CrUX URL lookup and redact sensitive network headers before returning network data to the client. They reduce exposure but do not make inspected pages private from the controller or model. Use a least-privilege account/profile and avoid opening unrelated private data.
+These flags disable the controller's usage statistics and CrUX URL lookup and redact
+sensitive network headers. They reduce exposure but do not make inspected pages private
+from the controller or model. Existing installations are not migrated automatically: if
+a live configuration omits these flags, update it only with authority to change global
+runtime configuration.
 
-Existing installations are not migrated automatically. If a live Claude Code or Codex configuration omits these flags, update it only with authority to change global runtime configuration, then restart that runtime. Otherwise report the mismatch and keep the browsing result `DEGRADED` for private or authenticated work.
+## 3. Install Browse and pair the extension
 
-### 4. Add the last-resort wrapper
-
-Install `agent-browser`, load its current workflow with `agent-browser skills get core`, and confirm that its current `--help` includes `--cdp`, `--session`, and `--pin-tab`. If strict tab binding is unavailable, this fallback is unavailable; do not attach through an unpinned shared session. Make Python 3, `curl`, and `lsof` available. Install [the bundled wrapper](../scripts/agent_edge.py) on `PATH` as `agent-edge`, resolving `<skill-directory>` from the loaded `SKILL.md`. On Linux, use the install in [Linux adapter](#linux-adapter) instead:
-
-```bash
-install -m 755 "<skill-directory>/scripts/agent_edge.py" "<directory-on-PATH>/agent-edge"
-```
-
-The wrapper reads the listener process's argument vector through macOS `KERN_PROCARGS2` (on Linux, `/proc/<pid>/cmdline`). It follows Chromium's POSIX switch prefixes, ASCII whitespace trimming, `--` terminator, and `=` values, then rejects missing, duplicate, or mismatched profile/port switches. A separate argument after a key is not its value. It never relies on a flattened `ps` command string or launches a browser. An unreadable binding fails closed; preserve the existing profile and report the missing evidence. Replace an installed older wrapper only under the authority to install or update this adapter.
-
-Before the first browser command of a fallback task, choose a unique controller session. Set it once, keep the value in the task's continuation state, and reuse it for every command and resumed shell; do not regenerate it on each call or share it with another task. For example:
+Download and read the installer before running it; it installs the binary into
+`~/.local/bin` after checking its size and SHA-256:
 
 ```bash
-export AGENT_BROWSER_SESSION="edge-$(python3 -c 'import uuid; print(uuid.uuid4().hex)')"
-agent-edge tab new "<authorized-task-url>"
+curl -fsSL https://opencode.ai/browse/install -o browse-install.sh
+sh browse-install.sh --no-setup
+browse install --agent claude --agent codex --agent opencode --no-open --no-wait
 ```
 
-The example creates a controller session, not a browser profile. The wrapper requires a non-default session name of 1–64 ASCII letters, digits, `_`, or `-`, starting with a letter or digit. It adds `--session`, `--cdp`, and `--pin-tab` itself; place the command first and ordinary options after it (`agent-edge snapshot --json`). Connection, session, and pinning overrides are rejected. On entry, create the task's own tab as above, or enumerate and explicitly select a verified task-owned tab from the prior controller before reading or acting; never use the currently selected page as proof of ownership.
+`browse install` has no help mode: `browse install --help` performs the install. Run
+inside an agent, it also configures that agent. The binary updates itself by default
+(`browse settings get` shows `autoUpdate`).
 
-When `agent-browser` reports `tab_gone`, the wrapper passes the failure through without retrying. Re-establish the profile binding, enumerate pages, and create or select a verified task-owned tab through the same named session before continuing. Do not disable pinning, reuse stale element references, or fall back to another task's tab. The unattended-Edge condition from the parent skill still applies when creating or switching tabs.
+Codex rejects MCP calls that need approval when its approval policy is `never`. If the
+user runs Codex without approval prompts, allow Browse's tools in its server entry:
 
-### 5. Verify without touching existing tabs
+```toml
+[mcp_servers.browse]
+command = "/Users/<user>/.local/bin/browse"
+args = ["mcp"]
+default_tools_approval_mode = "approve"
+```
 
-1. Launch `~/Applications/Edge (Agent).app`.
-2. For Codex, verify its extension by creating an inactive task tab, navigating it to
-   a harmless public URL, and confirming that the user's visible tab does not change.
-3. Confirm that `http://127.0.0.1:9223/json/version` responds locally.
-4. Attach with `chrome-devtools`, create a page with `background: true`, select it with
-   `bringToFront: false`, navigate it, and confirm that the visible tab does not change.
-5. Verify `agent-edge` with a unique task session and its pinned task tab only while
-   the user is not working in Edge; its current `tab new` and `tab switch` behavior
-   can foreground the task tab.
-6. Close only pages created by the check.
+Install the extension into the automation profile, not into whichever browser the
+system opens by default. Open
+`https://chromewebstore.google.com/detail/mfnicocicmmlkpjnaffgihfjhdgjkdjg` there, for
+example through the profile's CDP endpoint
+(`curl -X PUT "http://127.0.0.1:9223/json/new?<url>"`, which opens a foreground tab
+the user can act in), and ask the user to click
+**Add** / **Get**: the store accepts only a real click. Edge may ask to allow
+extensions from other stores.
 
-For OpenCode, the verification requires the
-[browser/profile binding](../SKILL.md#browser-and-profile-continuity) as well as the
-live `chrome-devtools` MCP creating and reading a task-owned background page without
-stealing focus. For Claude Code and Codex,
-the setup passes when the configured MCP attaches to the profile, completes the read
-without stealing focus, and all pre-existing tabs remain unchanged; Codex additionally
-verifies its extension route.
+Pair it:
+
+```bash
+browse pair --wait-seconds 600
+```
+
+The command prints a one-time code valid for 10 minutes. After the store install, the
+extension opens its own page (`onboarding.html`) in the profile, and that page has a
+code field with a **Pair** button. An agent may fill it through the profile's CDP
+endpoint (`Runtime.evaluate` on that page's target from `/json/list`); `chrome-devtools`
+MCP refuses extension pages. Otherwise ask the user to open Extensions → browse →
+Options in the automation profile, enter the code, and click **Pair**. Pairing passes when
+`browse pair --list` shows exactly one browser and `browse status` reports the
+extension connected. Restart each configured runtime so its catalog picks up the
+`browse` MCP server.
+
+## 4. Verify without touching existing tabs
+
+1. Confirm that `http://127.0.0.1:9223/json/version` responds and that the listener
+   belongs to the profile (macOS `KERN_PROCARGS2`, Linux `/proc/<pid>/cmdline`).
+2. Open a harmless public page through a new Browse session and confirm on screen that
+   the user's visible tab did not change. Browse pages report themselves visible even
+   in the background, so `document.visibilityState` is not evidence.
+3. Confirm the [binding](../SKILL.md#browser-and-profile-continuity): the page's
+   target id from `browse status --json` appears in `/json/list` on port `9223`.
+4. Read a page that requires a login the profile holds and confirm it is not redirected
+   to sign-in.
+5. Attach with `chrome-devtools`, create a page with `background: true`, read it, and
+   confirm the visible tab did not change.
+6. Close only pages created by the check (`browse session delete <name>`,
+   `close_page`).
 
 ## Linux adapter
 
-Verified on Fedora with Microsoft Edge from `/opt/microsoft/msedge/msedge`. The parameters
-follow the portable contract:
+Verified on Fedora with Microsoft Edge from `/opt/microsoft/msedge/msedge`:
 
 | Parameter | Value |
 |---|---|
 | User-data directory | `~/.config/microsoft-edge-agent` |
 | Launcher | `~/.local/bin/edge-agent` (desktop entry `~/.local/share/applications/microsoft-edge-agent.desktop`), which starts Edge with `--user-data-dir=<profile> --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223` and refuses when port `9223` answers but belongs to another profile |
-| Claude Code MCP | `~/.claude.json` runs `~/.local/bin/chrome-devtools-mcp-edge --browserUrl http://127.0.0.1:9223 ...` instead of `npx` |
-| Last fallback | `agent-edge`, below |
+| `chrome-devtools` MCP | `~/.local/bin/chrome-devtools-mcp-edge --browserUrl http://127.0.0.1:9223 ...` instead of `npx` |
+| Browse | [Step 3](#3-install-browse-and-pair-the-extension), unchanged |
 
 Start the launcher in the background; a browser started this way keeps the dedicated
-profile's logins.
+profile's logins. From a shell outside the graphical session (for example SSH), start
+it as a user unit with the session's display variables, such as
+`systemd-run --user --setenv=WAYLAND_DISPLAY=wayland-0 --setenv=XDG_RUNTIME_DIR=/run/user/$(id -u) ~/.local/bin/edge-agent`.
 
 ### MCP wrapper
 
 `chrome-devtools-mcp --browserUrl` starts without a reachable browser and connects on the
-first tool call that finds one, retrying on every later call (tested against a closed
-port that a browser then opened). A wrapper that exits when Edge is closed therefore
-marks the server failed for the whole session for no reason. The wrapper works in two
-modes:
+first tool call that finds one, so a wrapper that exits while Edge is closed would mark
+the server failed for the whole session. The wrapper works in two modes:
 
 - Endpoint answers: it checks that the listener belongs to the profile and replaces
   itself with the controller.
@@ -177,31 +175,16 @@ modes:
   profile before every `tools/call` and answers with an error result instead of
   forwarding when no browser listens or the port belongs to another profile.
 
-The wrapper reads `EDGE_AGENT_PORT` and `EDGE_AGENT_PROFILE` like the launcher. The gate
-runs only when the browser was not reachable at start; a browser that appears later is
-checked on each call, one that was reachable at start is checked once.
-
-### Fallback wrapper
-
-Install `agent-browser` at user level with a stable prefix so non-interactive shells find
-it (`npm install -g --prefix ~/.local agent-browser@<current-version>`; read the current
-version from `npm view agent-browser version`, because an unpinned install resolved an
-old release in testing). `agent-browser install` is not needed: the wrapper attaches to
-the existing Edge. Then install the scripts side by side, because the gate imports the
-wrapper's verifier:
+The wrapper reads `EDGE_AGENT_PORT` and `EDGE_AGENT_PROFILE` like the launcher. Install
+the gate next to [the profile verifier](../scripts/agent_edge.py) it imports; that
+file's command-line wrapper is the retired `agent-edge` route and is not used:
 
 ```bash
 mkdir -p ~/.local/share/x9-browser-session
 install -m 755 "<skill-directory>/scripts/agent_edge.py" "<skill-directory>/scripts/edge_mcp_gate.py" ~/.local/share/x9-browser-session/
-ln -sf ~/.local/share/x9-browser-session/agent_edge.py ~/.local/bin/agent-edge
 ```
 
-On Linux the wrapper finds the listener with `lsof -nP -tiTCP:9223 -sTCP:LISTEN` and
-verifies `/proc/<pid>/cmdline`. Chromium rewrites its process title, so the vector arrives
-joined by spaces and is split on spaces; a profile path containing spaces therefore fails
-closed. The session, pinning, and override rules of
-[the last-resort wrapper](#4-add-the-last-resort-wrapper) apply unchanged.
-`agent-browser` creates its own `about:blank` tab when a new session first attaches, and
-`tab new` creates a second one; close both when the task ends. Stop the session's
-background process afterwards (`agent-browser` keeps one per session; its
-`AGENT_BROWSER_SESSION` environment value identifies it).
+The verifier finds the listener with `lsof -nP -tiTCP:9223 -sTCP:LISTEN` and reads
+`/proc/<pid>/cmdline`. Chromium rewrites its process title, so the vector arrives joined
+by spaces and is split on spaces; a profile path containing spaces therefore fails
+closed.

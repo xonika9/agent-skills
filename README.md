@@ -110,9 +110,9 @@ research X and give me an HTML report
 #### [Work in your own browser · `x9-browser-session`](skills/x9-browser-session/SKILL.md)
 
 - **When:** the result depends on your account, region, cart, or feed, so a clean test browser would give the wrong answer.
-- **You get:** the agent keeps the browser or controller you explicitly selected; otherwise it follows the runtime's default route. Logged-in Edge work uses a separate automation profile and a task-owned tab. The agent leaves your tabs alone and does not solve CAPTCHAs.
+- **You get:** the agent keeps the browser or controller you explicitly selected; otherwise Claude Code, Codex, and OpenCode all work in a separate Edge automation profile through the same tool. Its tabs open in the background and cannot take over your window, so you can keep working in Edge. When a site asks for a login, a code, or a payment confirmation, the agent hands you the tab and continues after you click. It does not solve CAPTCHAs.
 
-**Needs:** for logged-in Edge work, one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; tested recipes cover Edge on macOS and on Linux (Fedora).
+**Needs:** for logged-in Edge work, one-time setup from the [setup guide](skills/x9-browser-session/references/setup.md), which you can hand to the agent; adding the browser extension takes one click in the store, and the agent pairs it with a one-time code. Tested recipes cover Edge on macOS and on Linux (Fedora).
 
 **Ask:**
 

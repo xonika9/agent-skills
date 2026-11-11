@@ -11,28 +11,35 @@
       "guidance_id": "enable-runtime-feature"
     },
     {
+      "id": "browse-command",
+      "kind": "command",
+      "level": "required",
+      "needed_for": "Controlling the logged-in Edge profile through Browse. Install it with step 3 of the browser skill setup guide.",
+      "check": {"type": "command-present", "command": "browse"},
+      "guidance_id": "install-command"
+    },
+    {
       "id": "chrome-devtools-mcp",
       "group": "browser-control-route",
       "kind": "mcp",
       "level": "required",
-      "needed_for": "MCP browser control.",
+      "needed_for": "DevTools work and the fallback browser route.",
       "check": {"type": "runtime-component", "component_id": "chrome-devtools"},
       "guidance_id": "configure-mcp"
     },
     {
-      "id": "agent-edge-command",
-      "group": "browser-control-route",
-      "kind": "command",
-      "level": "required",
-      "needed_for": "Using the command line browser fallback.",
-      "check": {"type": "command-present", "command": "agent-edge"},
-      "guidance_id": "install-command"
+      "id": "browse-extension-paired",
+      "kind": "user-action",
+      "level": "optional",
+      "needed_for": "Adding the Browse extension to the automation profile with one store click, then pairing it.",
+      "check": {"type": "manual"},
+      "guidance_id": "complete-user-action"
     },
     {
-      "id": "python3-edge-wrapper",
+      "id": "python3-edge-gate",
       "kind": "command",
       "level": "optional",
-      "needed_for": "Installing the verified macOS or Linux agent-edge fallback. Native and MCP routes do not need Python.",
+      "needed_for": "Running the Linux chrome-devtools MCP gate. Other routes do not need Python.",
       "check": {"type": "command-present", "command": "python3"},
       "guidance_id": "install-command"
     },
