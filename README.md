@@ -195,6 +195,21 @@ rename this note and keep its links
 criticize this idea
 ```
 
+#### [Customer conversations that don't lie · `x9-better-questions`](skills/x9-better-questions/SKILL.md)
+
+- **When:** you are about to talk to customers or users about a problem or an idea, and polite "sounds great" answers would tell you nothing.
+- **You get:** questions about what people actually did instead of what they would do, built on Rob Fitzpatrick's *The Mom Test*. The skill prepares a conversation plan with a one-page cheat sheet, fixes your draft questions, sorts conversation notes into facts, polite noise, and real commitments, and after a series gives a plain verdict: continue, narrow the audience, or stop. It can also play a polite customer so you can rehearse.
+
+**Ask:**
+
+```text
+prepare questions for customer interviews about this idea
+```
+
+```text
+debrief this conversation with a customer
+```
+
 #### [Explain it another way · `x9-explain-again`](skills/x9-explain-again/SKILL.md)
 
 - **When:** you did not understand the agent's last answer in this chat.

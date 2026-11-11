@@ -4,10 +4,12 @@
 
 ### Highlights
 
+- New `x9-better-questions` skill helps you get facts instead of polite approval from conversations with customers and users, following Rob Fitzpatrick's *The Mom Test*. It prepares a conversation plan with a cheat sheet, rewrites draft questions that invite flattering answers, sorts conversation notes into facts, polite noise, and real commitments, rehearses with you as a polite customer, and after a series of conversations gives a plain verdict to continue, narrow the audience, or stop. A series can be kept in a research folder so results build up across weeks.
 - Browser work in Claude Code, Codex, and OpenCode now goes through Browse, one tool for all three, in the dedicated Edge automation profile on macOS and Fedora. Agent tabs open in the background and cannot take over the window, so the user can keep working in Edge; logins, 2FA, and payment confirmations are handed to the user in the tab and resume after a real click. `chrome-devtools` MCP stays for performance traces, Lighthouse, and other DevTools work and as the fallback route.
 
 ### Install / update
 
+- Update through the existing skill or plugin route to get `x9-better-questions`.
 - Install Browse and pair its extension with the Edge automation profile by following step 3 of the browser setup guide; adding the extension takes one click in the store and one pairing code.
 
 ### Compatibility
