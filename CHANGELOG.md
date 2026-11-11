@@ -4,19 +4,33 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 26.11.11.1 - 2026-11-11
+
+### Highlights
+
 - New `x9-better-questions` skill helps you get facts instead of polite approval from conversations with customers and users, following Rob Fitzpatrick's *The Mom Test*. It prepares a conversation plan with a cheat sheet, rewrites draft questions that invite flattering answers, sorts conversation notes into facts, polite noise, and real commitments, rehearses with you as a polite customer, and after a series of conversations gives a plain verdict to continue, narrow the audience, or stop. A series can be kept in a research folder so results build up across weeks.
 - Browser work in Claude Code, Codex, and OpenCode now goes through Browse, one tool for all three, in the dedicated Edge automation profile on macOS and Fedora. Agent tabs open in the background and cannot take over the window, so the user can keep working in Edge; logins, 2FA, and payment confirmations are handed to the user in the tab and resume after a real click. `chrome-devtools` MCP stays for performance traces, Lighthouse, and other DevTools work and as the fallback route.
+- OpenCode global instructions run a command whose result a later step needs, such as tests, a build, or a release check, in the foreground and keep the turn open until it finishes. Under T3 Code, its result now reaches the chat and the chats waiting on it instead of arriving in a hidden turn.
 
 ### Install / update
 
 - Update through the existing skill or plugin route to get `x9-better-questions`.
 - Install Browse and pair its extension with the Edge automation profile by following step 3 of the browser setup guide; adding the extension takes one click in the store and one pairing code.
+- Update the installed OpenCode global instructions to adopt the new runtime rule.
 
 ### Compatibility
 
 - The browser skill no longer uses the `agent-edge` fallback or, by default, the Codex ChatGPT browser extension; an installed `agent-edge` can stay but is no longer called. Avito pages now open through Browse with the same traffic rules.
 
 ### Breaking changes
+
+None.
 
 ## 26.10.26.1 - 2026-10-26
 
