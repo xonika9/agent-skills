@@ -67,3 +67,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory.
 - Resolve a selected skill from its catalog-provided location and read that exact `SKILL.md`. Skill directories may be symlinked, so before reporting one missing, verify the exact path or use symlink-aware traversal; an empty result from `rg --files` or `find ... -type f` does not prove absence.
 <!-- END SHARED PERSONAL CORE -->
+
+## OpenCode runtime
+
+- When a later step depends on a command's result, such as a test run, build, or release check, run it in the foreground with `timeout: 0` (or a limit above its expected duration) instead of `background: true`, and keep the turn open until it finishes. Under T3 Code, a turn resumed by a background-command notification is not shown in the T3 thread and has no T3 tools, so its result never reaches the chat or the chats waiting on it. Use `background: true` only for processes you do not wait on, such as a dev server.
