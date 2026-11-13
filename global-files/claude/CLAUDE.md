@@ -64,6 +64,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 - Batch independent read-only calls when useful and preserve evidence needed for the task. Keep result-dependent work and actions needing approval sequential.
 - For Telegram tasks, use the already-authenticated Telegram Web session in the browser instead of the macOS Telegram app or Computer Use, unless the user explicitly requests the desktop app.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
+- Before proposing or changing a standing agent instruction — an instruction file, a rule, a task file, or a prompt the user will carry to another chat — load and apply `x9-agent-instructions`; for a skill, load `x9-skill-creator`. Native subagent briefs are excluded; the subagent section covers them.
 - If direct search, HTTP, or another built-in retrieval route cannot reach a required site or obtain the needed information, continue in a browser rather than dropping the source or substituting memory.
 - Resolve a selected skill from its catalog-provided location and read that exact `SKILL.md`. Skill directories may be symlinked, so before reporting one missing, verify the exact path or use symlink-aware traversal; an empty result from `rg --files` or `find ... -type f` does not prove absence.
 <!-- END SHARED PERSONAL CORE -->
