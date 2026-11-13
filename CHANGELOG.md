@@ -4,13 +4,28 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 26.11.13.1 - 2026-11-13
+
+### Highlights
+
 - Global instructions for Claude Code, Codex, and OpenCode now load `x9-agent-instructions` before an agent proposes or changes a standing instruction (an instruction file, rule, task file, or prompt for another chat) and `x9-skill-creator` before it works on a skill, even when the conversation is about something else. Subagent briefs are unaffected, so delegation adds no context.
 - `x9-agent-instructions` now rejects vague rules that cannot be checked, rules already owned by another loaded file, and rules carrying dates or incident stories. Every proposed standing rule comes with a line showing what behavior it changes, where a duplicate was searched for, and that it has no date or incident, so a skipped check is visible.
 - Release versions now use `YY.M.D.N`: month and day are written without a leading zero, for example `26.11.3.1` instead of `26.11.03.1`. Already published versions are unchanged.
 
 ### Install / update
 
+- Update through the existing skill or plugin route to receive the revised `x9-agent-instructions`.
+- Update the installed global instruction files for Claude Code, Codex, and OpenCode to adopt the new shared rule.
+
 ### Compatibility
+
+- No new dependencies; published versions keep their zero-padded numbers.
 
 ### Breaking changes
 

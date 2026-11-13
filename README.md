@@ -381,7 +381,7 @@ check whether my x9 skills are ready
 #### [Prompts and agent instructions · `x9-agent-instructions`](skills/x9-agent-instructions/SKILL.md)
 
 - **When:** you need a prompt for a task or a second look at instructions you already wrote.
-- **You get:** a ready prompt from your own description, even a dictated one: goal, constraints, sources, authority, deliverable, and what counts as done. For existing instructions, suggested edits with what each one gives you.
+- **You get:** a ready prompt from your own description, even a dictated one: goal, constraints, sources, authority, deliverable, and what counts as done. For existing instructions, suggested edits with what each one gives you. Each proposed standing rule comes with a line showing that a duplicate was searched for and that it carries no date or incident.
 
 **Ask:**
 
