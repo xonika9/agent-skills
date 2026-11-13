@@ -25,9 +25,9 @@ For a new or changed skill:
 ## Versioning
 
 Contributors add user-visible changes to `Unreleased`. Releases use calendar versions
-`YY.MM.DD.N`, for example `26.10.19.1`: the date in `Europe/Moscow`, followed by
-a positive sequence starting at 1 each day. Month and day have two digits; the
-sequence has no leading zeros. Compatibility changes do not determine the number.
+`YY.M.D.N`, for example `26.11.3.1`: the date in `Europe/Moscow`, followed by
+a positive sequence starting at 1 each day. The year has two digits; month, day,
+and sequence have no leading zeros. Compatibility changes do not determine the number.
 
 After fetching public tags, `python3 scripts/prepare_release.py --next-version`
 prints the next number. A release request authorizes automatic number selection

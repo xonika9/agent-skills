@@ -103,7 +103,7 @@ def test_runtime_claims() -> None:
 
 def main() -> None:
     check_package.validate_manifest(manifest(), "manifest")
-    for version in ("4.1.0", "26.2.03.1", "26.02.30.1", "26.10.19.0", "26.10.19.01"):
+    for version in ("4.1.0", "26.2.03.1", "26.02.3.1", "26.2.30.1", "26.10.19.0", "26.10.19.01"):
         invalid = manifest()
         invalid["version"] = version
         try:

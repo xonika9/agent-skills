@@ -1,8 +1,8 @@
 # Calendar versioning
 
-Use `YY.MM.DD.N`, for example `26.10.19.1`. Date components have two digits and
-represent a valid date in 2000–2099. `N` is a positive integer without leading
-zeros, starts at 1 each day, and increases for further releases that day.
+Use `YY.M.D.N`, for example `26.11.3.1`. The year has two digits; month and
+day have no leading zeros; together they represent a valid date in 2000–2099.
+`N` is a positive integer without leading zeros, starts at 1 each day, and increases for further releases that day.
 The date is determined in `Europe/Moscow`; GitHub tags retain the `v` prefix.
 
 After fetching public tags, `python3 scripts/prepare_release.py --next-version`

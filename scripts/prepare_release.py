@@ -177,7 +177,7 @@ def main() -> None:
     parser.add_argument("--github-output", type=Path)
     parser.add_argument(
         "--next-version", action="store_true",
-        help="Print the next Moscow-dated YY.MM.DD.N version from fetched public tags",
+        help="Print the next Moscow-dated YY.M.D.N version from fetched public tags",
     )
     parser.add_argument(
         "--check",

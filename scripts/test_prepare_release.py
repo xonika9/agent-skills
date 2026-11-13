@@ -102,7 +102,7 @@ def test_calendar_metadata_and_changelog_date() -> None:
         manifest = root / "plugin.json"
         manifest.write_text('{"version": "26.10.19.1"}', encoding="utf-8")
         assert prepare_release.load_version(manifest) == "26.10.19.1"
-        manifest.write_text('{"version": "26.02.30.1"}', encoding="utf-8")
+        manifest.write_text('{"version": "26.2.30.1"}', encoding="utf-8")
         with patch.object(prepare_release, "ROOT", root):
             try:
                 prepare_release.load_version(manifest)
@@ -142,11 +142,19 @@ def test_new_release_must_be_newer_than_public_tags() -> None:
 
 def main() -> None:
     assert parse_version("26.10.19.1") == (date(2026, 10, 19), 1)
-    assert parse_version("28.02.29.1") == (date(2028, 2, 29), 1)
+    assert parse_version("28.2.29.1") == (date(2028, 2, 29), 1)
+    assert parse_version("26.11.11.1") == (date(2026, 11, 11), 1)
+    for padded in ("26.02.3.1", "26.2.03.1", "26.02.03.1"):
+        try:
+            parse_version(padded)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"leading zeros must be rejected in {padded}")
     assert next_version(["v4.1.0"], date(2026, 10, 19)) == "26.10.19.1"
     assert next_version(["v26.10.19.2", "v26.10.19.10", "v4.1.0"], date(2026, 10, 19)) == "26.10.19.11"
     assert next_version(["v26.10.19.11"], date(2026, 10, 20)) == "26.10.20.1"
-    assert next_version(["v26.10.19.11"], date(2027, 1, 1)) == "27.01.01.1"
+    assert next_version(["v26.10.19.11"], date(2027, 1, 1)) == "27.1.1.1"
     try:
         next_version(["v26.10.20.1"], date(2026, 10, 19))
     except ValueError:

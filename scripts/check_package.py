@@ -79,7 +79,7 @@ def validate_manifest(manifest: dict, source: str) -> None:
     try:
         parse_version(manifest["version"])
     except ValueError as error:
-        fail(f"{source}.version must use calendar version YY.MM.DD.N: {error}")
+        fail(f"{source}.version must use calendar version YY.M.D.N: {error}")
     require(manifest["skills"] == "./skills/", f"{source}.skills must be ./skills/")
     require(isinstance(manifest.get("author"), dict), f"{source}.author is required")
     require(bool(manifest["author"].get("name")), f"{source}.author.name is required")

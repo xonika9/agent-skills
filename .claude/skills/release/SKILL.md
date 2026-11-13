@@ -64,7 +64,7 @@ Release authority covers running the checker with `--fix`: it only adds missing 
 
 ## Determine the version
 
-Use `YY.MM.DD.N`: Moscow's release date and a positive daily sequence starting at 1. Determine it from the fetched public tags with:
+Use `YY.M.D.N` without leading zeros in month, day, or sequence: Moscow's release date and a positive daily sequence starting at 1. Determine it from the fetched public tags with:
 
 ```bash
 python3 scripts/prepare_release.py --next-version
@@ -76,12 +76,12 @@ Announce the computed number and continue within the requested Prepare or Publis
 
 With the selected calendar version:
 
-- move the populated `Unreleased` content into `## YY.MM.DD.N - YYYY-MM-DD`, using the same date in the version and heading;
+- move the populated `Unreleased` content into `## YY.M.D.N - YYYY-MM-DD`, using the same date in the version and heading;
 - leave a new empty `Unreleased` template with `Highlights`, `Install / update`, `Compatibility`, and `Breaking changes`;
 - make the release notes concise and outcome-oriented, cover the complete candidate, and write `None.` explicitly when there are no breaking changes;
 - apply the identified README corrections, keeping the English and Russian versions materially equivalent;
 - synchronize the harness-specific files in `global-files/` with the current personal global contracts;
-- set the same `YY.MM.DD.N` in both plugin manifests.
+- set the same `YY.M.D.N` in both plugin manifests.
 
 Do not include private paths, credentials, tokens, cookies, fabricated evidence, or changes outside the release candidate.
 
@@ -95,4 +95,4 @@ Preparation is complete when the release diff contains the selected version and 
 
 Publication requires all preparation conditions plus explicit publish authority. Commit the coherent release candidate without absorbing unrelated changes, push the release commit to `main` without force, and monitor the repository's validation and release workflows.
 
-Publication is complete only when the GitHub Release for `vYY.MM.DD.N` is visible and points to the released commit. If a workflow fails, the tag points elsewhere, GitHub is unreachable, or the release does not appear after the workflows terminate, report the concrete state and stop without manufacturing or moving the tag.
+Publication is complete only when the GitHub Release for `vYY.M.D.N` is visible and points to the released commit. If a workflow fails, the tag points elsewhere, GitHub is unreachable, or the release does not appear after the workflows terminate, report the concrete state and stop without manufacturing or moving the tag.

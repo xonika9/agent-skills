@@ -1,17 +1,17 @@
-"""Calendar release versions: YY.MM.DD.N, dated in Europe/Moscow."""
+"""Calendar release versions: YY.M.D.N, dated in Europe/Moscow."""
 
 from datetime import date, datetime
 import re
 from zoneinfo import ZoneInfo
 
 
-CALVER = re.compile(r"([0-9]{2})\.([0-9]{2})\.([0-9]{2})\.([1-9][0-9]*)")
+CALVER = re.compile(r"([0-9]{2})\.([1-9][0-9]?)\.([1-9][0-9]?)\.([1-9][0-9]*)")
 
 
 def parse_version(version: str) -> tuple[date, int]:
     match = CALVER.fullmatch(version)
     if match is None:
-        raise ValueError("version must use YY.MM.DD.N with a positive daily release number")
+        raise ValueError("version must use YY.M.D.N without leading zeros and with a positive daily release number")
     year, month, day, number = map(int, match.groups())
     return date(2000 + year, month, day), number
 
@@ -32,4 +32,4 @@ def next_version(tags: list[str], day: date | None = None) -> str:
             raise ValueError("a release tag is dated after the proposed release day")
         if released_day == day:
             numbers.append(number)
-    return f"{day:%y.%m.%d}.{max(numbers, default=0) + 1}"
+    return f"{day:%y}.{day.month}.{day.day}.{max(numbers, default=0) + 1}"

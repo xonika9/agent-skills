@@ -4,11 +4,15 @@
 
 ### Highlights
 
+- Release versions now use `YY.M.D.N`: month and day are written without a leading zero, for example `26.11.3.1` instead of `26.11.03.1`. Already published versions are unchanged.
+
 ### Install / update
 
 ### Compatibility
 
 ### Breaking changes
+
+- Version checks now reject zero-padded month or day components. Scripts that build or parse release numbers must use `YY.M.D.N`.
 
 ## 26.11.11.1 - 2026-11-11
 
