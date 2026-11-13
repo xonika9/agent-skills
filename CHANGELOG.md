@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- `x9-research` now also handles choices and recommendations that depend on current prices, availability, or rules, asks up front about constraints that change the result, closes reachable gaps instead of estimating them, and hands off an answer the user can act on without another search: place, price with conditions, and an opened link.
+
 ### Install / update
 
 ### Compatibility
