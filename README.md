@@ -94,8 +94,8 @@ Clone or fork the repository only when you want to maintain your own variants; y
 
 #### [Research from current sources · `x9-research`](skills/x9-research/SKILL.md)
 
-- **When:** you need an answer built on current sources, not on the agent's memory.
-- **You get:** a conclusion with links: the key claims are checked, counter-evidence was searched for, and anything that could not be confirmed is named plainly. On request the research is saved as Markdown, with an HTML report as well if you want one.
+- **When:** you need an answer built on current sources, not on the agent's memory, including a choice that depends on today's prices, availability, or rules.
+- **You get:** a conclusion with links: the key claims are checked, counter-evidence was searched for, and anything that could not be confirmed is named plainly. For a choice, it names the option, where to get it, the price with its conditions, and a link, so you can act without searching again. On request the research is saved as Markdown, with an HTML report as well if you want one.
 
 **Ask:**
 
@@ -105,6 +105,10 @@ research this
 
 ```text
 research X and give me an HTML report
+```
+
+```text
+which one should I buy and where?
 ```
 
 #### [Work in your own browser · `x9-browser-session`](skills/x9-browser-session/SKILL.md)
@@ -331,7 +335,7 @@ audit this codebase's architecture
 #### [CTO-level decisions · `x9-cto`](skills/x9-cto/SKILL.md)
 
 - **When:** you need a call on product scope, architecture, or a large technical commitment.
-- **You get:** a CTO's view grounded in your repository. It can also lead delivery to a working user outcome and check executors' reports against real evidence.
+- **You get:** a CTO's view grounded in your repository. It can also lead delivery to a working user outcome, check executors' reports against real evidence, and on request report on a period: problems and whether each is in hand, running and finished work, and the decisions it made alone.
 
 **Needs:** nothing extra for a consultation; the autonomous `auto` mode needs the Compound Engineering skills `ce-plan`, `ce-work`, `ce-simplify-code`, and `ce-code-review`. Independent review modes need subagents.
 

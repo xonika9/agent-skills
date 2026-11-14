@@ -4,13 +4,34 @@
 
 ### Highlights
 
-- `x9-research` now also handles choices and recommendations that depend on current prices, availability, or rules, asks up front about constraints that change the result, closes reachable gaps instead of estimating them, and hands off an answer the user can act on without another search: place, price with conditions, and an opened link.
-
 ### Install / update
 
 ### Compatibility
 
 ### Breaking changes
+
+## 26.11.14.1 - 2026-11-14
+
+### Highlights
+
+- `x9-research` now also handles choices and recommendations that depend on current prices, availability, or rules, asks up front about constraints that change the result, closes reachable gaps instead of estimating them, and hands off an answer the user can act on without another search: place, price with conditions, and an opened link.
+- When an agent asks again, open questions keep their original order at the top of a block renumbered from 1, and new questions go after them, so a reply such as `1а` no longer lands on a question that was just inserted.
+- `x9-cto` gives a report on request in any CTO chat, with no running pilot needed: every state is checked against the board, merges, deploys, and executor chats at report time, problems are marked by whether people are affected and whether a plan exists, and the CTO's own decisions come with reasons the owner can follow. Where the chat renders HTML, the report is a phone-friendly page.
+- Starting a CTO pilot moves the repository's reminders from earlier CTO chats into the current one, so they no longer fire in a chat nobody reads.
+- `x9-web-stack` adds the rule "ready before own": behaviour an installed library or the platform already provides is taken from it, and an audit reports hand-written copies of it, such as home-made keyboard handling, validation, or fetch caches.
+
+### Install / update
+
+- Update through the existing skill or plugin route.
+- Update the installed global instruction files for Claude Code, Codex, and OpenCode to adopt the new order for repeated questions.
+
+### Compatibility
+
+- The CTO pilot no longer sends a scheduled 09:00 report; ask for a report when you want one.
+
+### Breaking changes
+
+None.
 
 ## 26.11.13.1 - 2026-11-13
 

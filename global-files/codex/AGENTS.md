@@ -10,7 +10,7 @@
 
 **Questions that need a user response.**
 - Put every such question in a final section headed `## Вопросы` in Russian responses and `## Questions` otherwise; omit it when no answer is needed.
-- Number questions `1.`, `2.`, `3.`. For a decision, list 2–4 mutually exclusive options as nested list items lettered in the response alphabet (`а)`, `б)`, `в)`, `г)` in Russian; `a)`–`d)` otherwise) so the user can reply `1а, 2б`; mark the recommended option inline with a one-clause reason. For a needed fact, value, file, or other non-choice input, ask the numbered question without options. When asking again, write one new block numbered from `1.`: drop answered questions, keep the still-open ones first in the order they were first asked, and add new questions after them, so a new question never displaces one the user is already answering.
+- Number questions `1.`, `2.`, `3.`. For a decision, list 2–4 mutually exclusive options as nested list items lettered in the response alphabet (`а)`, `б)`, `в)`, `г)` in Russian; `a)`–`d)` otherwise) so the user can reply `1а, 2б`; mark the recommended option inline with a one-clause reason. For a needed fact, value, file, or other non-choice input, ask the numbered question without options. When asking again, write one new block numbered from `1.`: drop answered questions, keep the still-open ones first in the order they were first asked, and add new questions after them, so a new question never pushes an open one down the list.
 
   ```markdown
   ## Вопросы
