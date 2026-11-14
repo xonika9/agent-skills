@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --red: var(--destructive);
+    --amber: var(--warning);
+    --blue: var(--info, var(--primary));
+    --green: var(--success);
+    --soft: var(--muted-foreground, var(--muted));
+    --line: var(--border);
+    --r: var(--radius, 10px);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-size: 14.5px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+  ::selection { background: color-mix(in srgb, var(--primary) 22%, transparent); }
+  a { color: var(--primary); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
+  svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  svg.i.lg { width: 20px; height: 20px; }
+
+  .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .top h1 { margin: 0; font-size: 15px; font-weight: 650; }
+  .top .when { font-size: 12.5px; color: var(--soft); }
+
+  .verdict-sub { margin: 0 0 16px; color: var(--soft); max-width: 62ch; text-wrap: pretty; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 13px; }
+  .legend .k { display: inline-flex; align-items: center; gap: 6px; }
+  .legend b { font-size: 15px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .meta { margin-top: 8px; font-size: 12.5px; color: var(--soft); }
+
+  h2 { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; margin: 32px 0 10px; display: flex; align-items: baseline; gap: 8px; }
+  h2 .count { font-size: 13px; font-weight: 500; color: var(--soft); }
+
+  .prob { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); overflow: hidden; margin-bottom: 12px; }
+  .prob-head { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px 12px; }
+  .prob.amber .prob-head { background: color-mix(in srgb, var(--amber) 11%, var(--card)); color: var(--foreground); }
+  .prob.red .prob-head { background: color-mix(in srgb, var(--red) 12%, var(--card)); }
+  .prob.amber .prob-head > svg { color: color-mix(in srgb, var(--amber) 80%, var(--foreground)); margin-top: 1px; }
+  .prob.red .prob-head > svg { color: var(--red); margin-top: 1px; }
+  .prob h3 { margin: 0; font-size: 15.5px; line-height: 1.35; font-weight: 650; text-wrap: balance; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 550; padding: 2px 9px 2px 7px; border-radius: 999px; background: var(--background); border: 1px solid var(--line); white-space: nowrap; }
+  .chip svg.i { width: 13px; height: 13px; }
+  .chip.safe { color: var(--green); }
+  .chip.risk { color: color-mix(in srgb, var(--amber) 75%, var(--foreground)); }
+  .chip.wait { color: var(--soft); }
+
+  .prob-body { margin: 0; padding: 14px 16px 12px; display: grid; grid-template-columns: 108px 1fr; gap: 8px 14px; }
+  .prob-body dt { font-size: 12.5px; color: var(--soft); padding-top: 2px; }
+  .prob-body dt.plan { color: var(--green); font-weight: 650; }
+  .prob-body dd { margin: 0; text-wrap: pretty; }
+  .prob-body dd ul { margin: 0; padding-left: 17px; }
+  .prob-body dd li + li { margin-top: 3px; }
+  .unv { color: var(--soft); font-style: italic; }
+  @media (max-width: 520px) {
+    .prob-body { grid-template-columns: 1fr; gap: 2px; }
+    .prob-body dd { margin-bottom: 9px; }
+  }
+
+  .links { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 14px; }
+  .link { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--background); color: var(--foreground); font-size: 13px; text-decoration: none; transition: border-color .15s, background .15s; }
+  .link svg.i { width: 14px; height: 14px; color: var(--soft); }
+  .link:hover { border-color: var(--ring); background: var(--secondary); }
+
+  details { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); margin-bottom: 12px; }
+  summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 13px 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary .t { font-weight: 650; }
+  summary .s { color: var(--soft); font-size: 13px; }
+  summary .chev { margin-left: auto; color: var(--soft); transition: transform .2s cubic-bezier(.2,.8,.2,1); }
+  details[open] summary .chev { transform: rotate(180deg); }
+  summary:hover .t { color: var(--primary); }
+  .dbody { padding: 2px 16px 14px; }
+
+  .row { display: grid; grid-template-columns: 20px 1fr; gap: 0 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .row:first-child { border-top: 0; padding-top: 4px; }
+  .row > svg { margin-top: 2px; }
+  .row .name { font-weight: 600; }
+  .row .txt { margin-top: 3px; text-wrap: pretty; }
+  .row .txt .lbl { color: var(--soft); }
+  .row .links { padding: 8px 0 0; }
+  .c-blue { color: var(--blue); } .c-green { color: var(--green); } .c-amber { color: color-mix(in srgb, var(--amber) 80%, var(--foreground)); } .c-soft { color: var(--soft); }
+
+  .pipe { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin: 8px 0 3px; max-width: 360px; }
+  .pipe i { height: 5px; border-radius: 3px; background: var(--secondary); }
+  .pipe i.d { background: var(--green); }
+  .pipe i.n { background: var(--blue); }
+  .stage { font-size: 12.5px; color: var(--soft); }
+  .pipe-key { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; max-width: 360px; font-size: 11px; color: var(--soft); margin: 0 0 4px 30px; }
+
+  .grp { font-size: 13px; font-weight: 600; margin: 10px 0 2px; }
+  .done { list-style: none; margin: 0; padding: 0; }
+  .done li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; padding: 5px 0; }
+  .done li svg { margin-top: 3px; color: var(--green); width: 15px; height: 15px; }
+
+  .next { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); padding: 6px 16px; margin: 0; list-style: none; counter-reset: n; }
+  .next li { counter-increment: n; display: grid; grid-template-columns: 22px 1fr; padding: 8px 0; border-top: 1px solid var(--line); }
+  .next li:first-child { border-top: 0; }
+  .next li::before { content: counter(n); color: var(--soft); font-weight: 600; }
+
+  .key { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--soft); }
+  .key span { display: inline-flex; align-items: center; gap: 5px; }
+  .key svg.i { width: 13px; height: 13px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="warn" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+  <symbol id="bad" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol>
+  <symbol id="run" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="board" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></symbol>
+  <symbol id="chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="slow" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0-10-10"/><path d="M12 6v6l3 2"/></symbol>
+  <symbol id="people" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="hour" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.17a2 2 0 0 0-.59-1.42L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22"/><path d="M7 2v4.17a2 2 0 0 0 .59 1.42L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+</svg>
+
+<div class="top">
+  <h1>Отчёт CTO</h1>
+  <span class="when">{{period}} · сверено в {{check time}}</span>
+</div>
+
+<div class="legend" style="margin-top:14px">
+  <span class="k"><span class="dot" style="background:var(--red)"></span><b>{{n}}</b> серьёзных</span>
+  <span class="k"><span class="dot" style="background:var(--amber)"></span><b>{{n}}</b> решение известно</span>
+  <span class="k"><span class="dot" style="background:var(--blue)"></span><b>{{n}}</b> идут по плану</span>
+  <span class="k"><span class="dot" style="background:var(--green)"></span><b>{{n}}</b> готово</span>
+</div>
+<p class="verdict-sub" style="margin:12px 0 0">Главное за сутки: {{two or three factual sentences}}</p>
+<div class="meta">{{owner questions}} · {{server vs main}} · {{merges, deploys, decisions}} · сверено: {{sources}}</div>
+
+<h2>Проблемы <span class="count">{{count and plan summary}}</span></h2>
+
+<!-- one article per problem; red: class "red" with icon #bad; yellow: class "amber" with icon #warn; red ones first -->
+<article class="prob amber">
+  <div class="prob-head">
+    <svg class="i lg"><use href="#warn"/></svg>
+    <div>
+      <h3>{{problem title}}</h3>
+      <div class="chips">
+        <span class="chip safe"><svg class="i"><use href="#shield"/></svg>людей не задевает</span>
+        <span class="chip risk"><svg class="i"><use href="#slow"/></svg>{{what it slows or risks}}</span>
+        <span class="chip wait"><svg class="i"><use href="#hour"/></svg>срок не назван</span>
+      </div>
+    </div>
+  </div>
+  <dl class="prob-body">
+    <dt>Что</dt>
+    <dd>{{what is broken}}</dd>
+    <dt>Чем грозит</dt>
+    <dd>{{consequence}}</dd>
+    <dt class="plan">Что делаю</dt>
+    <dd><ul>
+      <li>{{action, who does it}}</li>
+    </ul></dd>
+    <dt>Когда</dt>
+    <dd>{{when, and what turns it red}} <span class="unv">Не сверено: {{what}}</span></dd>
+  </dl>
+  <div class="links">
+    <a class="link" href="{{card url}}" target="_blank"><svg class="i"><use href="#board"/></svg>{{card label}}</a>
+    <a class="link" href="{{chat url}}"><svg class="i"><use href="#chat"/></svg>{{chat label}}</a>
+  </div>
+</article>
+
+<h2>Идёт по плану <span class="count">{{n}}</span></h2>
+<details>
+  <summary><svg class="i c-blue"><use href="#run"/></svg><span class="t">{{counts by stage}}</span><svg class="i chev"><use href="#chev"/></svg></summary>
+  <div class="dbody">
+    <div class="pipe-key"><span>план</span><span>код</span><span>ревью</span><span>проверки</span><span>слияние</span><span>сервер</span></div>
+    <!-- groups: product, then infrastructure; in each, later stage first, then earlier start; pipe cells: d = done, n = current, empty = ahead -->
+    <div class="grp">Продукт</div>
+    <div class="row"><svg class="i c-blue"><use href="#run"/></svg><div>
+      <div class="name">{{work title}}</div>
+      <div class="pipe"><i class="d"></i><i class="n"></i><i></i><i></i><i></i><i></i></div>
+      <div class="stage">{{stage · step · expected finish}}</div>
+      <div class="txt">{{done so far; what runs now}}</div>
+      <div class="links"><a class="link" href="{{card url}}" target="_blank"><svg class="i"><use href="#board"/></svg>Карточка</a><a class="link" href="{{chat url}}"><svg class="i"><use href="#chat"/></svg>Чат</a></div>
+    </div></div>
+    <div class="grp">Инфраструктура</div>
+    <div class="row"><svg class="i c-blue"><use href="#run"/></svg><div>
+      <div class="name">{{work title}}</div>
+      <div class="pipe"><i class="d"></i><i class="d"></i><i class="d"></i><i class="n"></i><i></i><i></i></div>
+      <div class="stage">{{stage · step · expected finish}}</div>
+      <div class="txt">{{done so far; what runs now}}</div>
+      <div class="links"><a class="link" href="{{card url}}" target="_blank"><svg class="i"><use href="#board"/></svg>Карточка</a><a class="link" href="{{chat url}}"><svg class="i"><use href="#chat"/></svg>Чат</a></div>
+    </div></div>
+  </div>
+</details>
+
+<h2>Решения CTO <span class="count">{{n}}</span></h2>
+<details>
+  <summary><svg class="i c-soft"><use href="#ok"/></svg><span class="t">{{summary}}</span><svg class="i chev"><use href="#chev"/></svg></summary>
+  <div class="dbody">
+    <!-- icon: run (c-blue) while its follow-up is pending, ok (c-green) when in effect -->
+    <div class="row"><svg class="i c-green"><use href="#ok"/></svg><div>
+      <div class="name">{{decision}}</div>
+      <div class="txt"><span class="lbl">Почему.</span> {{reason in plain words}}</div>
+      <div class="txt"><span class="lbl">Для вас.</span> {{effect on users, money, risk}}</div>
+      <div class="txt"><span class="lbl">Дальше.</span> {{follow-up and its state}}</div>
+    </div></div>
+  </div>
+</details>
+
+<h2>Готово за сутки <span class="count">{{n}}, {{server state}}</span></h2>
+<details>
+  <summary><svg class="i c-green"><use href="#ok"/></svg><span class="t">{{n}} продукт, {{n}} инфраструктура</span><svg class="i chev"><use href="#chev"/></svg></summary>
+  <div class="dbody">
+    <div class="grp">Продукт</div>
+    <ul class="done">
+      <li><svg class="i"><use href="#ok"/></svg><span><a href="{{card url}}" target="_blank">{{title}}</a>: {{what it gives}}</span></li>
+    </ul>
+    <div class="grp">Инфраструктура</div>
+    <ul class="done">
+      <li><svg class="i"><use href="#ok"/></svg><span><a href="{{card url}}" target="_blank">{{title}}</a>: {{what it gives}}</span></li>
+    </ul>
+  </div>
+</details>
+
+<h2>Дальше по очереди</h2>
+<ol class="next">
+  <li><span><a href="{{card url}}" target="_blank">{{title}}</a>: {{what it gives}}</span></li>
+</ol>
+
+<div class="key">
+  <span><svg class="i" style="color:var(--red)"><use href="#bad"/></svg>серьёзно: задевает людей сейчас или нет плана</span>
+  <span><svg class="i c-amber"><use href="#warn"/></svg>решение известно и идёт</span>
+  <span><svg class="i c-blue"><use href="#run"/></svg>идёт по плану</span>
+  <span><svg class="i c-green"><use href="#ok"/></svg>готово</span>
+</div>
+
+</body>
+</html>

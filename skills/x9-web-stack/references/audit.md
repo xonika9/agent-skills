@@ -20,6 +20,8 @@ Check each applicable rule in [rules.md](rules.md) against evidence. A finding n
 - the practical consequence in this project;
 - the smallest fix, with effort (minutes, hours, days) and whether it changes behaviour for users or data.
 
+For every accepted library and installed dependency, check that the code uses it where it applies: search for hand-written equivalents — keyboard and focus handling, ad-hoc validation, raw queries beside an ORM, hand-made fetch caches, argument parsers — and report each under D5 with the replacement API confirmed in the installed version. A library that is declared but barely used is a finding, not a match.
+
 Rank by consequence: data loss or exposure, then broken releases or deploys, then defects that slip past verification, then maintainability. Group trivially related findings. Keep unconfirmed suspicions in a separate list with the fact that would decide them.
 
 Security and testing are checked at the level of the rules here. A deeper review of trust boundaries belongs to `x9-appsec`; a review of the tests themselves and of how testing is organized (flaky tests, low-value tests, run tiers, CI test stages) belongs to `x9-test-quality`; a comparison of architectural directions belongs to `x9-architecture-scout`. Mention when the evidence suggests any of them is warranted.

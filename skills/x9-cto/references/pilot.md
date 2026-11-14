@@ -1,7 +1,7 @@
 # Pilot
 
 A standing CTO run that keeps the repository's work moving without the owner:
-it launches ready work, integrates finished work, and reports.
+it launches ready work, integrates finished work, and reports on request.
 
 ## Start
 
@@ -10,10 +10,13 @@ it launches ready work, integrates finished work, and reports.
   Without one, report pilot as unavailable here and stop.
 - Delete the scheduled tasks of an earlier pilot run in this repository, so
   only one pilot runs.
-- Create two scheduled tasks bound to this chat: a tick every 2 hours and
-  a report at 09:00 local. Their prompts name the tick or the report
-  and point here; they list no chats or cards, because state lives on the
-  repository's board.
+- Create one scheduled task bound to this chat: a tick every 2 hours. Its
+  prompt names the tick and points here; it lists no chats or cards, because
+  state lives on the repository's board.
+- Move every other scheduled task of this repository that is bound to an
+  earlier CTO chat to this chat, keeping its schedule and prompt, so a reminder
+  does not fire in a chat nobody reads. Where the runtime cannot rebind a task,
+  create the same task here and delete the old one.
 - Send every chat working on the started work the repository lists,
   including chats an earlier run launched, this chat's address for its
   end-of-work messages, so none of them keeps reporting to a stopped pilot.
@@ -51,8 +54,7 @@ for changes made outside the launched chats.
 
 ## Report
 
-At 09:00 and on `report`: what finished since the last report, what runs and
-what each waits for, spend, and the owner's open questions.
+On `report`, follow [report.md](report.md).
 
 ## Stop
 
