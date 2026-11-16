@@ -58,7 +58,7 @@ class SkillContractTests(unittest.TestCase):
 
     def test_review_explains_changes_before_complete_diff(self):
         self.assertIn("Why these changes help", self.skill)
-        self.assertIn("no more than two short sentences", self.skill)
+        self.assertIn("lead with the practical improvement", self.skill)
         self.assertIn("smallest complete proposed diff", self.skill)
         self.assertIn("actual diff, changed-file summary", self.skill)
 

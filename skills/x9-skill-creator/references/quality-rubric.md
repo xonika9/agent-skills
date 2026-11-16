@@ -37,6 +37,7 @@ Use every dimension when creating, auditing, or fixing a skill. Structural check
 - Flexible judgment stays in outcome-oriented prose.
 - Fragile repeated transformations use deterministic scripts.
 - Review the whole procedure against the required outcome, explicit user requirements, authority boundaries, and external constraints. Existing stages, tools, gates, schemas, and review loops are choices to assess, not requirements merely because the skill prescribes them. Recommend removing or collapsing unnecessary mechanisms, even when internally consistent, and name what still delivers the result. Do not invent deletions when none are justified.
+- A standing instruction to delegate states when delegation pays off and when it does not. Models differ in how readily they delegate, so an unconditional invitation multiplies cost on one runtime while its absence leaves another under-delegating.
 
 ## 4. Authority and preservation `[j+b]`
 

@@ -287,7 +287,7 @@ def main():
         ("reporting retains every severity", "Blocker, Important, and Minor", reporting_text),
         ("reporting assigns stable finding identifiers", "stable identifier such as `F1`", reporting_text),
         ("reporting explains why every change helps", "Why these changes help", reporting_text),
-        ("reporting limits explanation length", "no more than two short sentences", reporting_text),
+        ("reporting limits explanation length", "lead with the practical improvement", reporting_text),
         ("degraded status has precedence", "`degraded` takes precedence", reporting_text),
         ("batch links canonical QA", "[batch QA and handoff](audit-reporting.md#batch-handoff)", batch_text),
         ("batch loads the instruction rubric", "Load and apply `x9-agent-instructions`", batch_text),

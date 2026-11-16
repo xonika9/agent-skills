@@ -67,7 +67,7 @@ After QA, recompute status from retained findings:
 
 ## Why these changes help
 
-After the table, include one explanation for every retained finding, keyed by its identifier. Use no more than two short sentences: state the practical improvement rather than repeating the finding, evidence, or recommendation; add the material cost or trade-off when the change affects dependencies, compatibility, authority, runtime behavior, or scope. Omit this section when there are no retained findings.
+After the table, include one explanation for every retained finding, keyed by its identifier. Keep each explanation short and lead with the practical improvement rather than repeating the finding, evidence, or recommendation; add the material cost or trade-off when the change affects dependencies, compatibility, authority, runtime behavior, or scope. Omit this section when there are no retained findings.
 
 ## What can be simplified
 

@@ -4,7 +4,16 @@
 
 ### Highlights
 
+- `x9-agent-instructions` adds checks drawn from the Claude Fable 5.2 prompting guide: absolute "never" and "always" rules need a scope or exception path, approval and stopping conditions must not be broader than the risk, code briefs state whether restructuring is wanted, ordinary obstacles are worked through while deliberate blockers are reported, and prompts no longer ask the model to think less, write out its reasoning, or watch a token budget.
+- Review explanations in `x9-agent-instructions` are short with the improvement first, instead of a hard two-sentence limit that made them choppy.
+- `x9-skill-creator` flags standing delegation instructions that do not say when delegation pays off, audits several skills directly while they fit in one context instead of always starting the batch workflow, asks all needed clarifying questions at once, and keeps audit explanations short without a hard sentence limit.
+- The global instructions for Claude Code, Codex, and OpenCode ask that a code-change brief for a subagent say whether restructuring is welcome or the change must stay minimal. The Claude Code file also explains why implementation goes to Sonnet workers, sends file lookup, log reading, and test runs to Haiku, names migrations and performance work as reasons to implement on Opus, and moves to a larger model instead of raising effort past `high`.
+- Both READMEs link to the Claude Fable 5.2 prompting guide among the method's sources.
+
 ### Install / update
+
+- Update through the existing skill or plugin route.
+- Update the installed global instruction files for Claude Code, Codex, and OpenCode.
 
 ### Compatibility
 

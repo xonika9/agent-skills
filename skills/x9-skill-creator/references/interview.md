@@ -1,6 +1,6 @@
 # Focused skill questions
 
-Ask only for information that cannot be recovered from the request, existing skill, repository, or runtime. One question at a time; stop when the contract is implementable.
+Ask only for information that cannot be recovered from the request, existing skill, repository, or runtime. Ask the smallest sufficient set of questions; stop when the contract is implementable.
 
 ## Blind spots for a new skill
 

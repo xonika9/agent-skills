@@ -43,7 +43,7 @@ Before writing frontmatter, apply the [runtime classification](references/qualit
 - No claim outruns its evidence tier. [Behavioral evaluation](references/evals.md) runs only when behavioral evidence is selected; an unverified behavioral claim is recorded as unverified rather than treated as a defect.
 - Every Audit handoff follows [audit reporting](references/audit-reporting.md).
 
-Audit one target directly. For multiple targets, or when the user explicitly requests a batch audit, read [references/batch-audit.md](references/batch-audit.md) and delegate bounded groups to fresh workers. Batch execution changes only coordination and aggregation; every target still uses the same Audit action, evidence tier, rubric, validation, and verdict contract defined here.
+Audit targets directly while every relevant resource of all of them fits in one context. When they do not fit, or when the user explicitly requests a batch audit, read [references/batch-audit.md](references/batch-audit.md) and delegate bounded groups to fresh workers. Batch execution changes only coordination and aggregation; every target still uses the same Audit action, evidence tier, rubric, validation, and verdict contract defined here.
 
 For a genuinely underspecified new skill, use the focused questions in [references/interview.md](references/interview.md). Stop once triggers, non-triggers, runtime, input/output, authority, and success evidence are clear.
 
