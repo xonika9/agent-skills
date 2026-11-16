@@ -4,6 +4,16 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 26.11.16.1 - 2026-11-16
+
+### Highlights
+
 - `x9-agent-instructions` adds checks drawn from the Claude Fable 5.2 prompting guide: absolute "never" and "always" rules need a scope or exception path, approval and stopping conditions must not be broader than the risk, code briefs state whether restructuring is wanted, ordinary obstacles are worked through while deliberate blockers are reported, and prompts no longer ask the model to think less, write out its reasoning, or watch a token budget.
 - Review explanations in `x9-agent-instructions` are short with the improvement first, instead of a hard two-sentence limit that made them choppy.
 - `x9-skill-creator` flags standing delegation instructions that do not say when delegation pays off, audits several skills directly while they fit in one context instead of always starting the batch workflow, asks all needed clarifying questions at once, and keeps audit explanations short without a hard sentence limit.
@@ -17,7 +27,11 @@
 
 ### Compatibility
 
+- The Claude Code routing sends cheap reading to the `haiku` alias. Per Anthropic's model guide, that alias resolves to Haiku 5.5 on the Anthropic API from Claude Code v2.1.293 and to an older Haiku on other cloud providers.
+
 ### Breaking changes
+
+- None.
 
 ## 26.11.14.1 - 2026-11-14
 
