@@ -10,6 +10,30 @@
 
 ### Breaking changes
 
+## 26.11.17.1 - 2026-11-17
+
+### Highlights
+
+- The Claude Code plugin shows the same x9 icon as the Codex plugin.
+- `x9-agent-instructions` adds checks drawn from OpenAI's GPT-6.2 guide: prompts for long or delegated work ask for a final report readable without the progress history, an unclear detail is handled by stating a reversible assumption and continuing, and code briefs name the behavior existing callers rely on.
+- `x9-codex-delegation` briefs ask a one-shot Codex run to finish authorized steps instead of ending on an offer, and to check the result against the brief.
+- `x9-loop-engineering` adds a pattern for keeping the instruction and history prefix stable between turns, so models keep their earlier reasoning and prompt cache.
+- The global Codex instructions tell the model not to end a turn on an offer of a step the request already authorizes.
+- Both READMEs link to OpenAI's GPT-6.2 guide among the prompting method's sources.
+
+### Install / update
+
+- Update through the existing skill or plugin route.
+- Update the installed global instruction file for Codex.
+
+### Compatibility
+
+- None.
+
+### Breaking changes
+
+- None.
+
 ## 26.11.16.1 - 2026-11-16
 
 ### Highlights

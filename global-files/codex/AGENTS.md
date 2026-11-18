@@ -71,6 +71,10 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Codex runtime
 
+### Turn ending
+
+- Do not end a turn on an offer or proposed next step that the current request already authorizes; take the step and state any assumption it rests on.
+
 ### Local storage hygiene
 
 - Treat `$CODEX_HOME/evidence` and `$CODEX_HOME/worktrees` as bounded task storage, not permanent archives. Do not retain reconstructible binaries, package archives, dependency caches, build outputs, or completed worktrees there after the task.

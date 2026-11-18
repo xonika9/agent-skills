@@ -26,6 +26,7 @@ Read [references/codex-cli.md](references/codex-cli.md) and use its one-shot or 
 
 Load `x9-agent-instructions` before writing the first brief and apply its rubric; if it is unavailable, say so and pass a self-contained outcome, relevant files/sources, constraints, authority, deliverable, and completion bar. Add these failure rules when tools or current facts are load-bearing:
 
+- In a one-shot run, carry authorized steps through instead of ending on a proposal or offer, and check the result against the brief before finishing.
 - Report failed or cancelled calls exactly; do not substitute memory.
 - Surface an unresolved fork only when it materially changes the result.
 - Attach evidence appropriate to the task: paths/diff/tests for code; URLs and exact facts for research.

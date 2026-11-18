@@ -29,8 +29,11 @@ applying the `chat_*` fields to its own subagents. The file is flat JSON:
 
 Resolve the chat model in the live catalog (in T3 Code,
 `orchestrator_capabilities` with a search for the alias) and pass the resolved
-ID; when the catalog has no match, report that instead of substituting another
-model. Write the subagent route into the prompt, because the launched chat does
+ID with `chat_provider` and `chat_effort` on every launch (in T3 Code,
+`modelSelection` with `instanceId` and the effort option), because a launch
+without them inherits the launching chat's model and effort; when the launch
+result shows other values, correct them with `t3_thread_configure`. When the
+catalog has no match, report that instead of substituting another model. Write the subagent route into the prompt, because the launched chat does
 not read this file; the route covers every subagent of that chat, including
 reviews. For `default`, the prompt tells the chat to run its subagents on
 OpenCode with the default model and variant of the OpenCode

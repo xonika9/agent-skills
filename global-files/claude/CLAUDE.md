@@ -71,6 +71,8 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Claude Code runtime
 
+- Avoid zsh-only expansions such as `${(f)…}` in shell commands: Claude Code's removal safety check cannot parse them and prompts the user even in bypass mode.
+
 ### Subagent routing
 
 - Set explicit `model` and `effort` on every non-fork worker, using only the controls its live interface exposes. If a needed control is missing, say so; do not claim a model or effort you could not set. A fork inherits the parent's model and effort, so use one only when both already match the route for the worker's role.
