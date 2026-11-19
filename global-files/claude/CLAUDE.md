@@ -71,7 +71,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Claude Code runtime
 
-- Avoid zsh-only expansions such as `${(f)…}` in shell commands: Claude Code's removal safety check cannot parse them and prompts the user even in bypass mode.
+- Write a multi-line script to a file in the scratchpad and run it with a short command such as `python3 <file>`; do not pass it inline through a heredoc or `-c`, and avoid zsh-only expansions such as `${(f)…}`. Claude Code's removal safety check cannot parse such commands and stops for user approval even in bypass mode, so the run stalls until the user answers.
 
 ### Subagent routing
 
