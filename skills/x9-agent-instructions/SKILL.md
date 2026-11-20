@@ -21,7 +21,7 @@ Write this skill and standing machine-facing policy in English. Write a user-del
 
 ## What the prompt carries
 
-Completeness of the specification helps; completeness of the path hurts. Describe the task fully and leave the executor to choose how.
+Completeness of the specification helps; completeness of the path hurts. Describe the task fully and leave the executor to choose how. Each item below is a candidate admitted under [what earns a change](#what-earns-a-change), not a slot to fill.
 
 - **Goal** — one statement of what must be true when the work is done, not a list of activities.
 - **Facts the executor cannot derive** — state, paths, commits, what is already done, what is known broken, decisions taken elsewhere. For continuation briefs, preserve the user's decisions, constraints, permissions, and prohibitions in their exact wording where paraphrase could change scope; distinguish them from agent inferences. Include rejected approaches and why, unresolved commitments, and hard-to-reconstruct references. Condense agent explanations before these facts. Length is not a concern here; nothing else can supply this.
@@ -69,6 +69,7 @@ These rules apply when writing, when reviewing, and in every skill that loads th
 - Before proposing a standing rule, search the instruction files and skills that load in the same context for an existing owner. A rule already owned elsewhere becomes a pointer or is dropped.
 - For every proposed standing rule, in Write and Review alike, give one line naming the behavior it changes, where an existing owner was searched, and that it carries no date or incident. These lines let the user see that the checks ran.
 - Judge an issue separately from its remedy and use the smallest change that resolves it while preserving the intended result. Prefer deleting, merging, or rewording to adding; each net addition names the executor behavior it changes. Do not drop a supported issue for being minor; revise a disproportionate remedy instead.
+- Before delivering any text you wrote — a prompt, a proposed diff, or an applied edit — cut every sentence whose removal would leave the executor's actions and the judging of its result unchanged, including anything the executor already gets from the goal, its runtime, or loaded context. Deliver the version you would offer if asked to shorten it.
 - A repeated review of an unchanged artifact applies the same bar and does not lower it to find something new; "no changes needed" is a complete result.
 
 ## Unknowns

@@ -4,6 +4,9 @@
 
 ### Highlights
 
+- `x9-cto` lets a repository set the model per kind of launched chat and per helper job in `.x9-cto.json`: where the repository's own CTO process names such fields, a merge-train or deploy chat is launched on its own provider, model, and effort instead of the shared `chat_*` values.
+- `x9-agent-instructions` delivers compact text on the first pass — prompts, proposed instruction edits, and fixes in skill and global-instruction audits alike: before handing it over, it drops every sentence that would not change what the executor does, so asking to shorten it no longer removes content that was never needed.
+
 ### Install / update
 
 ### Compatibility

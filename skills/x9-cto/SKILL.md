@@ -135,7 +135,8 @@ competes for scope, apply
 ## Evidence
 
 Do not ask the user about facts available in code, repository documents, or
-current external sources; inspect them and answer with what the evidence
+current external sources, and do not ask for a decision whose consequences
+those sources can settle; inspect them and answer with what the evidence
 supports. If you do not know where to look, search briefly first. Ask only
 about intent, priorities, constraints, and context that no available source
 holds, and when research finds nothing, name what was checked before asking a

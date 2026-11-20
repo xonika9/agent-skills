@@ -27,9 +27,16 @@ applying the `chat_*` fields to its own subagents. The file is flat JSON:
 | `bakeoff_native_model`, `bakeoff_native_count` | candidates of a `ce-bakeoff` run as the runtime's own subagents: model or family alias, and how many |
 | `bakeoff_opencode_model`, `bakeoff_opencode_count` | candidates of a `ce-bakeoff` run on OpenCode: `default` or an exact model as for `subagent_model`, and how many |
 
+A repository's own CTO process may give a chat kind or a subagent job fields
+of its own in this file. Where it does, launch a chat of that kind with that
+kind's provider, model, and effort instead of `chat_*`, and take the subagent
+route, the bake-off candidates, and the bake-off judge from its table instead
+of `subagent_*` and `bakeoff_*`. The fields above then apply only to a kind or
+job that process does not name.
+
 Resolve the chat model in the live catalog (in T3 Code,
 `orchestrator_capabilities` with a search for the alias) and pass the resolved
-ID with `chat_provider` and `chat_effort` on every launch (in T3 Code,
+ID with the chat's provider and effort on every launch (in T3 Code,
 `modelSelection` with `instanceId` and the effort option), because a launch
 without them inherits the launching chat's model and effort; when the launch
 result shows other values, correct them with `t3_thread_configure`. When the
