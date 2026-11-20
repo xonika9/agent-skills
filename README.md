@@ -32,7 +32,7 @@ You talk to the agent in your own words; the matching skill takes over.
 
 - **They check instead of guessing.** Facts, tests, and speed-ups are backed by evidence, and anything unverified is called out as such.
 - **They ask before anything risky.** Deleting, spending money, publishing, or changing your settings waits for your approval.
-- **They remember earlier work.** Audits leave notes in the project, so the next run shows what was fixed and what is new, and does not raise again what you deliberately declined.
+- **They remember earlier work.** Audits leave notes in the project (security notes with your consent), so the next run shows what was fixed and what is new, and does not raise again what you deliberately declined.
 - **They declare compatibility.** Package checks cover OpenCode, Claude Code, and Codex; runtime-specific skills state their restrictions in [Compatibility](#compatibility).
 
 ## Install

@@ -50,7 +50,7 @@ The orchestrator does not repeat each target's full rubric audit from scratch, b
 - select `Audit` and one evidence tier for the whole batch;
 - select one report language by the precedence in [audit reporting](audit-reporting.md) and pass its exact `Report language: <tag>` to every worker;
 - split the resolved targets into bounded groups sized so each worker can read every relevant reachable resource;
-- assign every group to a fresh worker and use the parent agent's current model unless the user explicitly selected another;
+- assign every group to a fresh worker: in Claude Code on `opus` at `medium` effort, elsewhere on the parent agent's current model, unless the user explicitly selected another model or effort;
 - keep chat context lean by requiring only the report path, finding counts, instruction-rubric result, and one Verdict block per target from each worker;
 - wait for every group, verify that every expected report exists, and verify that every returned response contains the report path, the assigned report-language tag, severity counts, instruction-rubric result, and all required Verdict fields;
 - retry a failed or non-compliant bounded group with a fresh worker rather than silently omitting a target;
