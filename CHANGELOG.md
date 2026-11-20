@@ -10,6 +10,24 @@
 
 ### Breaking changes
 
+## 26.11.20.2 - 2026-11-20
+
+### Highlights
+
+- The global instructions for Claude Code, Codex, and OpenCode load `x9-agent-instructions` or `x9-skill-creator` again before every proposed instruction edit, even when the skill ran earlier in the conversation, so proposals made after a long chat was compacted go through the skill's checks instead of being written from memory.
+
+### Install / update
+
+- Update the installed global instruction files for Claude Code, Codex, and OpenCode; skills need no update.
+
+### Compatibility
+
+- No compatibility changes.
+
+### Breaking changes
+
+- None.
+
 ## 26.11.20.1 - 2026-11-20
 
 ### Highlights
