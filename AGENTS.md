@@ -2,7 +2,6 @@
 
 This is the public source of truth for the `x9-*` Agent Skills. The package targets the open Agent Skills format; Claude Code and Codex also have native plugin manifests in this repository. Work directly on `main`; do not create branches.
 
-
 ## Source ownership
 
 - Treat every directory under `skills/` as canonical. Do not create runtime-specific copies of a skill.
@@ -24,9 +23,9 @@ This is the public source of truth for the `x9-*` Agent Skills. The package targ
 
 ## Plugin metadata
 
-- Keep `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` synchronized across all shared metadata, including the calendar version `YY.M.D.N` (Moscow date, daily sequence starting at 1).
+- Keep `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` synchronized across all shared metadata, including the calendar version, whose format the `release` skill owns.
 - Keep the plugin name `x9-agent-skills` and marketplace name `xonika9` synchronized across both plugin manifests and `.claude-plugin/marketplace.json` plus `.agents/plugins/marketplace.json`, as enforced by `scripts/check_package.py`.
-- Run `claude plugin validate .claude-plugin/marketplace.json`, `claude plugin validate .claude-plugin/plugin.json`, and `python3 scripts/check_package.py` after changing manifests or marketplace files. The repository script is the reproducible Claude/Codex package gate; a runtime-bundled Codex validator may be used as an additional local check.
+- Run `claude plugin validate .claude-plugin/marketplace.json`, `claude plugin validate .claude-plugin/plugin.json`, and `python3 scripts/check_package.py` after changing manifests or marketplace files.
 
 ## Changelog
 

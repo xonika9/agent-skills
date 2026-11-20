@@ -221,9 +221,14 @@ class ExcalidrawTests(TempCase):
         path = self.write("big.excalidraw",
                           '{"elements":[{"id":"r","type":"rectangle","x":' + "1" * 5000 + "}]}")
         code, out, err = run(path)
-        self.assertEqual((code, out), (2, ""))
-        self.assertTrue(err.startswith("ERROR:"), err)
         self.assertNotIn("Traceback", err)
+        try:
+            int("1" * 5000)
+        except ValueError:
+            self.assertEqual((code, out), (2, ""))
+            self.assertTrue(err.startswith("ERROR:"), err)
+        else:  # interpreter without an integer-digit limit parses the scene
+            self.assertEqual(code, 0)
 
     def test_unexpected_type_errors_become_source_errors(self):
         path = self.write("a.excalidraw", excalidraw_scene())

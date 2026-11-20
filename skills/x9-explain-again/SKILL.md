@@ -15,12 +15,10 @@ Creating a durable visual teaching artifact belongs to `ce-explain`; creating a 
 
 ## Response
 
-Identify the specific claim, conclusion, example, or step that is unclear. Add only the context needed to make that fragment understandable, then use a different explanatory method: an analogy, a concrete example, a causal breakdown, or simpler words. Include a tiny example only when it resolves the confusion.
+Identify the specific claim, conclusion, example, or step that is unclear; when the user names none because the whole answer was unclear, take its main conclusion. Add only the context needed to make that fragment understandable, then use a different explanatory method: an analogy, a concrete example, a causal breakdown, or simpler words. Include a tiny example only when it resolves the confusion.
 
 Do not merely shorten or repeat the earlier wording. Do not create files, invoke `ce-explain` or `x9-diagrams` automatically, or start an autonomous loop. If the user still does not understand, one more bounded explanation is allowed; each new request still needs a clear referent.
 
-When the unclear referent cannot be determined, ask one short question and do not invent context.
-
 ## Completion
 
-Return either a concise explanation that addresses the identified fragment through a different method, or one short clarifying question when the fragment is not identifiable.
+Return a concise explanation that addresses the identified fragment through a different method.

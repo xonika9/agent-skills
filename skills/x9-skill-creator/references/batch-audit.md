@@ -54,9 +54,7 @@ The orchestrator does not repeat each target's full rubric audit from scratch, b
 - keep chat context lean by requiring only the report path, finding counts, instruction-rubric result, and one Verdict block per target from each worker;
 - wait for every group, verify that every expected report exists, and verify that every returned response contains the report path, the assigned report-language tag, severity counts, instruction-rubric result, and all required Verdict fields;
 - retry a failed or non-compliant bounded group with a fresh worker rather than silently omitting a target;
-- read every complete worker report, check every finding against its cited source and declared intent, merge duplicates, filter unsupported claims, and recompute target status from retained findings;
-- retain every evidence-backed Blocker, Important, and Minor finding regardless of whether it needs a user decision;
-- write the consolidated report and mirror its complete findings table in the final chat response;
+- after every worker report exists, follow [Orchestrator QA and consolidated report](#orchestrator-qa-and-consolidated-report);
 - stop with an explicit degraded or blocked result when the same underlying failure prevents complete coverage after a reasonable retry.
 
 Full evidence belongs in report files, not worker chat. Workers may write only the authorized audit reports; they must not modify target skills or their resources.
@@ -86,17 +84,17 @@ docs/skill-audits/<local-date-yyyy-mm-dd>/<skill-name>.md
 
 If two targets have the same skill name, add the shortest project-relative parent segment needed to make their report filenames unique. If a destination already exists, preserve it and choose a non-colliding filename unless the user explicitly authorized updating that report.
 
-Write the report using the assigned language and the persistent-report contract in [audit reporting](audit-reporting.md). Preserve exact commands, paths, source quotations, validator output, status tokens, and severity tokens.
+Write the report using the assigned language and the [findings table](audit-reporting.md#required-findings-table) and closing fields of [audit reporting](audit-reporting.md#report-language). Preserve exact commands, paths, source quotations, validator output, status tokens, and severity tokens.
 
 Each report must record `Report language: <tag>`, identify the project-relative target and selected evidence tier in that language, and contain:
 
 - the validator command, exit status, and relevant output;
-- one section for each of the 10 rubric dimensions, containing a localized no-finding statement or concrete findings;
+- one section for each rubric dimension, including Ownership boundary, containing a localized no-finding statement or concrete findings;
 - severity, evidence, impact, and a concrete proposed fix for every finding;
 - a localized `Why these changes help` section, with the concise explanation required by [audit reporting](audit-reporting.md) for every retained finding;
 - the localized `What can be simplified` section required by [audit reporting](audit-reporting.md#what-can-be-simplified);
 - the complete judge checklist from [quality-rubric.md](quality-rubric.md), with localized answers and explanations under its answer rules, and concrete fixes for retained findings;
-- the localized persistent-report verdict block defined by [audit reporting](audit-reporting.md).
+- the localized findings table, with one accounting row when there are no findings, and the four closing fields defined in [audit reporting](audit-reporting.md#report-language).
 
 Use the status meanings defined by [audit reporting](audit-reporting.md). Failed required structural validation is a blocker, and a target cannot be `clean` when required evidence or the required instruction rubric could not be collected.
 
@@ -127,7 +125,7 @@ Write the consolidated report to `docs/skill-audits/<local-date-yyyy-mm-dd>/summ
 The consolidated report contains:
 
 - `Report language: <tag>` matching the worker assignments;
-- the localized persistent-report findings table from [audit reporting](audit-reporting.md), including one accounting row for every clean target;
+- the localized findings table from [audit reporting](audit-reporting.md#required-findings-table), including one accounting row for every clean target;
 - a localized `Why these changes help` section, with one concise explanation for every retained finding;
 - the localized `What can be simplified` section required by [audit reporting](audit-reporting.md#what-can-be-simplified);
 - selected evidence tier and validation coverage;

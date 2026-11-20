@@ -73,7 +73,7 @@ A new test must not match one; a test audit hunts for existing tests that do.
 - tests whose only purpose is preserving test-only exports, globals, or wrappers;
 - expected values produced by the helper or renderer under test;
 - doubles that compute the asserted result themselves, so a bug in the real code under test would not turn the test red, or one identical mock standing in for different APIs;
-- fixtures that supply the receipt, admission, or callback ordering the owner should produce, or persistence asserted against a store the path never writes;
+- fixtures that hand the code under test a result its owner should produce itself, such as a receipt, an acknowledgement, or a callback order, or persistence asserted against a store the path never writes;
 - capability tests that restate declared flags instead of exercising the delivery or acknowledgement the flag promises;
 - negative controls that pass for an unrelated reason, such as a denial from a different guard or a rejection the production path never reaches;
 - tests that pass when they cannot run: swallowed exceptions, assertions inside a condition that may be false, skips without a reason;

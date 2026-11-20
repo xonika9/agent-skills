@@ -41,7 +41,7 @@ Present one plan in the conversation:
 - for a folder that already has its own structure, how each existing folder maps onto the model, including renames of topic folders whose names carry a date or a slug;
 - a manifest table: source, destination, kind, action;
 - what stays where it is and is linked instead;
-- the optional layers chosen (Obsidian views, Git) and the block that will be written;
+- the optional layers chosen (Obsidian views, Git), the block that will be written, and every edit outside the vault: the parent folder's pointer and its `.x9-okf.json` exclusion;
 - assumptions the user should correct.
 
 An approval of part of the plan applies only that part.

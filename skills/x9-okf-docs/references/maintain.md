@@ -2,7 +2,7 @@
 
 ## Repository instructions
 
-If the repository's instructions say it does not use OKF or exclude this skill, write no metadata and stop. Otherwise bring the `AGENTS.md` block in line with [the block template](agents-block.md) as part of this task.
+If the repository's instructions say it does not use OKF or exclude this skill, write no metadata and stop. Otherwise, when `AGENTS.md` already holds the block, bring it in line with [the block template](agents-block.md) as part of this task. When the instructions say nothing about OKF, propose the block and install it only after the user agrees; an explicit request to adopt OKF or to put the block into `AGENTS.md` is that agreement. Write the requested metadata either way.
 
 ## Documents
 

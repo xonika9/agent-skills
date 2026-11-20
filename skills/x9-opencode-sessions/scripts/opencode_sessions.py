@@ -125,7 +125,7 @@ def opencode_cli() -> str:
     discovered = shutil.which("opencode2")
     if discovered:
         return discovered
-    user_install = Path.home() / ".local" / "bin" / "opencode2"
+    user_install = Path.home() / ".opencode" / "bin" / "opencode2"
     if user_install.is_file() and os.access(user_install, os.X_OK):
         return str(user_install)
     return "opencode2"

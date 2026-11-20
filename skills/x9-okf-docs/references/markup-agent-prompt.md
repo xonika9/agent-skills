@@ -5,7 +5,7 @@ Use this brief for a read-only subagent that proposes metadata. It never edits f
 ## Input
 
 - The explicit list of documents.
-- [The contract](okf-format.md) and the `type` values the repository lists.
+- [The contract](okf-format.md), the `type` values the repository lists, and the language of `title` and `description` from Local.
 - The complete text of each document when practical; otherwise its headings and enough of the body for an accurate description.
 - Each document's existing header.
 

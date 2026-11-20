@@ -1,6 +1,6 @@
 ---
 name: x9-research
-description: Use when the user wants a genuinely researched answer from current or primary sources, including X/Twitter or Reddit — «разберись в вопросе», «изучи тему», «собери факты», "research this", "verify this claim" — or a choice or recommendation that depends on current facts such as prices, availability, offers, versions, or rules — «подбери», «что лучше купить и где», «сравни варианты», "which should I buy". Also use for durable research intent in varied wording — «создай ресерч в папке», «сохрани исследование», «обнови ресерч», "save/update this research" — and for explicit HTML delivery — «ресерч по теме X + html», «подготовь HTML-отчёт с источниками», «нужна HTML-версия», "research X and deliver it as HTML". Do not use for library/API documentation (find-docs), product search owned by another skill, personal advice, or questions answerable from stable supplied context. Mentioning HTML only as the research subject does not request HTML files.
+description: Use when the user wants a genuinely researched answer from current or primary sources, including X/Twitter or Reddit — «разберись в вопросе», «изучи тему», "verify this claim" — or a choice that depends on current facts such as prices, availability, offers, versions, or rules — «подбери», «что лучше купить и где». Also use to save or update research — «сохрани исследование», «обнови ресерч» — or to deliver it as HTML — «ресерч по теме X + html», «нужна HTML-версия». Do not use for library/API documentation (find-docs), product search owned by another skill, personal advice, or questions answerable from stable supplied context.
 compatibility: Requires Python 3 for deterministic HTML output validation.
 ---
 
@@ -17,15 +17,15 @@ The [machine-readable onboarding contract](references/onboarding.json) lists ext
 3. Match evidence to claim type using [the evidence thresholds](references/methodology.md#evidence-thresholds); social sampling is owned by [source selection](references/sources.md#social-search).
 4. Resolve source conflicts explicitly; do not average incompatible claims.
 5. Close every gap you can reach: open the remaining pages, prices, links, and listings instead of estimating them or labelling them unchecked. Stop when every coverage item is researched or excluded with a stated reason and new queries no longer change a load-bearing claim.
-6. Answer at the level the user will act on: conclusion first, naming the specific option, place, price with its conditions, and an opened link; evidence near each claim, freshness, and calibrated confidence. Say what an unfamiliar entity is when it first appears. Before handing off, note the follow-up questions the user would most likely ask and answer those the research can settle. When a sourced finding outside the question would change the user's decision, add it in a short final block; do not research it in depth unasked.
+6. Answer at the level the user will act on: conclusion first, naming the specific option and an opened link, and for a purchase or offer also the place and price with its conditions; evidence near each claim, freshness, and calibrated confidence. Say what an unfamiliar entity is when it first appears. Before handing off, note the follow-up questions the user would most likely ask and answer those the research can settle. When a sourced finding outside the question would change the user's decision, add it in a short final block; do not research it in depth unasked.
 
-Read [references/methodology.md](references/methodology.md) for evidence thresholds and independent verification. Read [references/sources.md](references/sources.md) when selecting search/browser surfaces.
+Read [references/methodology.md](references/methodology.md) for evidence thresholds and independent verification.
 
 ## Runtime and browser
 
-Use the live tools exposed by the current runtime; do not assume Claude-only names. Prefer purpose-built connectors/APIs for structured resources. Before browser work, follow `x9-browser-session`.
+Use the live tools exposed by the current runtime; do not assume Claude-only names. Prefer purpose-built connectors/APIs for structured resources.
 
-Read [references/sources.md](references/sources.md) before browser or social research. It owns source selection, platform sampling, and the intentional authenticated-browser exception for X/Twitter; `x9-browser-session` owns controller selection, task-tab isolation, private-surface safety, and browser-route failure.
+Read [references/sources.md](references/sources.md) when selecting search or browser surfaces and before social research. It owns source selection, platform sampling, and the intentional authenticated-browser exception for X/Twitter. Before browser work, follow `x9-browser-session`, which owns controller selection, task-tab isolation, private-surface safety, and browser-route failure.
 
 ## Route the result
 
@@ -41,7 +41,7 @@ Return a sourced answer in chat unless the request conveys persistence, update, 
 ## Done
 
 - Every coverage item is researched or excluded with a stated reason; no reachable gap is left as an estimate or an unchecked label.
-- The user can act on the answer without another search: each recommendation names the place, price with conditions, and an opened link where one exists.
+- The user can act on the answer without another search: each recommendation names the specific option and an opened link where one exists, plus the place and price with conditions for a purchase or offer.
 - When researching or refreshing evidence, every load-bearing current claim traces to a source opened in this run; HTML-only work uses the current Markdown evidence and states its freshness.
 - Evidence strength matches claim risk; contradictions and freshness are visible.
 - The applicable completion contract passes in [delivery modes](references/delivery-modes.md), [HTML reports](references/html-reports.md), and [source selection](references/sources.md).

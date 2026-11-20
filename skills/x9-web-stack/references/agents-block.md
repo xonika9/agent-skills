@@ -44,4 +44,4 @@ For a project on a different stack, express each chosen principle in that stack'
 
 ## Done
 
-The diff touches only the block (plus the agreed insertion point on first write), the block is within budget, every command in it runs or is labelled unverified, and every included rule passes the three tests above.
+The diff touches only the block (plus the agreed insertion point on first write), the block is within budget, every command in it runs or is labelled unverified, and every included rule passes the three tests above. The report names `x9-agent-instructions` as unavailable when it could not be loaded.

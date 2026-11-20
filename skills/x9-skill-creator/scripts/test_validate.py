@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -12,7 +13,6 @@ from pathlib import Path
 VALIDATOR = Path(__file__).with_name("validate.py")
 SKILL_ROOT = Path(__file__).parent.parent
 SKILL_FILE = SKILL_ROOT / "SKILL.md"
-REPORTING = SKILL_ROOT / "references" / "audit-reporting.md"
 BATCH_AUDIT = SKILL_ROOT / "references" / "batch-audit.md"
 
 
@@ -32,6 +32,24 @@ def skill(root: Path, frontmatter: str, body: str = "# Demo\n"):
 def expect(label: str, condition: bool, output: str = ""):
     if not condition:
         raise AssertionError(f"{label}\n{output}")
+
+
+def heading_anchors(path: Path):
+    anchors = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"#{1,6}\s+(.*)", line)
+        if match:
+            slug = re.sub(r"[^\w\- ]", "", match.group(1).lower()).replace(" ", "-")
+            anchors.add(slug)
+    return anchors
+
+
+def contract_links(text: str):
+    for target in re.findall(r"\]\(([^)\s]+)\)", text):
+        if "://" in target:
+            continue
+        file_part, _, anchor = target.partition("#")
+        yield file_part, anchor
 
 
 def main():
@@ -269,40 +287,15 @@ def main():
         (scripts / "helper.py").write_text("VALUE = 'ok'\n", encoding="utf-8")
         expect("script dependency is reachable", run(script_dependency).returncode == 0, run(script_dependency).stdout)
 
-    skill_text = SKILL_FILE.read_text(encoding="utf-8")
-    reporting_text = REPORTING.read_text(encoding="utf-8")
-    batch_text = BATCH_AUDIT.read_text(encoding="utf-8")
-    table_header = "| Skill | Status | Severity | Area | Finding | Evidence / impact | Recommendation | Decision | Full report |"
-    for label, fragment, text in (
-        ("core links the audit reporting contract", "references/audit-reporting.md", skill_text),
-        ("core requires the instruction rubric", "load and apply `x9-agent-instructions`", skill_text),
-        ("core degrades when the instruction rubric is unavailable", "instruction rubric as `degraded`", skill_text),
-        ("reporting defines the complete findings table", table_header, reporting_text),
-        ("report language follows explicit user choice", "language explicitly requested by the user", reporting_text),
-        ("report language falls back to request carrier language", "primary carrier language of the audit request", reporting_text),
-        ("report language does not follow the target", "Never derive the report language from the audited skill", reporting_text),
-        ("persistent reports record one language tag", "Report language: <tag>", reporting_text),
-        ("persistent reports localize prose and labels", "Localize the human-facing labels", reporting_text),
-        ("reporting accounts for clean targets", "No retained findings", reporting_text),
-        ("reporting retains every severity", "Blocker, Important, and Minor", reporting_text),
-        ("reporting assigns stable finding identifiers", "stable identifier such as `F1`", reporting_text),
-        ("reporting explains why every change helps", "Why these changes help", reporting_text),
-        ("reporting limits explanation length", "lead with the practical improvement", reporting_text),
-        ("degraded status has precedence", "`degraded` takes precedence", reporting_text),
-        ("batch links canonical QA", "[batch QA and handoff](audit-reporting.md#batch-handoff)", batch_text),
-        ("batch loads the instruction rubric", "Load and apply `x9-agent-instructions`", batch_text),
-        ("batch reports instruction-rubric coverage", "Instruction rubric: applied|not applicable|degraded", batch_text),
-        ("batch writes a consolidated report", "summary.md", batch_text),
-        ("batch assigns one report language", "pass its exact `Report language: <tag>` to every worker", batch_text),
-        ("workers must not infer another language", "Do not infer another language from the target", batch_text),
-        ("worker responses return the report language", "Report language: <tag>", batch_text),
-        ("orchestrator verifies report language", "verify the assigned report language in each report", batch_text),
-        ("batch uses the canonical localized verdict block", "localized persistent-report verdict block defined by [audit reporting](audit-reporting.md)", batch_text),
-        ("batch final response uses the canonical handoff", "[batch handoff](audit-reporting.md#batch-handoff)", batch_text),
-    ):
-        expect(label, fragment in text)
+    for path in (SKILL_FILE, *sorted((SKILL_ROOT / "references").glob("*.md"))):
+        for target, anchor in contract_links(path.read_text(encoding="utf-8")):
+            destination = (path.parent / target).resolve() if target else path
+            label = f"{path.name} link {target}#{anchor}"
+            expect(f"{label} resolves to a file", destination.is_file(), str(destination))
+            if anchor:
+                expect(f"{label} resolves to a heading", anchor in heading_anchors(destination), str(destination))
 
-    expect("batch links the canonical judge checklist", "[quality-rubric.md](quality-rubric.md)" in batch_text)
+    batch_text = BATCH_AUDIT.read_text(encoding="utf-8")
     expect("batch does not copy judge checklist cardinality", "8-item judge checklist" not in batch_text)
     result = run(SKILL_ROOT, "portable", "claude", "codex")
     expect("creator validates for all declared runtimes", result.returncode == 0, result.stdout)

@@ -72,4 +72,4 @@ Better: return `DEGRADED`, name the missing route, and limit the conclusion acco
 
 Bad: an interview is mandatory even when the request fully specifies scope and output.
 
-Better: ask one question only when an unrecoverable ambiguity materially changes the implementation.
+Better: ask only the questions whose answers cannot be recovered and materially change the implementation.

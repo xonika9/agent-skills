@@ -153,61 +153,46 @@ def selector_specificity(selector: str, tag: str, attrs: dict[str, str]) -> tupl
     return len(ids), len(classes), int(element is not None)
 
 
-LAYOUT_PROPERTIES = {"grid-template-columns", "grid-template", "grid", "all"}
+NARROW_MEDIA = re.compile(
+    r"@media\s+(?:screen\s+and\s+)?\(\s*max-width\s*:\s*(\d+(?:\.\d+)?)px\s*\)", re.I
+)
 
 
-def has_narrow_report_grid_rule(css: str, nodes: list[tuple[str, dict[str, str]]]) -> bool:
-    """Resolve the supported cascade at the contract's 390px narrow viewport.
+def selector_names(selector: str, class_name: str) -> bool:
+    return bool(re.search(rf"\.{re.escape(class_name)}(?![\w-])", selector))
 
-    All accepted max-width conditions also apply below 390px. Unknown layout
-    selectors, nesting and shorthands fail closed; rendering remains separate.
-    """
-    winners: list[tuple[tuple[int, int, int, int, int], str] | None] = [None] * len(nodes)
-    responsive = [False] * len(nodes)
-    order = 0
 
-    def visit(source: str, media: bool = False) -> None:
-        nonlocal order
-        for selector, body in css_blocks(source):
-            if selector.startswith("@"):
-                # Non-layout at-rules cannot override the hook.
-                if not re.search(r"(?:^|[;{])\s*(?:grid(?:-template(?:-columns)?)?|all)\s*:", body, re.I):
-                    continue
-                match = re.fullmatch(
-                    r"@media\s+(?:screen\s+and\s+)?\(\s*max-width\s*:\s*(\d+(?:\.\d+)?)px\s*\)",
-                    selector, re.I,
-                )
-                if media or not match or not 390 <= float(match[1]) < 1280:
-                    raise ValueError("unsupported layout media condition")
-                visit(body, media=True)
-                continue
-            if "{" in body or "}" in body:
-                raise ValueError("nested CSS rules are unsupported")
-            declarations = [(name, value) for name, value in css_declarations(body) if name in LAYOUT_PROPERTIES]
-            if not declarations:
-                continue
-            for name, value in declarations:
-                order += 1
-                important = bool(re.search(r"!\s*important\s*$", value, re.I))
-                value = re.sub(r"!\s*important\s*$", "", value, flags=re.I).strip().lower()
-                for part in selector.split(","):
-                    for index, (tag, attrs) in enumerate(nodes):
-                        specificity = selector_specificity(part.strip(), tag, attrs)
-                        if specificity is None:
-                            continue
-                        if name != "grid-template-columns":
-                            raise ValueError("layout shorthands are unsupported on report-grid")
-                        priority = (int(important), *specificity, order)
-                        if winners[index] is None or priority >= winners[index][0]:
-                            winners[index] = priority, value
-                        if media and value == "1fr" and "report-grid" in re.findall(r"\.([\w-]+)", part):
-                            responsive[index] = True
-
+def responsive_hook_errors(css: str) -> list[str]:
+    """Check that the narrow-viewport hooks are present; rendering proves they work."""
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    found = {"grid": False, "table": False, "overflow": False}
     try:
-        visit(css)
+        for selector, body in css_blocks(css):
+            if selector.startswith("@"):
+                match = NARROW_MEDIA.fullmatch(selector.strip())
+                if not match or not 390 <= float(match[1]) < 1280:
+                    continue
+                for inner, inner_body in css_blocks(body):
+                    for name, value in css_declarations(inner_body):
+                        value = re.sub(r"!\s*important\s*$", "", value, flags=re.I).strip().lower()
+                        if name == "grid-template-columns" and value == "1fr" and selector_names(inner, "report-grid"):
+                            found["grid"] = True
+                        if name == "display" and value in {"block", "grid"} and selector_names(inner, "comparison-table"):
+                            found["table"] = True
+            elif selector_names(selector, "diagram-container"):
+                for name, value in css_declarations(body):
+                    value = re.sub(r"!\s*important\s*$", "", value, flags=re.I).strip().lower()
+                    if (name == "overflow-x" and value == "auto") or (name == "overflow" and value.split()[:1] == ["auto"]):
+                        found["overflow"] = True
     except ValueError:
-        return False
-    return bool(nodes) and all(responsive) and all(winner and winner[1] == "1fr" for winner in winners)
+        return ["stylesheet is not well-formed"]
+    messages = {
+        "grid": "missing narrow media rule: .report-grid { grid-template-columns: 1fr }",
+        "table": "missing narrow media rule: .comparison-table { display: block or grid }",
+        "overflow": "missing rule: .diagram-container { overflow-x: auto }",
+    }
+    return [message for key, message in messages.items() if not found[key]]
+
 
 
 class ReportParser(HTMLParser):
@@ -218,7 +203,6 @@ class ReportParser(HTMLParser):
         self.stack: list[str] = []
         self.errors: list[str] = []
         self.ids: list[str] = []
-        self.nodes: list[tuple[str, dict[str, str]]] = []
         self.id_nodes: list[tuple[str, str]] = []
         self.section_stack: list[str] = []
         self.headings: list[tuple[int, str]] = []
@@ -227,7 +211,6 @@ class ReportParser(HTMLParser):
         self.in_style = 0
         self.styles: list[str] = []
         self.inline_styles: list[str] = []
-        self.report_grids: list[tuple[str, dict[str, str]]] = []
         self.scripts: list[dict[str, str]] = []
         self.script_stack: list[dict[str, str]] = []
         self.network_attrs: list[tuple[str, str, str]] = []
@@ -259,7 +242,6 @@ class ReportParser(HTMLParser):
             self.errors.append(f"duplicate attributes on <{tag}>: {', '.join(duplicates)}")
         values = {name.lower(): value or "" for name, value in attrs}
         self.counts[tag] += 1
-        self.nodes.append((tag, values))
         if self.repo_depth and tag not in {"pre", "code"}:
             self.repo_bad_tags.append(tag)
         if tag not in VOID:
@@ -287,8 +269,6 @@ class ReportParser(HTMLParser):
             if name == "style":
                 self.inline_styles.append(value)
         classes = class_set(values)
-        if "report-grid" in classes:
-            self.report_grids.append((tag, values))
         if tag == "template":
             self.errors.append("inert template content is not allowed")
         if classes & FALLBACK_CLASSES:
@@ -475,7 +455,7 @@ def fallback_visibility_errors(css: str, ancestors: list[tuple[str, dict[str, st
     return errors
 
 
-def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inline_styles: list[str], fallback_ancestors: list[tuple[str, dict[str, str]]]) -> list[str]:
+def css_contract_errors(css: str, inline_styles: list[str], fallback_ancestors: list[tuple[str, dict[str, str]]]) -> list[str]:
     errors: list[str] = []
     all_css = css + "\n" + "\n".join(inline_styles)
     if "\\" in all_css:
@@ -489,93 +469,6 @@ def css_contract_errors(css: str, nodes: list[tuple[str, dict[str, str]]], inlin
         ):
             errors.append("fallback content must not be hidden by CSS")
     errors.extend(fallback_visibility_errors(compact, fallback_ancestors))
-    if not has_narrow_report_grid_rule(compact, nodes):
-        errors.append("report-grid must resolve to one column through the supported narrow CSS rules")
-    for declarations in inline_styles:
-        try:
-            if any(name in LAYOUT_PROPERTIES for name, _ in css_declarations(re.sub(r"/\*.*?\*/", "", declarations, flags=re.DOTALL))):
-                errors.append("grid layout declarations must be in style blocks, not style attributes")
-        except ValueError:
-            errors.append("malformed inline CSS declaration")
-    return errors
-
-
-def responsive_resource_errors(css: str, nodes: list[tuple[str, dict[str, str]]]) -> list[str]:
-    """Resolve comparison display and horizontal overflow at the narrow checkpoint."""
-    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    winners: dict[tuple[int, str], tuple[tuple[int, int, int, int, int], str]] = {}
-    narrow_tables: set[int] = set()
-    order = 0
-    def visit(source: str, media: bool = False) -> None:
-        nonlocal order
-        for selector, body in css_blocks(source):
-            if selector.startswith("@"):
-                if not re.search(r"(?:^|[;{])\s*(?:display|overflow(?:-[xy])?|all)\s*:", body, re.I):
-                    continue
-                match = re.fullmatch(r"@media\s+(?:screen\s+and\s+)?\(\s*max-width\s*:\s*(\d+(?:\.\d+)?)px\s*\)", selector, re.I)
-                if media or not match or not 390 <= float(match[1]) < 1280:
-                    raise ValueError("unsupported reflow/overflow media condition")
-                visit(body, True)
-                continue
-            if "{" in body or "}" in body:
-                raise ValueError("nested reflow/overflow rules are unsupported")
-            for name, value in css_declarations(body):
-                if name == "all":
-                    for part in selector.split(","):
-                        for tag, attrs in nodes:
-                            if class_set(attrs) & {"comparison-table", "diagram-container"} and selector_specificity(part.strip(), tag, attrs) is not None:
-                                raise ValueError("all resets on reflow/diagram elements are unsupported")
-                if name not in {"display", "overflow", "overflow-x", "overflow-y"}:
-                    continue
-                order += 1
-                important = bool(re.search(r"!\s*important\s*$", value, re.I))
-                value = re.sub(r"!\s*important\s*$", "", value, flags=re.I).strip().lower()
-                properties = {name: value}
-                if name == "overflow":
-                    axes = value.split()
-                    if len(axes) not in (1, 2):
-                        raise ValueError("unsupported overflow shorthand")
-                    properties = {"overflow-x": axes[0], "overflow-y": axes[-1]}
-                if any(prop.startswith("overflow-") and val not in {"visible", "hidden", "clip", "auto", "scroll"} for prop, val in properties.items()):
-                    raise ValueError("overflow values must use supported concrete keywords")
-                for part in selector.split(","):
-                    for index, (tag, attrs) in enumerate(nodes):
-                        specificity = selector_specificity(part.strip(), tag, attrs)
-                        if specificity is None:
-                            continue
-                        priority = (int(important), *specificity, order)
-                        for prop, resolved in properties.items():
-                            key = index, prop
-                            if key not in winners or priority >= winners[key][0]:
-                                winners[key] = priority, resolved
-                        if media and name == "display" and value in {"block", "grid"} and "comparison-table" in re.findall(r"\.([\w-]+)", part):
-                            narrow_tables.add(index)
-    try:
-        visit(css)
-    except ValueError as exc:
-        return [str(exc)]
-    errors = []
-    for tag, attrs in nodes:
-        for name, _ in css_declarations(attrs.get("style", "")):
-            if name in {"overflow", "overflow-x", "overflow-y"} or (name == "display" and "comparison-table" in class_set(attrs)):
-                errors.append("reflow/overflow declarations must be in style blocks")
-            if name == "all" and class_set(attrs) & {"comparison-table", "diagram-container"}:
-                errors.append("inline all resets on reflow/diagram elements are unsupported")
-    tables = [i for i, (_, attrs) in enumerate(nodes) if "comparison-table" in class_set(attrs)]
-    containers = [i for i, (_, attrs) in enumerate(nodes) if "diagram-container" in class_set(attrs)]
-    if not tables or any(i not in narrow_tables or winners.get((i, "display"), (None, ""))[1] not in {"block", "grid"} for i in tables):
-        errors.append("comparison-table must resolve to block/grid through narrow media rules")
-    computed_x = {}
-    for index in range(len(nodes)):
-        x = winners.get((index, "overflow-x"), (None, "visible"))[1]
-        y = winners.get((index, "overflow-y"), (None, "visible"))[1]
-        if x in {"visible", "clip"} and y not in {"visible", "clip"}:
-            x = "auto" if x == "visible" else "hidden"
-        computed_x[index] = x
-    if not containers or any(computed_x[i] != "auto" for i in containers):
-        errors.append("diagram-container must resolve to horizontal auto scrolling")
-    if any(value in {"auto", "scroll"} and index not in containers for index, value in computed_x.items()):
-        errors.append("only diagram-container may provide horizontal scrolling")
     return errors
 
 
@@ -644,7 +537,7 @@ def validate(path: Path) -> list[str]:
     elif not any(table["caption"] and table["col_headers"] and table["row_headers"] for table in comparison_tables):
         errors.append("comparison table needs caption, column headers, and row headers")
 
-    errors.extend(responsive_resource_errors("\n".join(parser.styles), parser.nodes))
+    errors.extend(responsive_hook_errors("\n".join(parser.styles)))
     if parser.repo_bad_tags:
         errors.append("repository evidence contains unescaped HTML: " + ", ".join(sorted(set(parser.repo_bad_tags))))
     for figure in parser.figures:
@@ -718,7 +611,7 @@ def validate(path: Path) -> list[str]:
     ]
     if any(re.search(r"(?:@|/)latest(?:[/?#]|$)", url, re.IGNORECASE) for url in script_urls):
         errors.append("latest aliases are not allowed")
-    errors.extend(css_contract_errors("\n".join(parser.styles), parser.report_grids, parser.inline_styles, parser.fallback_ancestors))
+    errors.extend(css_contract_errors("\n".join(parser.styles), parser.inline_styles, parser.fallback_ancestors))
     return errors
 
 

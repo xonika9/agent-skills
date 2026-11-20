@@ -5,7 +5,6 @@ Use this reference when a request may create, save, or update research files. Ke
 ## Contents
 
 - [Decision table](#decision-table)
-- [Decision flow](#decision-flow)
 - [Resolve the research area](#resolve-the-research-area)
 - [Use OKF frontmatter for discovery](#use-okf-frontmatter-for-discovery)
 - [Create durable research](#create-durable-research)
@@ -30,28 +29,6 @@ Classify semantic intent, not one exact phrase.
 | «обнови только Markdown», «HTML не трогай» | update | leave unchanged | Re-research, warn that existing HTML may now be stale |
 
 The words «создай ресерч» without a folder, file, save, update, or output-format cue do not by themselves authorize persistent files. Treat them like a chat research request when context does not make persistence explicit.
-
-## Decision flow
-
-```mermaid
-flowchart TD
-    request["Research request"] --> html_only{"Update only the HTML presentation?"}
-    html_only -- yes --> rebuild_html["Find the paired Markdown and rebuild HTML without claiming fresh research"]
-    html_only -- no --> durable{"Save, folder, update, or explicit HTML-output intent?"}
-    durable -- no --> chat["Research and answer in chat; write no files"]
-    durable -- yes --> resolve["Resolve the subject area and Markdown target through path, context, and OKF frontmatter"]
-    resolve --> refresh{"Update existing research?"}
-    refresh -- yes --> update_md["Refresh evidence and update Markdown"]
-    update_md --> paired{"Does same-basename HTML already exist?"}
-    paired -- yes --> sync_html["Synchronize and verify HTML automatically"]
-    paired -- no --> requested_html{"Was HTML explicitly requested?"}
-    requested_html -- yes --> create_html["Create and verify same-basename HTML"]
-    requested_html -- no --> finish_md["Finish with Markdown only"]
-    refresh -- no --> create_md["Create or update the Markdown work file"]
-    create_md --> new_html{"Was HTML explicitly requested?"}
-    new_html -- yes --> create_html
-    new_html -- no --> finish_md
-```
 
 ## Resolve the research area
 
@@ -110,7 +87,7 @@ When HTML is also requested, create the same-basename `.html` beside the Markdow
 1. Resolve one existing Markdown target through current context and OKF metadata.
 2. Read its complete contents, related area entry point, update log, and same-basename HTML when present.
 3. Re-open volatile or load-bearing sources, search for changed and disconfirming evidence, then update the Markdown conclusion, ledger, freshness, and metadata.
-4. If same-basename HTML already exists, update it from the refreshed Markdown and run the complete HTML language, humanization, fact-lock, and render checks.
+4. If same-basename HTML already exists, update it from the refreshed Markdown and run the language editing pipeline and pair validation in [HTML report rules](html-reports.md).
 5. If HTML does not exist and the user did not request it, stop after Markdown. Do not expand scope by creating it.
 6. If the user explicitly says «только Markdown» or «HTML не трогай», preserve the HTML and warn that it may now be stale.
 
@@ -123,7 +100,7 @@ If the resolved item is a broad dossier entry point and several research notes l
 - require a current Markdown work file as the evidence base;
 - do not browse for new facts unless the user also requests a research update;
 - do not change Markdown claims merely to fit the presentation;
-- rebuild the HTML, then run the HTML-specific language, fact-lock, anchor, responsive, and render checks;
+- rebuild the HTML, then run the language editing pipeline and pair validation in [HTML report rules](html-reports.md);
 - state the Markdown freshness date so presentation work is not mistaken for refreshed research.
 
 If only a legacy HTML file exists and no evidence-oriented Markdown can be found, do not invent the missing research basis. Ask whether to reconstruct a Markdown work file from fresh research.

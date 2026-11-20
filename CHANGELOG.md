@@ -8,12 +8,28 @@
 - The global Codex instructions tell a Codex chat to wait on a running command with the longest poll the tool accepts instead of many short checks.
 - `x9-cto` lets a repository set the model per kind of launched chat and per helper job in `.x9-cto.json`: where the repository's own CTO process names such fields, a merge-train or deploy chat is launched on its own provider, model, and effort instead of the shared `chat_*` values.
 - `x9-agent-instructions` delivers compact text on the first pass — prompts, proposed instruction edits, and fixes in skill and global-instruction audits alike: before handing it over, it drops every sentence that would not change what the executor does, so asking to shorten it no longer removes content that was never needed.
+- `x9-appsec` saves security notes after a pre-release audit only when the owner agrees, the same as after a review.
+- `x9-okf-docs` proposes its `AGENTS.md` block in a repository that says nothing about OKF and installs it only after the user agrees, and it reports when an existing `CLAUDE.md` without `@AGENTS.md` would keep the block from reaching Claude Code.
+- `x9-browser-session` describes the current Browse tab model and commands, closes pages it opened through `chrome-devtools`, and keeps the Avito rules in a reference loaded only for Avito.
+- `x9-onboarding` computes group, coverage, and readiness statuses with a script instead of prose, and flags the OpenCode `chrome-devtools` server as a setting with noticeable consequences.
+- `x9-web-stack` refuses to create a project inside another Git repository before copying any files.
+- `x9-explain-again` re-explains the main conclusion when the whole answer was unclear instead of asking which part.
+- `x9-better-questions` no longer starts on meeting notes that only need minutes, action items, or a follow-up message.
+- `x9-codex-imagegen` stops when a revised brief is refused for the same reason, `x9-opencode-sessions` reports `UNKNOWN` instead of resending after an unconfirmed send, and `x9-decision-map` recommends the next planning skill instead of starting it.
+- `x9-architecture-scout` checks that a report carries its adaptive layout rules and leaves their effect to the required browser check; `x9-diagrams` checks work on Python 3.9.
+- Several skills drop repeated or outdated text: `x9-codex-delegation`, `x9-context-files-generator`, `x9-personal-vault`, `x9-research`, `x9-skill-creator`, `x9-test-quality`, and `x9-video-transcripts`.
 
 ### Install / update
 
+- Update through the existing skill or plugin route, and update the installed global instruction files.
+
 ### Compatibility
 
+- `x9-architecture-scout` reports no longer need an element with `class="report-grid"`; only the adaptive CSS hooks are checked.
+
 ### Breaking changes
+
+- The `--exclude` and `--include-readme` flags of the `x9-okf-docs` scripts are removed; folder scope lives only in `.x9-okf.json`.
 
 ## 26.11.17.1 - 2026-11-17
 

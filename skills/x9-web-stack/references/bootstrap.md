@@ -4,7 +4,7 @@ The result is a local repository that passes `bun run verify` against a real dat
 
 ## Inputs
 
-- Target directory: absent, or empty except `.git`. The script refuses anything else, so an existing project goes through the audit instead.
+- Target directory: absent, or empty except `.git`. The script refuses anything else, so an existing project goes through the audit instead. It also refuses a directory inside another Git repository before creating anything, because the template expects to be a repository root.
 - Sign-in variant (A, B, C, or none yet) and whether server rendering is needed. Neither blocks the scaffold; ask only when the user has not said and the answer is needed for the step at hand.
 - The current stable Bun version, discovered live (for example `gh api repos/oven-sh/bun/releases/latest --jq .tag_name`). The local `bun` should match it; the script warns when it does not.
 

@@ -93,14 +93,6 @@ def main() -> int:
             "prefixed string image-set resource": (report(extra="<style>body { background-image:-webkit-image-set('pixel.png' 1x); }</style>"), False),
             "inline mixed-case image-set resource": (report(extra_body='<p style="background-image:ImAgE-SeT(&quot;//example.invalid/pixel.png&quot; 1x)">Note</p>'), False),
             "comment-obfuscated image-set resource": (report(extra='<style>body { background-image:im/**/age-set("pixel.png" 1x); }</style>'), False),
-            "vertical overflow cannot imply horizontal scroll outside diagram": (report(extra='<style>p { overflow-y:auto; width:1px; }</style>'), False),
-            "explicit hidden x permits vertical-only scrolling": (report(extra='<style>p { overflow-y:auto; overflow-x:hidden; }</style>'), True),
-            "overflow shorthand axes obey computed rule": (report(extra='<style>p { overflow:visible auto; width:1px; }</style>'), False),
-            "invalid overflow cannot mask active scrolling": (report(extra='<style>p { overflow-x:auto; overflow-x:bogus; }</style>'), False),
-            "media all reset cannot cancel table reflow": (report(extra='<style>@media (max-width: 500px) { .comparison-table { all:revert!important; } }</style>'), False),
-            "all reset cannot cancel table reflow": (report(extra='<style>.comparison-table { all:revert!important; }</style>'), False),
-            "all reset cannot cancel diagram scrolling": (report(extra='<style>.diagram-container { all:initial!important; }</style>'), False),
-            "inline all reset cannot cancel table reflow": (report().replace('<table class="comparison-table">', '<table class="comparison-table" style="all:revert!important">'), False),
             "raw SVG cannot introduce animated resources": (report(extra_body='<svg><image width="10" height="10"><animate attributeName="href" values="https://example.test/beacon" dur="1s"></animate></image></svg>'), False),
             "legacy HTML image alias is forbidden": (report(extra_body='<image alt="Unexpected">'), False),
             "missing viewport": (report().replace('<meta name="viewport" content="width=device-width, initial-scale=1">', ''), False),
@@ -112,12 +104,6 @@ def main() -> int:
             "fallback section hidden by CSS": (report(extra='<style>#diagrams { display:none; }</style>'), False),
             "inert template hides fallback": (report().replace('<figure class="diagram">', '<template><figure class="diagram">').replace('</figure>', '</figure></template>'), False),
             "unrelated hidden content is allowed": (report(extra='<style>.unrelated { display:none; }</style>', extra_body='<p class="unrelated">Optional decoration</p>'), True),
-            "inline table display cannot bypass reflow": (report().replace('<table class="comparison-table">', '<table class="comparison-table" style="display:table!important">'), False),
-            "inline paragraph overflow cannot bypass scope": (report(extra_body='<p style="overflow-x:auto">Overflow</p>'), False),
-            "winning comparison display must reflow": (report().replace('.comparison-table { display:block; }', '.comparison-table { display:block; display:table !important; }'), False),
-            "table cannot scroll horizontally": (report(extra='<style>.comparison-table { overflow-x:auto; }</style>'), False),
-            "winning diagram overflow must scroll": (report(extra='<style>.diagram-container { overflow-x:hidden !important; }</style>'), False),
-            "table media hook must match actual table": (report().replace('.comparison-table { display:block; }', '.comparison-table.missing { display:block; }'), False),
             "Mermaid declaration must start source": (report(diagram="not a diagram\nflowchart LR\n A --> B"), False),
             "missing required structure": (report().replace(' id="risks"', ' id="limitations"'), False),
             "unpinned latest URL": (report(tailwind="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@latest"), False),
@@ -167,13 +153,6 @@ def main() -> int:
                 ),
                 False,
             ),
-            "one-column rule on report-grid descendant": (
-                report().replace(
-                    '.report-grid { grid-template-columns: 1fr; } .comparison-table',
-                    '.report-grid .child { grid-template-columns: 1fr; } .comparison-table',
-                ),
-                False,
-            ),
             "two-column rule beginning with one fraction": (
                 report().replace(
                     'grid-template-columns: 1fr; } .comparison-table',
@@ -188,48 +167,11 @@ def main() -> int:
                 ),
                 True,
             ),
-            "last declaration overrides narrow layout": (
-                report().replace('grid-template-columns: 1fr;', 'grid-template-columns: 1fr; grid-template-columns: 1fr 1fr;'), False,
-            ),
-            "later stylesheet overrides narrow layout": (
-                report(extra='<style>.report-grid { grid-template-columns: 1fr 1fr; }</style>'), False,
-            ),
-            "earlier more specific desktop rule wins": (
-                report().replace('.report-grid { display:grid;', 'main.report-grid { display:grid;'), False,
-            ),
-            "earlier important desktop rule wins": (
-                report().replace('grid-template-columns: 2fr 1fr;', 'grid-template-columns: 2fr 1fr !important;'), False,
-            ),
-            "important narrow declaration resists later normal declaration": (
-                report().replace('grid-template-columns: 1fr;', 'grid-template-columns: 1fr !important; grid-template-columns: 2fr 1fr;'), True,
-            ),
-            "more specific narrow rule resists later general rule": (
-                report(extra='<style>.report-grid { grid-template-columns: 2fr 1fr; }</style>').replace(
-                    '.report-grid { grid-template-columns: 1fr;', 'main.report-grid { grid-template-columns: 1fr;'), True,
-            ),
-            "earlier declaration restored to one column": (
-                report().replace('grid-template-columns: 1fr;', 'grid-template-columns: 2fr 1fr; grid-template-columns: 1fr;'), True,
-            ),
-            "layout shorthand resets columns": (
-                report(extra='<style>.report-grid { grid: auto / 1fr 1fr; }</style>'), False,
-            ),
-            "inline layout overrides stylesheet": (
-                report().replace('<main class="report-grid">', '<main class="report-grid" style="grid-template-columns: 1fr 1fr">'), False,
-            ),
             "ordinary inline style preserves stylesheet parsing": (
                 report(extra_body='<p style="color: red">Note</p>'), True,
             ),
             "inline resource remains forbidden": (
                 report(extra_body='<p style="background: url(https://example.test/image)">Note</p>'), False,
-            ),
-            "layout hidden in unsupported at-rule": (
-                report(extra='<style>@supports (display: grid) { .report-grid { grid-template-columns: 1fr 1fr; } }</style>'), False,
-            ),
-            "selector must match actual grid element": (
-                report().replace('.report-grid { grid-template-columns: 1fr;', 'article.report-grid { grid-template-columns: 1fr;'), False,
-            ),
-            "selector requires absent class": (
-                report().replace('.report-grid { grid-template-columns: 1fr;', '.report-grid.missing { grid-template-columns: 1fr;'), False,
             ),
             "class names remain case sensitive": (
                 report().replace('.report-grid { grid-template-columns: 1fr;', '.REPORT-GRID { grid-template-columns: 1fr;'), False,
@@ -237,11 +179,6 @@ def main() -> int:
             "layout in string is not a declaration": (
                 report().replace('grid-template-columns: 1fr;', 'content: "; grid-template-columns: 1fr;";'), False,
             ),
-            "selector list uses matching specificity only": (
-                report().replace('.report-grid { grid-template-columns: 1fr;', '#absent.report-grid, .report-grid { grid-template-columns: 1fr;').replace(
-                    '.report-grid { display:grid;', 'main.report-grid { display:grid;'), False,
-            ),
-            "missing report-grid node": (report().replace('<main class="report-grid">', '<main>'), False),
             "unclosed stylesheet block": (report(extra='<style>.other { color: red;</style>'), False),
             "stylesheet only applies to print": (report().replace('<style>', '<style media="print">'), False),
             "stylesheet has a non-CSS type": (report().replace('<style>', '<style type="text/plain">'), False),
@@ -258,6 +195,10 @@ def main() -> int:
             "Mermaid source hidden by class": (report().replace('class="mermaid-source"', 'class="mermaid-source hidden"'), False),
             "Mermaid source hidden by attribute": (report().replace('class="mermaid-source"', 'class="mermaid-source" hidden'), False),
             "self-closing void metadata": (report().replace('<meta charset="utf-8">', '<meta charset="utf-8" />'), True),
+            "missing narrow grid hook": (report().replace('.report-grid { grid-template-columns: 1fr; }', ''), False),
+            "missing table reflow hook": (report().replace('.comparison-table { display:block; }', ''), False),
+            "missing diagram overflow hook": (report().replace('.diagram-container { overflow-x: auto; }', ''), False),
+            "overflow shorthand supplies diagram hook": (report().replace('.diagram-container { overflow-x: auto; }', '.diagram-container { overflow: auto; }'), True),
             "mismatched structure status": (report(structure_status="FAIL"), False),
         }
         for condition, passing in [

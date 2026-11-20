@@ -27,13 +27,12 @@ and response semantics.
 `prompt` is preview-first. Run it without `--apply`, retain and show its generated
 `message_id`, then dispatch the same ID with `--apply` only after the user has explicitly
 asked to send and one target is unambiguous. The original explicit request is sufficient;
-do not add a confirmation step. Never send a live message unless the user requested it.
-The wrapper permanently reserves each preview ID and records a one-use local receipt
-containing the session ID and a hash of the text; `--apply` rejects a missing, reused, or
-mismatched receipt.
+do not add a confirmation step.
 
 If dispatch times out or its outcome is unknown, do not retry. Reconcile that exact
-`message_id` with `message` before any further action. Do not delete, rename, move, or
+`message_id` with `message` before any further action. If reconciliation does not confirm
+the message, report `UNKNOWN` and send again only when the user asks anew; a failed API
+call does not show the message is absent. Do not delete, rename, move, or
 otherwise alter sessions.
 
 `wait` may be unavailable on a running V2 service. Treat that response as blocked, then

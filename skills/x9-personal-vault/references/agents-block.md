@@ -1,6 +1,6 @@
 # The vault block in AGENTS.md
 
-The block carries every rule an ordinary session needs for daily work, so the vault does not depend on this skill being invoked.
+The block carries every rule an ordinary session needs for daily work, so the vault does not depend on this skill being invoked. It is the single canonical text of those rules; [the model](model.md) holds their rationale.
 
 ## Template
 
@@ -57,7 +57,7 @@ A new `area` value or stream, turning a topic into a collection of episodes, reg
 <!-- x9-personal-vault:end -->
 ```
 
-Keep the block within about 50 lines. A rule the vault's owner adds outside the block wins over the block for that vault; when the two conflict, report it and keep both until the user chooses.
+A rule the vault's owner adds outside the block wins over the block for that vault; when the two conflict, report it and keep both until the user chooses.
 
 ## Parent folder pointer
 
@@ -81,4 +81,4 @@ If the parent's `AGENTS.md` already describes the vault's folders or properties 
 
 ## Done
 
-`CLAUDE.md` beside each written `AGENTS.md` matches the authorized mode in [Writing and updating](#writing-and-updating): import-only after normalization with unique rules preserved in their owner, or the import plus preserved legacy content otherwise. The vault's `AGENTS.md` holds the `x9-okf-docs` block, every stream, template, and external link named in the block exists, every stream folder is named in the block, every topic's `area` is in the block's list, the block is within budget, and nothing outside the markers changed except the agreed insertion point, a newly created file, or lines the plan moved from a parent.
+`CLAUDE.md` beside each written `AGENTS.md` matches the authorized mode in [Writing and updating](#writing-and-updating): import-only after normalization with unique rules preserved in their owner, or the import plus preserved legacy content otherwise. The vault's `AGENTS.md` holds the `x9-okf-docs` block, every stream, template, and external link named in the block exists, every stream folder is named in the block, every topic's `area` is in the block's list, and nothing outside the markers changed except the agreed insertion point, a newly created file, or lines the plan moved from a parent.

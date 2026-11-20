@@ -92,9 +92,10 @@ class Scope:
         return f"scope: {source}; {readme}"
 
 
-def load_scope(root: Path, extra_excludes=(), include_readme: bool = False):
+def load_scope(root: Path):
     policy_path = root / POLICY_FILE
-    excludes = list(extra_excludes)
+    excludes = []
+    include_readme = False
     if policy_path.is_symlink():
         raise SystemExit(f"{POLICY_FILE} must be a regular file, not a link")
     if policy_path.is_file():
@@ -113,7 +114,7 @@ def load_scope(root: Path, extra_excludes=(), include_readme: bool = False):
         if not isinstance(policy.get("include_readme", False), bool):
             raise SystemExit(f"{POLICY_FILE}: 'include_readme' must be true or false")
         excludes.extend(listed)
-        include_readme = include_readme or policy.get("include_readme", False)
+        include_readme = policy.get("include_readme", False)
     else:
         policy_path = None
         includes = []

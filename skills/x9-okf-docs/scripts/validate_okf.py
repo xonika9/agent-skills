@@ -40,14 +40,12 @@ def main():
     parser.add_argument("--paths", nargs="+", metavar="PATH", help="check only these documents")
     parser.add_argument("--missing", action="store_true", help="list documents that need metadata work")
     parser.add_argument("--inventory", type=Path, help="also confirm bodies match this pre-edit inventory")
-    parser.add_argument("--exclude", nargs="*", default=[])
-    parser.add_argument("--include-readme", action="store_true")
     args = parser.parse_args()
 
     root = args.root.resolve()
     if not root.is_dir():
         raise SystemExit(f"not a directory: {root}")
-    scope = load_scope(root, args.exclude, args.include_readme)
+    scope = load_scope(root)
     files = markdown_files(scope)
     if args.paths:
         files = {rel: files[rel] for rel in resolve_named(files, args.paths, root)}

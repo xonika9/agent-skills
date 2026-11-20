@@ -12,10 +12,6 @@ Tool names change; inspect the current runtime before use.
 
 Search-result snippets are discovery aids, not evidence. Open the source page or document.
 
-## Browser
-
-Follow `x9-browser-session` before browser work; it owns controller selection, task-tab isolation, private-surface safety, and browser-route failure.
-
 ## Social search
 
 - Deliberately sample primary posts across relevant queries, dates, and views, and state the sampling limitation.

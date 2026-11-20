@@ -753,8 +753,14 @@ class GeometryWarningTests(unittest.TestCase):
             scene_path = Path(directory) / "scene.excalidraw"
             scene_path.write_text('{"elements": [{"x": ' + "1" * 5000 + "}]}", encoding="utf-8")
             code, _, stderr = run_cli(str(scene_path), "--structural-only")
-        self.assertEqual(code, 2)
-        self.assertIn("ERROR: cannot parse", stderr)
+        self.assertNotIn("Traceback", stderr)
+        try:
+            int("1" * 5000)
+        except ValueError:
+            self.assertEqual(code, 2)
+            self.assertIn("ERROR: cannot parse", stderr)
+        else:  # interpreter without an integer-digit limit parses the scene
+            self.assertEqual(code, 1)
 
     def test_cli_strict_geometry_passes_clean_scene(self):
         with tempfile.TemporaryDirectory() as directory:

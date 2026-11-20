@@ -8,6 +8,15 @@ import tempfile
 
 import check_package
 
+ROOT = Path(__file__).resolve().parent.parent
+SHARED_CORE_START = b"<!-- BEGIN SHARED PERSONAL CORE -->"
+SHARED_CORE_END = b"<!-- END SHARED PERSONAL CORE -->"
+PUBLISHED_GLOBAL_FILES = (
+    ROOT / "global-files/opencode/AGENTS.md",
+    ROOT / "global-files/claude/CLAUDE.md",
+    ROOT / "global-files/codex/AGENTS.md",
+)
+
 
 def manifest() -> dict:
     return {
@@ -101,6 +110,55 @@ def test_runtime_claims() -> None:
     assert errors("x9-demo", skill("Use for demos.", "Do it."), restricted)
 
 
+def shared_core(path: Path) -> bytes:
+    data = path.read_bytes()
+    assert data.count(SHARED_CORE_START) == 1 and data.count(SHARED_CORE_END) == 1, path
+    start = data.index(SHARED_CORE_START)
+    return data[start : data.index(SHARED_CORE_END, start) + len(SHARED_CORE_END)]
+
+
+def test_published_shared_cores() -> None:
+    cores = [shared_core(path) for path in PUBLISHED_GLOBAL_FILES]
+    assert all(core == cores[0] for core in cores[1:]), "published shared cores differ"
+    required = (
+        b"Include the goal and completion bar, non-derivable context, scope and authority, required evidence, and expected output",
+        b"Avoid unrequested features, abstractions, and adjacent cleanup.",
+        b"preserve load-bearing source wording and the active skill's specialist prompt and output contract",
+        b"Write worker briefs in English",
+        b"user-facing results in the user's language.",
+        b"Do substantive work in the primary session by default.",
+        b"nested delegation is explicitly required",
+        b"Continue already-authorized fixes, reruns, and explicitly scoped external actions",
+        b"newly discovered risk materially changes the agreed scope",
+        b"Intermediate checks do not replace the requested end-to-end result",
+        b"tell me in the chat and stop that delegated work; do not switch to another model or runtime yourself.",
+    )
+    for path, core in zip(PUBLISHED_GLOBAL_FILES, cores):
+        for phrase in required:
+            assert phrase in core, f"{path}: missing {phrase!r}"
+        for phrase in (b"configured lower-cost subagents execute", b"Do not use OpenCode"):
+            assert phrase not in core, f"{path}: still contains {phrase!r}"
+    codex = PUBLISHED_GLOBAL_FILES[2].read_text(encoding="utf-8")
+    for phrase in (
+        "inherit the primary session's model and reasoning effort",
+        "do not configure a lower-cost subagent default",
+        "stop or archive them only when that cleanup is explicitly authorized",
+    ):
+        assert phrase in codex, f"codex global file: missing {phrase!r}"
+
+
+def test_context_creator_uses_instruction_rubric() -> None:
+    skill = (ROOT / "skills/x9-context-files-generator/SKILL.md").read_text(encoding="utf-8")
+    for phrase in (
+        "load and apply `x9-agent-instructions`",
+        "subordinate instruction-quality rubric",
+        "single report and approval gate",
+        "instruction rubric as `degraded`",
+        "README-only work records it as `not applicable`",
+    ):
+        assert phrase in skill, f"x9-context-files-generator: missing {phrase!r}"
+
+
 def main() -> None:
     check_package.validate_manifest(manifest(), "manifest")
     for version in ("4.1.0", "26.2.03.1", "26.02.3.1", "26.2.30.1", "26.10.19.0", "26.10.19.01"):
@@ -118,6 +176,8 @@ def main() -> None:
     test_capabilities_contract()
     test_declared_png_geometry()
     test_runtime_claims()
+    test_published_shared_cores()
+    test_context_creator_uses_instruction_rubric()
     print("PASS: shared plugin metadata regression scenarios")
 
 

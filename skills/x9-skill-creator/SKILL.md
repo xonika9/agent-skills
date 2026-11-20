@@ -1,6 +1,6 @@
 ---
 name: x9-skill-creator
-description: Create, audit, fix, or improve Agent Skills for Claude Code or Codex. Excludes running existing skills and editing global agent instructions.
+description: Create, audit, fix, or improve Agent Skills. Excludes running existing skills and editing global agent instructions.
 compatibility: Requires Python 3 and Ruby with Psych for structural validation. Full Create, Audit, and Fix work on agent-facing prose also requires x9-agent-instructions.
 ---
 

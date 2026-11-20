@@ -23,7 +23,7 @@ python3 <skill-directory>/scripts/validate_okf.py <root>
    python3 <skill-directory>/scripts/insert_frontmatter.py <root> --inventory-out <inventory.json>
    ```
 
-3. List the work with `validate_okf.py <root> --missing`, read each listed document, and write a manifest that sets all four contract fields. A read-only subagent can propose them with [the proposal brief](markup-agent-prompt.md).
+3. List the work with `validate_okf.py <root> --missing`, read each listed document, and write a manifest that sets all four contract fields. When the documents' text does not fit your context, a read-only subagent can propose them with [the proposal brief](markup-agent-prompt.md).
 
    ```json
    {"Темы/Здоровье/README.md": {"type": "Dossier", "title": "Здоровье", "description": "…", "tags": ["health", "checkup"]}}

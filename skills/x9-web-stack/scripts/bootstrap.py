@@ -236,6 +236,16 @@ def main() -> int:
     if not bun or not node or not git:
         print("bun, node, and git must be on PATH", file=sys.stderr)
         return 2
+    # The template assumes it is the repository root (.github/, Dependabot).
+    existing = next(p for p in (target, *target.parents) if p.is_dir())
+    parent = subprocess.run([git, "rev-parse", "--show-toplevel"], cwd=existing, capture_output=True, text=True)
+    if parent.returncode == 0 and Path(parent.stdout.strip()).resolve() != target:
+        print(
+            f"{target} is inside the Git repository {parent.stdout.strip()}; the template expects to be a repository "
+            "root (.github/, Dependabot). Choose a directory outside it. Nothing was created.",
+            file=sys.stderr,
+        )
+        return 2
     local = subprocess.run([bun, "--version"], capture_output=True, text=True).stdout.strip()
     if local != args.bun_version:
         print(f"warning: local bun is {local}, project pins {args.bun_version}", file=sys.stderr)
@@ -247,9 +257,6 @@ def main() -> int:
         target.mkdir(parents=True, exist_ok=True)
         (target / MARKER).write_text("bootstrap in progress; rerun bootstrap.py to continue\n")
     copy_assets(target, name, args.bun_version, preserve_existing=resuming)
-    inside = subprocess.run([git, "rev-parse", "--show-toplevel"], cwd=target, capture_output=True, text=True)
-    if inside.returncode == 0 and Path(inside.stdout.strip()).resolve() != target:
-        print(f"warning: {target} is inside the repository {inside.stdout.strip()}", file=sys.stderr)
     if not (target / ".git").exists():
         run([git, "init", "-q"], target)
 

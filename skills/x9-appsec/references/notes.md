@@ -33,13 +33,13 @@ The coverage table lists each surface from [trust surfaces](trust-surfaces.md) t
 
 ## Reports
 
-Each pre-release audit adds `audits/YYYY-MM-DD.md`, with a suffix for a second run that day, and never edits the report of an earlier run; a review adds one only when the owner agrees. Its header gives the date, commit, mode, and scope: what was examined, by source review or authorized active testing, and what was not. Its first section, **Since the previous report**, lists by ID the new findings, the fixed ones, the ones that came back after a fix, the ones still open, accepted risks past their review date, and the ones not checked this time, then the surfaces whose disposition changed. A new finding in code unchanged since the previous report's commit is labelled as newly detected rather than new in the project. The first report says there is no previous one.
+Each saved pre-release audit or review adds `audits/YYYY-MM-DD.md`, with a suffix for a second run that day, and never edits the report of an earlier run. Its header gives the date, commit, mode, and scope: what was examined, by source review or authorized active testing, and what was not. Its first section, **Since the previous report**, lists by ID the new findings, the fixed ones, the ones that came back after a fix, the ones still open, accepted risks past their review date, and the ones not checked this time, then the surfaces whose disposition changed. A new finding in code unchanged since the previous report's commit is labelled as newly detected rather than new in the project. The first report says there is no previous one.
 
 An active-testing authorization is recorded in its run's report as history: target, environment, limits, and who granted it as a role or handle. It never authorizes a later run.
 
 ## When to write
 
-A pre-release audit writes the notes. A review writes them only when the owner agrees. Development adds no report; it updates only a register row the change fixes, with the check that shows it.
+A pre-release audit or a review writes the notes only when the owner agrees; without consent, its results go in the report to the owner. Development adds no report; it updates only a register row the change fixes, with the check that shows it.
 
 ## Reading and closing a run
 

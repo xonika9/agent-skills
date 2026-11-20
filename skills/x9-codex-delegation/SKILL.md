@@ -5,7 +5,7 @@ description: Claude Code only; never use in a Codex session. Use when substantia
 
 # Delegate from Claude Code to Codex
 
-Use `x9-browser-session` for browser routing. Use the plugin route when it is available; the raw CLI remains a fallback for an explicitly requested delegation.
+Use the plugin route when it is available; otherwise fall back to the raw CLI.
 
 The [onboarding declaration](references/onboarding.json) is the machine-readable onboarding contract.
 
@@ -15,12 +15,12 @@ When Claude and OpenAI/Codex are backed by separate subscriptions or usage pools
 
 - **Implementation or fixes:** use the installed `codex:codex-rescue` subagent when available. It is write-capable; the active project's local-change authority applies.
 - **Read-only review or one-shot analysis:** use the plugin route when callable, otherwise raw `codex exec`.
-- **Logged-in browsing:** delegate the whole bounded browse-and-return task and follow the browser adapter. Shell read-only mode does not change the separately approved browser authority.
+- **Logged-in browsing:** delegate the whole bounded browse-and-return task and route it through `x9-browser-session`. Shell read-only mode does not change the separately approved browser authority.
 - **Plugin commands marked user-only:** report the exact command for the user; do not pretend it was invoked programmatically.
 
 ## Raw fallback
 
-Read [references/codex-cli.md](references/codex-cli.md) and use its one-shot or resume recipe after checking the current command help. That reference owns exact flags and known differences between `exec` and `resume`; this skill owns the delegation contract, not the volatile command surface. Prefer the model configured in `~/.codex/config.toml` unless the user explicitly chooses another.
+Read [references/codex-cli.md](references/codex-cli.md) and use its one-shot or resume recipe after checking the current command help. That reference owns exact flags and known differences between `exec` and `resume`; this skill owns the delegation contract, not the volatile command surface.
 
 ## Brief contract
 
@@ -43,11 +43,7 @@ Stop retrying when the same blocking cause repeats, the budget is exhausted, or 
 
 ## Record the delegation
 
-Logging is off by default. Append to `~/.local/share/x9/codex-delegation-log.md` only when the user explicitly opts in for the current task/session or an existing user-owned policy records that choice. Delegation must work normally without a log; do not ask again when the current scope already contains the answer.
-
-When logging is enabled, read the current table header before writing and keep each row to minimal non-sensitive telemetry: route, actual model/effort when observable, wall-clock time, Codex tokens, whether rework was needed, and a generic success/failure outcome. Never record task content, secrets, repository names, or personal paths. Use `н/д` for unavailable data and `?` when rework is not known yet; never invent telemetry. Do not replace an existing file or follow a symlink; report that logging was skipped instead.
-
-The log is optional permanent operational history, not a completion gate. A missing or unwritable log must not fail the delegated task.
+Logging is off by default. Append to the log only when the user explicitly opts in for the current task/session or an existing user-owned policy records that choice; follow [references/logging.md](references/logging.md) then. Delegation works normally without a log; do not ask again when the current scope already contains the answer.
 
 ## Done
 

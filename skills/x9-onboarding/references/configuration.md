@@ -50,14 +50,20 @@ and feature names are volatile: confirm them through the current runtime before 
 the profile value as applicable.
 
 The following paths need a conspicuous consequence in the report because they reduce a
-permission boundary or expose private screen context:
+permission boundary, expose private screen context, or start unpinned third-party code.
+State the consequence next to the path:
 
-- Codex: `approval_policy`, `sandbox_mode`, and
-  `desktop.realtimeVoiceScreenContextEnabled`; also state that `features.hooks` enables
-  execution of separately configured hooks but does not install any hook.
-- OpenCode: `permissions`.
-- Claude Code: `permissions.defaultMode` and
-  `skipDangerousModePermissionPrompt`.
+- Codex: `approval_policy = "never"` and `sandbox_mode = "danger-full-access"` remove
+  routine runtime approval and sandbox boundaries;
+  `desktop.realtimeVoiceScreenContextEnabled` allows screen context during an active
+  voice call; `features.hooks` enables execution of separately configured hooks but does
+  not install any hook.
+- OpenCode: the wildcard `permissions` rule allows every action and resource without a
+  runtime permission boundary; `mcp.servers.chrome-devtools` runs a package that `npx`
+  fetches from the network without a pinned version at every start, and connects it to the
+  local browser debugging endpoint named in the profile.
+- Claude Code: `permissions.defaultMode = "bypassPermissions"` bypasses normal permission
+  prompts; `skipDangerousModePermissionPrompt = true` also suppresses its warning.
 
 An unqualified approval after this complete report authorizes every non-blocked proposed
 change, including the marked paths. If the report omitted a marked path or its

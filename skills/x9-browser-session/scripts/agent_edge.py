@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Verify the Microsoft Edge automation profile behind a CDP port on macOS or Linux.
 
-edge_mcp_gate.py imports the verifier; the agent-browser wrapper below is the retired
-agent-edge route.
+edge_mcp_gate.py imports the verifier.
 
 Regression checks: python3 -m unittest discover -s this-directory -p 'test_*.py'
 """
@@ -10,9 +9,7 @@ Regression checks: python3 -m unittest discover -s this-directory -p 'test_*.py'
 import ctypes
 import os
 from pathlib import Path
-import re
 import struct
-import subprocess
 import sys
 
 
@@ -95,38 +92,3 @@ def verify_profile(args, profile, port):
             found[name].append(value)
     if any(found[name] != [value] for name, value in expected.items()):
         raise ValueError('listener does not match the expected Edge profile and port')
-
-
-def main():
-    try:
-        profile = profile_path()
-        session = os.environ.get('AGENT_BROWSER_SESSION', '')
-        if session == 'default' or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,63}', session):
-            raise ValueError('set a unique AGENT_BROWSER_SESSION for this task')
-        arguments = sys.argv[1:]
-        # The wrapper owns endpoint, controller session and strict tab binding.
-        protected = {'--session', '--cdp', '--pin-tab', '--no-pin-tab', '--auto-connect'}
-        if (not arguments or arguments[0].startswith('-') or arguments[0] == 'connect'
-                or any(arg.partition('=')[0] in protected for arg in arguments)):
-            raise ValueError('use a command without connection or task-binding overrides')
-        result = subprocess.run(['lsof', '-nP', f'-tiTCP:{PORT}', '-sTCP:LISTEN'],
-                                check=True, capture_output=True, text=True, timeout=3)
-        pids = set(result.stdout.split())
-        if len(pids) != 1 or not all(pid.isdecimal() and int(pid) > 0 for pid in pids):
-            raise ValueError('CDP listener identity is ambiguous')
-        verify_profile(process_argv(int(pids.pop())), profile, PORT)
-        subprocess.run(['curl', '--noproxy', '*', '--fail', '--silent', '--show-error',
-                        '--max-time', '3', '-o', os.devnull,
-                        f'http://127.0.0.1:{PORT}/json/version'],
-                       check=True, capture_output=True, timeout=4)
-        os.execvp('agent-browser', ['agent-browser', '--session', session,
-                                  '--cdp', str(PORT), '--pin-tab', *arguments])
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
-        # Command output and process arguments may contain private profile data.
-        print('Edge binding failed: check the task session, command, and browser profile; '
-              f'{type(error).__name__}; no browser command was dispatched', file=sys.stderr)
-        return 1
-
-
-if __name__ == '__main__':
-    raise SystemExit(main())

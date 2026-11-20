@@ -24,7 +24,7 @@ tags: ["health", "checkup"]
 
 Write string values in double quotes: an unquoted value containing `:` breaks some YAML readers.
 
-Write no other OKF field. `generated`, `verified`, `status`, `stale_after`, `sources`, `usage_window`, `resource`, `timestamp`, and the computation fields are not part of this contract. Retired OKF fields are deleted from a document whose content you edit anyway, or on request, unless Local keeps them. Every field this contract does not name, including a repository's own such as `state`, stays untouched unless the user asks to remove it.
+Write no other OKF field. `generated`, `timestamp`, `verified`, `status`, `stale_after`, `sources`, `usage_window`, and `resource` are not part of this contract. Retired OKF fields are deleted from a document whose content you edit anyway, or on request, unless Local keeps them. Every field this contract does not name, including a repository's own such as `state`, stays untouched unless the user asks to remove it.
 
 ## Repository rules
 

@@ -27,7 +27,7 @@ Infer the action from the request and the folder's state.
 ## Boundaries
 
 - Inspection, the conversation, and the plan change nothing. Changes start only after the user approves the plan or names the exact change.
-- Read only the target folder, its parent's `AGENTS.md` and `CLAUDE.md` when the agent starts there, and the paths the user names.
+- Read only the target folder, its parent's `AGENTS.md`, `CLAUDE.md`, and `.x9-okf.json` when the agent starts there, and the paths the user names.
 - Deleting a user's file needs its own confirmation naming that file or folder, after the user has seen its verified copy. Merging an inbox note into its place is a move, not a deletion.
 - Offer Git as local-only. A remote, sync service, or sharing setup is the user's separate decision; a vault with health or financial records stays private.
 - Human-facing files are written in the user's language; the `AGENTS.md` block is written in English.

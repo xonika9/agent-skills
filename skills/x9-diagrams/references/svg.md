@@ -16,7 +16,7 @@ SVG has no automatic layout and no visual editor that round-trips it losslessly;
 
 ## Scope
 
-This route draws the same schematic views as the other formats; [the trigger boundary](../SKILL.md#trigger-boundary) excludes charts and mockups. Animation, brand theming, and external fonts or images are outside this route.
+This route draws the same schematic views as the other formats; [the skill description](../SKILL.md) excludes charts and mockups. Animation, brand theming, and external fonts or images are outside this route.
 
 ## Document contract
 

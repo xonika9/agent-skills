@@ -20,7 +20,7 @@ Check each applicable rule in [rules.md](rules.md) against evidence. A finding n
 - the practical consequence in this project;
 - the smallest fix, with effort (minutes, hours, days) and whether it changes behaviour for users or data.
 
-For every accepted library and installed dependency, check that the code uses it where it applies: search for hand-written equivalents — keyboard and focus handling, ad-hoc validation, raw queries beside an ORM, hand-made fetch caches, argument parsers — and report each under D5 with the replacement API confirmed in the installed version. A library that is declared but barely used is a finding, not a match.
+For every accepted library and installed dependency, check that the code uses it where it applies: search for hand-written equivalents — keyboard and focus handling, ad-hoc validation, raw queries beside an ORM, hand-made fetch caches, argument parsers — and report each under D5 with the replacement API confirmed in the installed version.
 
 Rank by consequence: data loss or exposure, then broken releases or deploys, then defects that slip past verification, then maintainability. Group trivially related findings. Keep unconfirmed suspicions in a separate list with the fact that would decide them.
 

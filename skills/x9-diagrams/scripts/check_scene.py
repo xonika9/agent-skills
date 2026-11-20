@@ -111,11 +111,12 @@ SHARED_ATTACH_TOLERANCE = 0.02
 
 
 def _number(value: Any) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and math.isfinite(value)
-    )
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:  # an integer too large for a float
+        return False
 
 
 def _lookup(by_id: dict[str, dict[str, Any]], key: Any) -> dict[str, Any] | None:

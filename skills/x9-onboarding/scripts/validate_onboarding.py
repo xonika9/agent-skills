@@ -329,12 +329,21 @@ def validate_requirement(
                     error(errors, f"{path}.check.target_skill", "target skill does not exist below the skills root")
 
 
-def validate_declaration(path: Path, skills_root: Path) -> list[str]:
+def load_declaration(path: Path, skills_root: Path) -> tuple[dict[str, Any] | None, list[str]]:
+    """Read and validate one declaration; the data is returned only when it is valid."""
     try:
         data = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=no_duplicate_object)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError, DuplicateKeyError, RecursionError) as exc:
-        return [f"JSON: {exc}"]
+        return None, [f"JSON: {exc}"]
+    errors = check_declaration(data, skills_root)
+    return (None if errors else data), errors
 
+
+def validate_declaration(path: Path, skills_root: Path) -> list[str]:
+    return load_declaration(path, skills_root)[1]
+
+
+def check_declaration(data: Any, skills_root: Path) -> list[str]:
     errors: list[str] = []
     scan_unsafe(data, "", errors)
     declaration = require_object(data, "declaration", errors)
@@ -393,33 +402,38 @@ def validate_declaration(path: Path, skills_root: Path) -> list[str]:
     return errors
 
 
+def inspect_declaration(skill_dir: Path) -> tuple[Path | None, str | None]:
+    """Return the declaration path, or an error; both are None when there is no declaration."""
+    if skill_dir.is_symlink():
+        return None, f"{skill_dir.name}: skill directory must not be a symbolic link"
+    if not skill_dir.is_dir():
+        return None, None
+    references = skill_dir / "references"
+    if references.is_symlink():
+        return None, f"{skill_dir.name}/references: directory must not be a symbolic link"
+    declaration = references / "onboarding.json"
+    try:
+        declaration_mode = declaration.lstat().st_mode
+    except FileNotFoundError:
+        return None, None
+    except OSError as exc:
+        return None, f"{skill_dir.name}/references/onboarding.json: cannot inspect file: {exc}"
+    if stat.S_ISLNK(declaration_mode):
+        return None, f"{skill_dir.name}/references/onboarding.json: file must not be a symbolic link"
+    if stat.S_ISREG(declaration_mode):
+        return declaration, None
+    return None, f"{skill_dir.name}/references/onboarding.json: must be a regular file"
+
+
 def declaration_files(skills_root: Path) -> tuple[list[Path], list[str]]:
     files = []
     errors = []
     for skill_dir in sorted(skills_root.iterdir()):
-        if skill_dir.is_symlink():
-            errors.append(f"{skill_dir.name}: skill directory must not be a symbolic link")
-            continue
-        if not skill_dir.is_dir():
-            continue
-        references = skill_dir / "references"
-        if references.is_symlink():
-            errors.append(f"{skill_dir.name}/references: directory must not be a symbolic link")
-            continue
-        declaration = references / "onboarding.json"
-        try:
-            declaration_mode = declaration.lstat().st_mode
-        except FileNotFoundError:
-            continue
-        except OSError as exc:
-            errors.append(f"{skill_dir.name}/references/onboarding.json: cannot inspect file: {exc}")
-            continue
-        if stat.S_ISLNK(declaration_mode):
-            errors.append(f"{skill_dir.name}/references/onboarding.json: file must not be a symbolic link")
-        elif stat.S_ISREG(declaration_mode):
+        declaration, problem = inspect_declaration(skill_dir)
+        if problem is not None:
+            errors.append(problem)
+        elif declaration is not None:
             files.append(declaration)
-        else:
-            errors.append(f"{skill_dir.name}/references/onboarding.json: must be a regular file")
     return files, errors
 
 

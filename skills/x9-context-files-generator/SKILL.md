@@ -26,19 +26,17 @@ Infer the action from the whole request, not only trigger words.
 2. Classify content by audience:
    - Agent file: commands, dangerous gotchas, local constraints, non-inferable conventions, and verification contracts.
    - README: purpose, setup, normal usage, and links to deeper material.
-3. Apply the applicable audience contract below for ownership and summaries.
-4. For agent files, apply the canonical ownership, normalization, preservation, and verification contract in [references/agents-md.md](references/agents-md.md).
-5. For README work, apply [references/readme.md](references/readme.md); it owns preservation and verification for that audience.
-6. Judge agent-file content with the derivability test in that contract.
-7. Use English for machine-facing instructions by default; follow repository/user language when human maintenance or domain literals make that clearer.
-8. Run commands you present only when they are safe, local, and within the requested repository scope. Read-only inspection and ordinary local validation are allowed by default. Destructive, external, costly, deployment, migration, production-data, account-mutating, or credential-changing commands require explicit user authority; otherwise preserve the command and label it unverified with the reason.
-9. In a code repository, finish by offering the development rule blocks in [references/rule-blocks.md](references/rule-blocks.md); it owns when to offer them and how to insert or update them.
+3. For agent files, apply the canonical ownership, normalization, preservation, derivability, and verification contract in [references/agents-md.md](references/agents-md.md).
+4. For README work, apply [references/readme.md](references/readme.md); it owns preservation and verification for that audience.
+5. Use English for machine-facing instructions by default; follow repository/user language when human maintenance or domain literals make that clearer.
+6. Run commands you present only when they are safe, local, and within the requested repository scope. Read-only inspection and ordinary local validation are allowed by default. Destructive, external, costly, deployment, migration, production-data, account-mutating, or credential-changing commands require explicit user authority; otherwise preserve the command and label it unverified with the reason.
+7. In a code repository, finish by offering the development rule blocks in [references/rule-blocks.md](references/rule-blocks.md); it owns when to offer them and how to insert or update them.
 
-Read [references/agents-md.md](references/agents-md.md) when editing agent files, [references/readme.md](references/readme.md) for README work, and [references/research-basis.md](references/research-basis.md) when judging how much inferred architecture belongs in context.
+Read [references/research-basis.md](references/research-basis.md) when judging how much inferred architecture belongs in context.
 
 ## Boundaries
 
-- Global `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` belong to `x9-agent-instructions`.
+- Global personal instruction files belong to `x9-agent-instructions`.
 - Skill folders belong to `x9-skill-creator`.
 - Do not put personal absolute paths such as `/Users/<name>/...` or `/home/<name>/...` in committed files. Prefer repository-relative paths or neutral placeholders; keep a machine-bound path only when the repository genuinely depends on that machine and the user explicitly wants it documented.
 

@@ -23,8 +23,6 @@ Give each lane to its own read-only worker when the runtime supports delegation;
 - `C`: consolidate, naming the owner that absorbs the assertion first: a sibling table case, a stronger boundary suite, or the shared owner in another package;
 - `D`: delete, naming the proof that remains, or why no contract exists.
 
-Judge a test by its assertions, not its name: a test named for retiring a progress window can turn out to assert that the window was _not_ cleared.
-
 Done when every declaration in the lane has a mark and an evidence line.
 
 ## 4. Layer plan per lane

@@ -31,6 +31,7 @@ from check_svg import _css_rules, _resolved_property
 
 MAX_FILE_BYTES = 20 * 1024 * 1024
 MAX_ELEMENTS = 100_000
+# Keep in sync with "Respect the complexity budget" in references/design-method.md.
 NODE_BUDGET = 9
 EDGE_BUDGET = 12
 DEFAULT_MAX_ROWS = 40

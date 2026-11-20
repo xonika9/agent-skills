@@ -278,9 +278,9 @@ class OpenCodeSessionsTests(unittest.TestCase):
             "/api/session/session%2Fa/message/message%2Fb",
         )
 
-    def test_cli_falls_back_to_standard_user_install(self) -> None:
+    def test_cli_falls_back_to_installer_directory(self) -> None:
         with tempfile.TemporaryDirectory() as home:
-            cli = os.path.join(home, ".local", "bin", "opencode2")
+            cli = os.path.join(home, ".opencode", "bin", "opencode2")
             os.makedirs(os.path.dirname(cli))
             with open(cli, "w", encoding="utf-8") as file:
                 file.write("#!/bin/sh\n")

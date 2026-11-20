@@ -3,7 +3,7 @@
 The verified recipe uses a dedicated Edge profile with local CDP on port `9223`, the
 Browse extension paired with that profile as the primary controller in every runtime,
 and `chrome-devtools` MCP on the same port for DevTools work and as the fallback.
-Both controllers change over time: check `browse --version`, `browse doctor`, and
+Both controllers change over time: check `browse --version`, `browse status`, and
 `chrome-devtools-mcp --help` before configuring them instead of trusting the flags
 below.
 
@@ -93,7 +93,7 @@ browse install --agent claude --agent codex --agent opencode --no-open --no-wait
 
 `browse install` has no help mode: `browse install --help` performs the install. Run
 inside an agent, it also configures that agent. The binary updates itself by default
-(`browse settings get` shows `autoUpdate`).
+(`browse status` shows the `Updates:` line; `browse update --mode` changes it).
 
 Codex rejects MCP calls that need approval when its approval policy is `never`. If the
 user runs Codex without approval prompts, allow Browse's tools in its server entry:
@@ -134,16 +134,16 @@ extension connected. Restart each configured runtime so its catalog picks up the
 
 1. Confirm that `http://127.0.0.1:9223/json/version` responds and that the listener
    belongs to the profile (macOS `KERN_PROCARGS2`, Linux `/proc/<pid>/cmdline`).
-2. Open a harmless public page through a new Browse session and confirm on screen that
-   the user's visible tab did not change. Browse pages report themselves visible even
+2. Open a harmless public page in a new Browse tab (`browse tabs new --group <check>`)
+   and confirm on screen that the user's visible tab did not change. Browse pages report themselves visible even
    in the background, so `document.visibilityState` is not evidence.
-3. Confirm the [binding](../SKILL.md#browser-and-profile-continuity): the page's
-   target id from `browse status --json` appears in `/json/list` on port `9223`.
+3. Confirm the [binding](../SKILL.md#browser-and-profile-continuity): the tab's
+   `targetId` in `browse status --json` equals a page `id` in `/json/list` on port `9223`.
 4. Read a page that requires a login the profile holds and confirm it is not redirected
    to sign-in.
 5. Attach with `chrome-devtools`, create a page with `background: true`, read it, and
    confirm the visible tab did not change.
-6. Close only pages created by the check (`browse session delete <name>`,
+6. Close only pages created by the check (`browse tabs close --group <check>`,
    `close_page`).
 
 ## Linux adapter
@@ -176,8 +176,7 @@ the server failed for the whole session. The wrapper works in two modes:
   forwarding when no browser listens or the port belongs to another profile.
 
 The wrapper reads `EDGE_AGENT_PORT` and `EDGE_AGENT_PROFILE` like the launcher. Install
-the gate next to [the profile verifier](../scripts/agent_edge.py) it imports; that
-file's command-line wrapper is the retired `agent-edge` route and is not used:
+the gate next to [the profile verifier](../scripts/agent_edge.py) it imports:
 
 ```bash
 mkdir -p ~/.local/share/x9-browser-session

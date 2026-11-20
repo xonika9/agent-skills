@@ -24,9 +24,9 @@ Use [the editorial theme asset](../assets/editorial-theme.css) for shared visual
 - optional `<details>` blocks for secondary methodology, caveats, or long examples;
 - print rules;
 - inline CSS and no external fonts, libraries, trackers, images, or network dependencies;
-- no JavaScript by default.
+- no JavaScript.
 
-The asset contains no HTML skeleton and defines no required section order. Design the document structure from the research question, then inline only the relevant theme rules into the standalone HTML. Reuse the palette, font roles, moderate type scale, spacing, navigation, tables, and optional surfaces so reports share a family resemblance without receiving the same composition. Do not recreate the deleted placeholder layout or inflate headings to fill a preset grid.
+The asset contains no HTML skeleton and defines no required section order. Design the document structure from the research question, then inline only the relevant theme rules into the standalone HTML. Reuse the palette, font roles, moderate type scale, spacing, navigation, tables, and optional surfaces so reports share a family resemblance without receiving the same composition. Do not inflate headings to fill a preset grid.
 
 Keep the main conclusion, confidence, and verdict-changing limitations expanded. Collapse only secondary material. Put source links near the claims they support; a source list at the end is supplementary, not a substitute for claim-level traceability.
 

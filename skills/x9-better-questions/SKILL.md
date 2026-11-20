@@ -1,6 +1,6 @@
 ---
 name: x9-better-questions
-description: Use whenever the user shares notes or a transcript of a talk with a customer, user, or potential client, drafts questions for such talks, starts or sums up a series of customer interviews (custdev), or wants to rehearse one with you playing the customer — the method of Rob Fitzpatrick's The Mom Test («Спроси маму») for getting facts instead of polite approval, for example «разбери разговор с клиентом», «вот заметки после встречи», «проверь мои вопросы», «начинаю серию интервью», «потренируй меня перед кастдевом», "prepare customer interview questions". Do not use for surveys or questionnaires, usability tests of a prototype, criticizing an idea without customer conversations (x9-idea-critic), or job interviews.
+description: Use when the user is learning from customers whether a problem or idea is real — the method of Rob Fitzpatrick's The Mom Test («Спроси маму») for getting facts instead of polite approval, applied to preparing or checking questions for such talks, debriefing notes or a transcript of one, summing up a series of customer interviews (custdev), or rehearsing one with you playing the customer — «разбери разговор с клиентом», «проверь мои вопросы», «начинаю серию интервью», «потренируй меня перед кастдевом», "prepare customer interview questions". Do not use for meeting notes that only need minutes, action items, or a follow-up message, sales or support calls handled for another purpose, surveys or questionnaires, usability tests of a prototype, criticizing an idea without customer conversations (x9-idea-critic), or job interviews.
 ---
 
 # Better questions
@@ -35,7 +35,7 @@ Ask one question only when the input fits two modes and the choice changes the o
 
 ## Research folder
 
-When the user starts a series of conversations, ask once where to keep it before creating anything, even when they ask you to set it up, proposing `./research-<topic>/` in the current working folder; storage rules of the workspace, such as its `AGENTS.md`, take precedence over that proposal. Keep `plan.md`, one file per conversation in `interviews/` named by number, person, and date, and `synthesis.md`. Read the existing folder before writing to it and update files in place so the user's own edits survive. Without a series, everything stays in the chat.
+When the user starts a series of conversations and neither they nor the workspace's storage rules, such as its `AGENTS.md`, name a location, ask once where to keep it before creating anything, even when they ask you to set it up, proposing `./research-<topic>/` in the current working folder. Keep `plan.md`, one file per conversation in `interviews/` named by number, person, and date, and `synthesis.md`. Read the existing folder before writing to it and update files in place so the user's own edits survive. Without a series, everything stays in the chat.
 
 ## Rules for every mode
 

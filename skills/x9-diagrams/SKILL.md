@@ -1,6 +1,6 @@
 ---
 name: x9-diagrams
-description: Use when the user explicitly invokes x9-diagrams, needs a choice between diagram formats, converts or reviews diagrams across formats, or needs one visual method with native creation and verification in Excalidraw, Mermaid, draw.io/diagrams.net, or standalone SVG with an optional HTML preview. Also use for requests such as “choose the right diagram format”, “convert this Mermaid diagram to editable draw.io”, «выбери формат схемы», «проверь и улучши диаграмму». A Mermaid-only syntax request may remain with an installed specialized Mermaid skill. Do not use for data charts, UI mockups, illustration, or unsupported diagram formats.
+description: Use when the user wants to create, change, review, or convert a diagram, or to choose a diagram format, with native creation and verification in Excalidraw, Mermaid, draw.io/diagrams.net, or standalone SVG with an optional HTML preview — «нарисуй схему», «выбери формат схемы», «проверь и улучши диаграмму», “choose the right diagram format”, “convert this Mermaid diagram to editable draw.io”. A Mermaid-only syntax request may remain with an installed specialized Mermaid skill. Do not use for data charts, UI mockups, illustration, or unsupported diagram formats.
 compatibility: Python 3.9 or newer runs the bundled Excalidraw and SVG checks and the source summary. Rendering proof needs the target format's tool - a compatible Excalidraw renderer, Mermaid renderer, or diagrams.net tool, or a browser engine for SVG.
 ---
 
@@ -65,9 +65,7 @@ For review-only work, inspect and report without rewriting. Check the native str
 
 ## Trigger boundary
 
-This skill owns explicit `x9-diagrams` calls, format selection, cross-format conversion, the shared visual method, and combined structural plus visual verification. Quantitative charts, interface mockups, and illustrations stay outside it even when the output would be SVG or HTML. A request limited to ordinary Mermaid syntax can stay with an installed specialized `mermaid-diagrams` skill. This skill remains self-contained for users who do not have that third-party skill.
-
-When trigger ownership is ambiguous, use `x9-diagrams` only if the task needs its broader decision or verification contract. Do not invoke both skills merely because Mermaid appears in the request.
+This skill is self-contained for users who do not have a third-party Mermaid skill. Do not invoke both skills merely because Mermaid appears in the request.
 
 ## Completion gate
 

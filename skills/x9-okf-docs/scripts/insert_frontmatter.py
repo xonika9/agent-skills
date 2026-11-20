@@ -427,8 +427,6 @@ def main():
     parser.add_argument("--inventory", type=Path)
     parser.add_argument("--paths", nargs="+", metavar="PATH", help="limit --remove-fields to these documents")
     parser.add_argument("--replace-existing", action="store_true", help="replace valid existing values")
-    parser.add_argument("--exclude", nargs="*", default=[])
-    parser.add_argument("--include-readme", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -437,7 +435,7 @@ def main():
         raise SystemExit(f"not a directory: {root}")
     if args.paths and not args.remove_fields:
         raise SystemExit("--paths is only valid with --remove-fields")
-    scope = load_scope(root, args.exclude, args.include_readme)
+    scope = load_scope(root)
     concepts, _ = partition(markdown_files(scope))
     print(scope.describe())
 

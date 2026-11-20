@@ -5,6 +5,7 @@
 - [Version 1 Shape](#version-1-shape)
 - [Alternative Routes](#alternative-routes)
 - [Typed Checks](#typed-checks)
+- [Runtime Checks and Guidance](#runtime-checks-and-guidance)
 - [Safety Boundary](#safety-boundary)
 
 `references/onboarding.json` is a version 1, read-only declaration of external
@@ -14,9 +15,10 @@ free-form setup steps. A skill runs in every runtime unless its declaration
 restricts it, so a skill without external requirements or a runtime
 restriction has no declaration.
 
-Resolve the loaded `x9-onboarding` directory from its loaded `SKILL.md`. Independently
-resolve the actual package `skills` root to validate; it may belong to another package,
-and neither path depends on the current working directory. Then run:
+Resolve the loaded `x9-onboarding` directory from its loaded `SKILL.md`. The `skills`
+root to validate is the loaded skill's package root; use another package's root only when
+the user explicitly asks to validate that package. Neither path depends on the current
+working directory. Then run:
 
 ```bash
 python3 <resolved-x9-onboarding-directory>/scripts/validate_onboarding.py \
@@ -83,7 +85,7 @@ any one route satisfies one required capability. Every member is `required`
 and uses the same `runtimes`; individual rows stay visible, but readiness is
 computed once for the group. The exhaustive group and skill aggregation rules,
 including the ready-route short circuit and optional-row coverage, are owned by
-the [core status model](../SKILL.md#status-model).
+`scripts/aggregate_status.py` and its regression tests.
 
 ## Typed Checks
 
@@ -118,6 +120,33 @@ allowlist is `active-skill-catalog`, `browser-control`, `native-subagents`.
 The table above is also the complete `guidance_id` allowlist. New identifiers
 require an explicit contract update to this document and the validator; a local
 declaration cannot invent them.
+
+## Runtime Checks and Guidance
+
+Every runtime adapter applies these rules; an adapter states only what differs in its
+runtime.
+
+For `skill-present`, accept only a live catalog entry whose resolved physical path
+remains under the package `skills` root. For `command-present`, a safe shell discovery
+such as `command -v` may establish presence without launching the command; retain only
+its name and present/absent result. For `command-version`, follow
+[Typed Checks](#typed-checks). Check `agent`, `mcp`, `active-skill-catalog`, and
+`native-subagents` only through a live catalog or schema. Classify unavailable
+interfaces, private-data boundaries, and restart evidence with the
+[core status model](../SKILL.md#status-model). Dependency checks do not inspect raw
+configuration.
+
+Each row that needs guidance shows the step for its `guidance_id`, with `<runtime>`
+replaced by the current runtime's name:
+
+| `guidance_id` | Manual step | Expected safe evidence |
+| --- | --- | --- |
+| `install-skill` | Install or update the named skill using `<runtime>`'s current documented flow. | Live skill catalog lists the named skill. |
+| `install-command` | Install the named command using its vendor documentation. | Safe command discovery reports the command present. |
+| `create-agent` | Create or enable the required agent through `<runtime>`'s current interface. | Live agent catalog lists the declared component. |
+| `configure-mcp` | Configure the required MCP component manually through `<runtime>`'s documented interface. | Live component catalog lists MCP without exposing configuration. |
+| `enable-runtime-feature` | Enable the declared `<runtime>` feature through its current documented interface. | Live catalog or schema exposes the feature. |
+| `complete-user-action` | Complete the declared authorization, profile, provider, or other human-only action outside this skill. | User confirms completion, then a safe follow-up fact is available. |
 
 ## Safety Boundary
 

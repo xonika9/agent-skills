@@ -30,7 +30,7 @@
     {
       "id": "browse-extension-paired",
       "kind": "user-action",
-      "level": "optional",
+      "level": "required",
       "needed_for": "Adding the Browse extension to the automation profile with one store click, then pairing it.",
       "check": {"type": "manual"},
       "guidance_id": "complete-user-action"

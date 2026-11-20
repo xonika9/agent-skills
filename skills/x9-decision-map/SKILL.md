@@ -7,8 +7,6 @@ description: Use when a large initiative has material unresolved decisions and n
 
 Create, find, read, and update the durable decision map for a large initiative before turning it into an implementation plan.
 
-Use this only when unresolved choices can materially change an initiative's direction, scope, or plan. A request to design a recurring, multi-stage agent workflow belongs to `x9-loop-engineering`, even if it also has open decisions.
-
 ## Durable map
 
 Read [the map format](references/map-format.md) before creating or changing a map. Use a canonical initiative ID and retain former names and aliases so later sessions can recover the same artifact.
@@ -30,7 +28,7 @@ When evidence changes, follow [the evidence-preservation and invalidation rules]
 
 ## Handoff
 
-If Compound Engineering is available, hand the map to `ce-brainstorm` while major forks or material fog remain. Hand it to `ce-plan` once the key decisions are resolved. Otherwise provide a portable handoff brief with the current direction, accepted and invalidated decisions, sharp open questions, material fog, and the next frontier.
+If Compound Engineering is available, recommend `ce-brainstorm` while major forks or material fog remain, and `ce-plan` once the key decisions are resolved; invoke either only when the user asks to continue. Otherwise provide a portable handoff brief with the current direction, accepted and invalidated decisions, sharp open questions, material fog, and the next frontier.
 
 ## Done
 

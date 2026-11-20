@@ -55,6 +55,7 @@ python3 skills/x9-onboarding/scripts/test_validate_onboarding.py
 python3 skills/x9-onboarding/scripts/validate_onboarding.py skills
 python3 skills/x9-onboarding/scripts/test_validate_profiles.py
 python3 skills/x9-onboarding/scripts/validate_profiles.py
+python3 skills/x9-onboarding/scripts/test_aggregate_status.py
 python3 skills/x9-opencode-sessions/scripts/test_opencode_sessions.py
 python3 skills/x9-agent-instructions/scripts/test_check_globals.py
 python3 skills/x9-diagrams/scripts/test_check_scene.py
@@ -64,6 +65,8 @@ python3 skills/x9-okf-docs/scripts/test_okf.py
 python3 skills/x9-personal-vault/scripts/test_apply_plan.py
 python3 skills/x9-research/scripts/test_validate_html.py
 python3 skills/x9-architecture-scout/scripts/test_validate_report.py
+python3 skills/x9-video-transcripts/scripts/test_transcripts.py
+python3 skills/x9-web-stack/scripts/test_bootstrap.py
 python3 .claude/skills/release/scripts/check_global_files.py --published-only
 printf '@AGENTS.md\n' | cmp - CLAUDE.md
 python3 scripts/test_check_package.py

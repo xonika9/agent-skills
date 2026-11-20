@@ -32,14 +32,6 @@
       "needed_for": "Writing local agent instructions in the OKF block.",
       "check": {"type": "skill-present", "target_skill": "x9-agent-instructions"},
       "guidance_id": "install-skill"
-    },
-    {
-      "id": "context-files-generator",
-      "kind": "skill",
-      "level": "optional",
-      "needed_for": "Replacing stale OKF sections in repository instructions.",
-      "check": {"type": "skill-present", "target_skill": "x9-context-files-generator"},
-      "guidance_id": "install-skill"
     }
   ]
 }
