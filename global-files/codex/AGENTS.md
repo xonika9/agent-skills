@@ -71,6 +71,10 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Codex runtime
 
+### Shell commands
+
+- Delete without `-f` (`rm --`, `rm -r --`), including inside `trap` or `sh -c`; guard a possibly missing file with `[ -e "$f" ] && rm -- "$f"`. Codex treats `-f` deletions as dangerous: it stops for user approval under T3 full access and rejects them under `never` approval.
+
 ### Turn ending
 
 - Do not end a turn on an offer or proposed next step that the current request already authorizes; take the step and state any assumption it rests on.
