@@ -54,9 +54,8 @@ The packet contains:
 - independent-critique status and unresolved facts;
 - evidence and recommendation fields defined below.
 
-Use the existing `Evidence` section in `SKILL.md`; do not duplicate
-its source or freshness rules here. For this gate, extend that research from the
-initial mechanism to the relevant solution landscape.
+For this gate, extend the research under `SKILL.md` → Evidence from the initial
+mechanism to the relevant solution landscape.
 
 ## Minimal ownership ladder
 

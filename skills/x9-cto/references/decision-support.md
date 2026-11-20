@@ -4,8 +4,6 @@ Use one primary method that matches the shape and maturity of the question. Do
 not invoke another skill merely to enrich an answer, and do not chain methods by
 default:
 
-- keep quick facts, canon checks, settled decisions, and routine reversible
-  implementation choices in CTO;
 - use `ce-pov` for a named external-adoption question, a document-level take, or
   an already-developed approach set;
 - use `ce-bakeoff` only when the outcome, constraints, and comparison criteria

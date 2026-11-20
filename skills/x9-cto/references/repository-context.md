@@ -2,7 +2,7 @@
 
 Resolve local context only to the depth the current request needs. Applicable
 repository instructions already supplied by the runtime are the starting point;
-do not require a new profile or a complete repository inventory for a quick fact.
+do not require a complete repository inventory for a quick fact.
 
 ## Questions to resolve
 

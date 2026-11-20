@@ -21,11 +21,6 @@ evidence cannot be inspected, report `NOT_PROVEN` and request the missing access
 or report. Do not continue, close, archive, or otherwise mutate it without
 separate authority.
 
-If autonomous delivery is active, this mode applies only when the user
-explicitly asks to pause that delivery and prepare a prompt for an external
-chat. Otherwise keep owning the delivery and actively collect internal
-subagents.
-
 ## What you do
 
 1. **Assess the report on the merits.** For each finding — valid, cosmetic, or wrong. Do not echo the report's wording; give your own judgment.

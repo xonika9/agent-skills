@@ -38,7 +38,7 @@ not applied. The CTO adds only these:
 Return one prompt per independent target, with the actual installed invocation
 of `x9-cto` when the executor needs this role. Take working-directory,
 isolation, closure, and authority terms from the task and applicable local
-contract. Point to their owners instead of restating their full instructions.
+contract.
 
 Preparing prompts is not execution authority. Launch a top-level chat only on
 an explicit request for one, using the active runtime's supported route and

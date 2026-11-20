@@ -52,8 +52,8 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 - Do substantive work in the primary session by default. Delegate bounded independent work when parallel execution, context isolation, or a separate review is useful, or when the user or an applicable instruction requests delegation.
 - Only the root session orchestrates unless nested delegation is explicitly required by the user, repository, or applicable skill. State the worker's delegation mode in each brief.
-- Write worker briefs in English and user-facing results in the user's language. Include the goal, non-derivable context, scope and authority, required evidence, and expected output; for a code change, also whether restructuring is welcome or the change must stay minimal; preserve load-bearing source wording and the active skill's specialist prompt and output contract. Add a rule, check, or contingency only for a situation the task, its sources, or an observed failure gives reason to expect; a merely conceivable one does not earn a line. Rarity alone does not dismiss a credible risk of data loss, secret exposure, or an irreversible action.
-- Give a worker the goal and completion bar, not a prescribed fix, and leave investigation open: it may read live state, logs, and real data and run non-mutating experiments wherever the task reaches. Fence only destructive, external, costly, or shared-state actions, each with its reason. When the worker cannot reach live data, supply real samples instead of described formats.
+- Write worker briefs in English and user-facing results in the user's language. Include the goal and completion bar, non-derivable context, scope and authority, required evidence, and expected output; for a code change, also whether restructuring is welcome or the change must stay minimal; preserve load-bearing source wording and the active skill's specialist prompt and output contract. Add a rule, check, or contingency only for a situation the task, its sources, or an observed failure gives reason to expect; a merely conceivable one does not earn a line. Rarity alone does not dismiss a credible risk of data loss, secret exposure, or an irreversible action.
+- Do not prescribe the fix, and leave investigation open: the worker may read live state, logs, and real data and run non-mutating experiments wherever the task reaches. Fence only destructive, external, costly, or shared-state actions, each with its reason. When the worker cannot reach live data, supply real samples instead of described formats.
 - The parent owns task decomposition, integration, and final acceptance, and checks decisive findings against primary evidence.
 - A GPT worker that stops with a capacity error such as `Selected model is at capacity` is interrupted, not failed. Resume the same conversation by sending `continue`: in T3 Code, `t3_thread_send` to its `childThreadId` (resuming an interrupted turn is not a new review round); for a native Codex subagent, its follow-up control. Start a fresh bounded replacement only when the runtime rejects that resume. Report failure only after two supported retry attempts fail.
 - When a worker runs through OpenCode and the user names no model, use the target OpenCode's configured default model and variant: read them from that OpenCode (for example `opencode debug config`) and pass them explicitly, because an omitted model may inherit the parent's. Naming OpenCode selects the runtime, not a model, so do not pick one from a catalog search.
@@ -61,7 +61,6 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Shared tool routing
 
-- Batch independent read-only calls when useful and preserve evidence needed for the task. Keep result-dependent work and actions needing approval sequential.
 - For Telegram tasks, use the already-authenticated Telegram Web session in the browser instead of the macOS Telegram app or Computer Use, unless the user explicitly requests the desktop app.
 - Before the first browser action, load and follow the installed `x9-browser-session` skill; let it own surface selection and runtime-specific browser routing.
 - Before proposing or changing a standing agent instruction — an instruction file, a rule, a task file, or a prompt the user will carry to another chat — load and apply `x9-agent-instructions`; for a skill, load `x9-skill-creator`. Native subagent briefs are excluded; the subagent section covers them.
@@ -74,6 +73,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 ### Shell commands
 
 - Delete without `-f` (`rm --`, `rm -r --`), including inside `trap` or `sh -c`; guard a possibly missing file with `[ -e "$f" ] && rm -- "$f"`. Codex treats `-f` deletions as dangerous: it stops for user approval under T3 full access and rejects them under `never` approval.
+- While waiting for a running command to exit with nothing else to do, poll it with the longest wait the tool accepts; the poll returns as soon as the command exits.
 
 ### Turn ending
 
@@ -92,7 +92,7 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Subagent delegation
 
-Use the active runtime's delegation and lifecycle contract. The named controls below apply only to native Codex subagents; use the current orchestrator's equivalent controls and completion delivery for orchestrator-owned children.
+The named controls below apply only to native Codex subagents; use the current orchestrator's equivalent controls and completion delivery for orchestrator-owned children.
 
 - Subject to the shared delegation restrictions, inherit the primary session's model and reasoning effort for substantive delegated work; do not configure a lower-cost subagent default. An explicit user or applicable skill model choice takes precedence within those restrictions.
 - Use `fork_turns: "none"` by default. Include recent conversation context only when the subagent's task cannot be made self-contained.

@@ -50,12 +50,6 @@ weakens them:
   recommendation rather than presenting it as the decision.
 
 When a task-specific delivery budget is exhausted without its accepted user-path
-movement, do not project ordinary progress or permission to continue. Preserve
-the current delivery-budget reassessment and Grounding rules, including the
-freeze and owner-controlled resumption; do not create a universal time or retry
-limit.
+movement, do not project ordinary progress or permission to continue.
 
-Do not wrap the exact Automatic Judge YAML in this brief. Judge, Grounding, and
-autonomous-delivery modes retain their required substantive fields and safety
-semantics; the brief only puts their human-facing conclusion and required owner
-action first.
+Do not wrap the exact Automatic Judge YAML in this brief.

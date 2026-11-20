@@ -4,7 +4,8 @@ The owner reads a report, often on a phone, to learn what changed, which
 problems exist and whether each is in hand, and what the CTO decided alone,
 without having to ask again. Selected by `x9-cto pilot report` or by an owner
 request for a report or status over a period, in any CTO chat; a running pilot
-is not required. Reports are produced on request only.
+is not required. Reports are produced on request only. Write the report in the
+owner's language; the quoted labels and the page template are its Russian form.
 
 ## Contents
 

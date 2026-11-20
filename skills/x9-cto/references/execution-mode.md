@@ -10,7 +10,6 @@ outcome; delegation changes who executes a bounded unit, not who owns the result
 ## Contents
 
 - [Operating contract](#operating-contract)
-- [Feasibility admission before broad delivery](#feasibility-admission-before-broad-delivery)
 - [Start with a closure contract](#start-with-a-closure-contract)
 - [Working-state-first evidence ladder](#working-state-first-evidence-ladder)
 - [Delivery budget and strategy reassessment](#delivery-budget-and-strategy-reassessment)
@@ -25,10 +24,8 @@ outcome; delegation changes who executes a bounded unit, not who owns the result
 
 - The head agent acts as delivery lead, reviewer, and integrator for the combined
   outcome. An internal subagent is a bounded executor.
-- Prefer delegation when a unit can run independently, has an observable
-  result, and separate context or ownership provides a material benefit. Keep
-  load-bearing product decisions, cross-workstream integration, destructive or
-  external authority, and final acceptance in the head chat.
+- Keep load-bearing product decisions, cross-workstream integration,
+  destructive or external authority, and final acceptance in the head chat.
 - When the remaining work is ordinary implementation of a settled contract,
   route it through `ce-work` or the applicable implementation owner. The CTO
   retains acceptance only when that implementation remains part of the CTO
@@ -45,13 +42,6 @@ outcome; delegation changes who executes a bounded unit, not who owns the result
   Keep the goal active and request the authority or decision; use a runtime's
   blocked status only when its own blocked-status rules are satisfied. An
   out-of-scope external action may instead be named in the final handoff.
-
-## Feasibility admission before broad delivery
-
-Apply [feasibility admission](feasibility-gate.md) before the closure contract
-admits broad implementation. Current evidence must come from the same
-product-path artifact and load-bearing target boundary. Otherwise keep the
-contract at `EXPERIMENT_ONLY`; do not introduce a second CTO-owned lifecycle.
 
 ## Start with a closure contract
 
@@ -115,16 +105,10 @@ controls must be effective before the dependent action; later inspection is not
 a substitute. If a required control is unavailable, stop that action and report
 it. Grounding and user stop conditions remain binding.
 
-Ordinary work remains in this chat or its authorized internal executors.
-
 If a persistent goal was explicitly requested, keep it active across this cycle
 and update it to complete only after the independent tail audit and integrated
 checks pass. Nearing a token or time budget is not a completion condition; an
 exhausted task-specific budget may require the reassessment below.
-
-If a load-bearing choice cannot be recovered from the repository or external
-sources, ask one targeted question. Do not turn ordinary implementation
-uncertainty into a questionnaire.
 
 ## Working-state-first evidence ladder
 
@@ -156,8 +140,8 @@ direction-killing result, bounded experiment budget, and condition for later
 reconsideration. When the killing result is observed, stop dependent work and
 do not resurrect the direction until one named new fact changes the prior
 conclusion. Use an observable task-specific bound; do not invent a time estimate
-when elapsed work is not measurable. This extends the existing record; it does
-not create a hypothesis registry or another approval gate.
+when elapsed work is not measurable. This creates no hypothesis registry or
+approval gate.
 
 A review, refactor, diagnostic improvement, or cleaner harness is progress only
 when it enables working-path evidence or closes an accepted risk. Do not repeat
@@ -184,8 +168,8 @@ justify strategy reassessment without a completed milestone, but must change the
 causal conclusion about the accepted outcome, not merely describe another
 failure of supporting machinery. Neither milestone movement nor reassessment
 resets the delivery budget; it is cumulative. Use the existing work ledger;
-create no new controller, record schema, approval step, or universal retry
-count.
+create no new controller, record schema, lifecycle status, approval step, or
+universal retry count.
 
 Suspend broad implementation and require one strategy reassessment when any of
 these facts is recorded:
@@ -201,9 +185,7 @@ these facts is recorded:
 - the actual source or subsystem boundary leaves the approved delivery
   envelope before the real user path has passed.
 
-These are task-specific facts, not universal retry counts or line thresholds.
-The reassessment extends the existing work ledger; it creates no new lifecycle
-status or parallel state machine. It records the
+The reassessment records the
 accepted milestone state, causal evidence, budget consumed, reuse alternatives,
 keep/delete boundary, cheapest falsifier, and either one `next_action` naming
 the action, its allowed surface, and the evidence it must produce, or a
@@ -347,11 +329,10 @@ The audit checks at least:
 5. Are there uncommitted changes, stopped agents, or unverified reports?
 6. What would the user's most likely next question expose as unfinished?
 
-Resolve every valid in-scope finding and rerun the affected checks. Repair is
-subject to the non-convergence rule above; a repeated cause without a new
-evidence/input/method delta ends as `NOT_PROVEN`, not another implicit worker
-budget. If a finding needs new authority or a product decision, report it
-explicitly instead of guessing or hiding it under “done”.
+Resolve every valid in-scope finding and rerun the affected checks, subject to
+the [non-convergence rule](#supervise-actively). If a finding needs new
+authority or a product decision, report it explicitly instead of guessing or
+hiding it under “done”.
 
 A finding reopens delivery only when it falsifies the observable completion
 bar, an accepted safety or authority boundary, a required repository contract,

@@ -33,7 +33,7 @@ for changes made outside the launched chats.
 - Read the end of every chat working on the started work the repository
   lists, including chats an earlier run launched; the start is stale.
   Delegate this collection to a fact-extraction worker under the runtime's
-  routing (in Claude Code, Sonnet at high): it returns a short digest per chat,
+  routing: it returns a short digest per chat,
   check and branch, with the commits, report paths and quoted lines the
   decisions rest on. This chat keeps integration, launches, pushes and owner
   questions, and checks each decisive fact against primary evidence.

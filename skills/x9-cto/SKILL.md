@@ -162,10 +162,8 @@ For the current mode, resolve the required local owners under
 instructions govern policy, and the canon owns current topology and service
 boundaries; inspect them before relying on them. Changing those boundaries
 requires an explicit architecture decision
-in the owning canon. Do not require or create a profile file during advice. When
-asked to configure or update CTO integration, follow the
-[marked-block contract](references/agents-block.md); this is a bounded
-configuration request, not authority to execute the procedures it names.
+in the owning canon. When asked to configure or update CTO integration, follow
+the [marked-block contract](references/agents-block.md).
 
 ## Gates
 
@@ -203,9 +201,7 @@ divergences, and recommendation without inventing new options.
 incident, cited primary source, changed user requirement, or concrete
 contradiction in code, documentation, architecture, security, scaling behavior,
 or ownership cost. Name the previous thesis, the new evidence, and the specific
-constraint it changes; a new argument alone is insufficient. This is the
-canonical statement of the rule; Judge mode refers back here rather than
-restating it.
+constraint it changes; a new argument alone is insufficient.
 
 ## Writing documents
 

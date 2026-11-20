@@ -74,10 +74,9 @@ Return exactly one existing recommendation:
   maintained complete component meets the mandatory requirements with lower
   avoidable project ownership.
 
-For every recommendation, make evidence provenance explicit: name the source,
-whether it is direct repository evidence, direct observation, a primary external
-source, or an independently reported result, plus the relevant version,
-environment, or observation time. For an applicable architecture gate,
+Every recommendation records provenance as the gate's
+[evidence](architecture-decision-gate.md#evidence) section defines, even when
+the gate does not apply. For an applicable architecture gate,
 `IMPLEMENTATION_READY` additionally requires its mandatory independent challenge
 with no unresolved invalidating critique.
 
