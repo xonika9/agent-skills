@@ -105,7 +105,14 @@ When edits were already authorized, replace the proposed diff with the actual di
 
 ## Global instruction files
 
-`~/.config/opencode/AGENTS.md`, `~/.claude/CLAUDE.md`, and `~/.codex/AGENTS.md` are review targets with one extra invariant: the block between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->` is byte-identical in all three. Read all three before changing any of them.
+The personal global instructions live in one file per runtime:
+
+- `~/.config/opencode/AGENTS.md`
+- `~/.claude/CLAUDE.md`
+- `~/.codex/AGENTS.md`
+- `~/.pi/agent/AGENTS.md`, if it exists
+
+They all share one block, between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->`. Keep that block byte-identical in every file, and read all the files before changing any of them.
 
 A standing rule earns always-loaded context only when omitting it would make a capable agent behave differently or repeat a known failure.
 

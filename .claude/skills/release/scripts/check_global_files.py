@@ -12,11 +12,13 @@ PUBLISHED_FILES = (
     ROOT / "global-files/opencode/AGENTS.md",
     ROOT / "global-files/claude/CLAUDE.md",
     ROOT / "global-files/codex/AGENTS.md",
+    ROOT / "global-files/pi/AGENTS.md",
 )
 INSTALLED_FILES = (
     Path.home() / ".config/opencode/AGENTS.md",
     Path.home() / ".claude/CLAUDE.md",
     Path.home() / ".codex/AGENTS.md",
+    Path.home() / ".pi/agent/AGENTS.md",
 )
 
 
@@ -34,7 +36,7 @@ def main() -> None:
     parser.add_argument(
         "--published-only",
         action="store_true",
-        help="Check only the three repository-owned global files",
+        help="Check only the repository-owned global files",
     )
     args = parser.parse_args()
     files = PUBLISHED_FILES if args.published_only else INSTALLED_FILES + PUBLISHED_FILES

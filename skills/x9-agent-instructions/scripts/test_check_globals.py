@@ -60,11 +60,12 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("use a project-relative path and say why", self.skill)
         self.assertIn("when the target runtime loads it automatically", self.skill)
 
-    def test_global_contract_includes_all_three_harnesses(self):
+    def test_global_contract_includes_every_harness(self):
         self.assertIn("`~/.config/opencode/AGENTS.md`", self.skill)
         self.assertIn("`~/.claude/CLAUDE.md`", self.skill)
         self.assertIn("`~/.codex/AGENTS.md`", self.skill)
-        self.assertIn("byte-identical in all three", self.skill)
+        self.assertIn("`~/.pi/agent/AGENTS.md`, if it exists", self.skill)
+        self.assertIn("byte-identical in every file", self.skill)
 
 
 if __name__ == "__main__":

@@ -508,7 +508,7 @@ codex plugin add x9-agent-skills@xonika9
 
 ## Глобальные файлы инструкций
 
-В репозитории есть примеры глобальных инструкций для [OpenCode](global-files/opencode/AGENTS.md), [Codex](global-files/codex/AGENTS.md) и [Claude Code](global-files/claude/CLAUDE.md): язык общения, что агент может делать сам, сохранение твоих изменений, проверяемый критерий готовности, работа с браузером и субагентами. Не затирай ими свой файл. Сохрани копию и попроси агента:
+В репозитории есть примеры глобальных инструкций для [OpenCode](global-files/opencode/AGENTS.md), [Codex](global-files/codex/AGENTS.md), [Claude Code](global-files/claude/CLAUDE.md) и [Pi](global-files/pi/AGENTS.md): язык общения, что агент может делать сам, сохранение твоих изменений, проверяемый критерий готовности, работа с браузером и субагентами. Не затирай ими свой файл. Сохрани копию и попроси агента:
 
 ```text
 Используй x9-agent-instructions: изучи эти примеры и добавь только подходящие мне правила

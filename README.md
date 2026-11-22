@@ -508,7 +508,7 @@ The skills use the open Agent Skills format and are checked in OpenCode, Claude 
 
 ## Global instruction files
 
-The repository also includes example global instructions for [OpenCode](global-files/opencode/AGENTS.md), [Codex](global-files/codex/AGENTS.md), and [Claude Code](global-files/claude/CLAUDE.md): language, what the agent may do on its own, preserving your changes, verifiable completion, browser routing, and subagent use. Do not overwrite your own file with them. Back it up and ask the agent:
+The repository also includes example global instructions for [OpenCode](global-files/opencode/AGENTS.md), [Codex](global-files/codex/AGENTS.md), [Claude Code](global-files/claude/CLAUDE.md), and [Pi](global-files/pi/AGENTS.md): language, what the agent may do on its own, preserving your changes, verifiable completion, browser routing, and subagent use. Do not overwrite your own file with them. Back it up and ask the agent:
 
 ```text
 Use x9-agent-instructions to review these examples and merge only the rules that fit my setup

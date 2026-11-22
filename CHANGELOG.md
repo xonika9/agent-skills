@@ -4,6 +4,8 @@
 
 ### Highlights
 
+- The repository now includes global instructions for Pi (`global-files/pi/AGENTS.md`), and `x9-agent-instructions` checks that their shared part matches the other runtimes when Pi has a global instruction file.
+
 ### Install / update
 
 ### Compatibility

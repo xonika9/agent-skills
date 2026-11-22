@@ -11,6 +11,8 @@ FILES = (
     Path.home() / ".claude/CLAUDE.md",
     Path.home() / ".codex/AGENTS.md",
 )
+# Checked only where Pi has a global instruction file.
+OPTIONAL_FILES = (Path.home() / ".pi/agent/AGENTS.md",)
 
 
 def extract(path: Path):
@@ -24,12 +26,13 @@ def extract(path: Path):
 
 def main():
     try:
-        blocks = [extract(path) for path in FILES]
+        files = FILES + tuple(path for path in OPTIONAL_FILES if path.exists() or path.is_symlink())
+        blocks = [extract(path) for path in files]
     except (OSError, ValueError) as exc:
         print(f"FAIL: {exc}")
         raise SystemExit(1)
     if any(block != blocks[0] for block in blocks[1:]):
-        print("FAIL: shared personal core differs across OpenCode, Claude Code, and Codex")
+        print("FAIL: shared personal core differs across the global instruction files")
         raise SystemExit(1)
     print("PASS: shared personal core is byte-identical")
 

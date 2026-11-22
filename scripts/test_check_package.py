@@ -15,6 +15,7 @@ PUBLISHED_GLOBAL_FILES = (
     ROOT / "global-files/opencode/AGENTS.md",
     ROOT / "global-files/claude/CLAUDE.md",
     ROOT / "global-files/codex/AGENTS.md",
+    ROOT / "global-files/pi/AGENTS.md",
 )
 
 

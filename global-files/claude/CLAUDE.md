@@ -70,8 +70,6 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ## Claude Code runtime
 
-- Run multi-line scripts from a scratchpad file (`python3 <file>`), not inline via heredoc or `-c`, and avoid zsh-only expansions such as `${(f)…}`: Claude Code's removal safety check cannot parse them and stops for user approval even in bypass mode.
-
 ### Subagent routing
 
 - Set explicit `model` and `effort` on every non-fork worker, using only the controls its live interface exposes. If a needed control is missing, say so; do not claim a model or effort you could not set. A fork inherits the parent's model and effort, so use one only when both already match the route for the worker's role.
