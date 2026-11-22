@@ -4,16 +4,31 @@
 
 ### Highlights
 
-- The repository now includes global instructions for Pi (`global-files/pi/AGENTS.md`), and `x9-agent-instructions` checks that their shared part matches the other runtimes when Pi has a global instruction file.
-- The Codex global instructions retain the `rm -f` restriction for routine removals, bound command waits by the session's limits, and prevent duplicate tasks when retrying creation. Codex handles its managed worktrees and provides its own completion guidance. The subagent rules retain model, context, and failure-handling preferences in a shorter form.
-
 ### Install / update
-
-- Update the installed Codex global instructions.
 
 ### Compatibility
 
 ### Breaking changes
+
+## 26.11.22.1 - 2026-11-22
+
+### Highlights
+
+- The repository now includes global instructions for Pi (`global-files/pi/AGENTS.md`), and `x9-agent-instructions` checks that their shared part matches the other runtimes when Pi has a global instruction file.
+- The Codex global instructions retain the `rm -f` restriction for routine removals, bound command waits by the session's limits, and prevent duplicate tasks when retrying creation. Codex handles its managed worktrees and provides its own completion guidance. The subagent rules retain model, context, and failure-handling preferences in a shorter form.
+- The Claude Code global instructions no longer include the rule to run multi-line scripts from a scratchpad file.
+
+### Install / update
+
+- Update `x9-agent-instructions` through the existing skill or plugin route, and update the installed global instruction files for Codex and Claude Code. For Pi, merge the rules you want from the new example into `~/.pi/agent/AGENTS.md`.
+
+### Compatibility
+
+- The `x9-agent-instructions` global check fails when `~/.pi/agent/AGENTS.md` exists but lacks the shared core or has a different one; without that file it works as before.
+
+### Breaking changes
+
+- None.
 
 ## 26.11.20.2 - 2026-11-20
 
