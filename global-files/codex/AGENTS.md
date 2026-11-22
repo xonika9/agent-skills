@@ -72,22 +72,18 @@ Treat prior beliefs as hypotheses when the answer depends on current files, tool
 
 ### Shell commands
 
-- Delete without `-f` (`rm --`, `rm -r --`), including inside `trap` or `sh -c`; guard a possibly missing file with `[ -e "$f" ] && rm -- "$f"`. Codex treats `-f` deletions as dangerous: it stops for user approval under T3 full access and rejects them under `never` approval.
-- While waiting for a running command to exit with nothing else to do, poll it with the longest wait the tool accepts; the poll returns as soon as the command exits.
-
-### Turn ending
-
-- Do not end a turn on an offer or proposed next step that the current request already authorizes; take the step and state any assumption it rests on.
+- Delete without `-f` (`rm --`, `rm -r --`), including in `trap` and `sh -c`. Forced removal can prompt for approval even in T3 Code Full Access and can be rejected under `never` approval. For an optional file, use `if [ -e "$f" ] || [ -L "$f" ]; then rm -- "$f"; fi`.
+- When a running command is the only thing left to wait for, use a long poll on its existing session within the active wait limits. The poll can return on exit; avoid repeated short status checks.
 
 ### Local storage hygiene
 
-- Treat `$CODEX_HOME/evidence` and `$CODEX_HOME/worktrees` as bounded task storage, not permanent archives. Do not retain reconstructible binaries, package archives, dependency caches, build outputs, or completed worktrees there after the task.
-- Before completing a task that created or materially expanded either directory, report its size and disposition. Remove task-created disposable data only when deletion is already authorized; otherwise ask whether to keep or remove it. Preserve user changes and evidence required for resumability or audit.
+- Keep `$CODEX_HOME/evidence` and manually created worktrees under `$CODEX_HOME/worktrees` as bounded task storage. Leave Codex-managed worktrees to the app's cleanup lifecycle.
+- Report the size and disposition of task data created there or materially expanded by the task. Remove disposable task outputs only when authorized; otherwise ask whether to keep or remove them. Preserve user changes and evidence needed to resume or audit the work.
 
 ### User-owned task creation
 
-- Treat creation of a user-owned task or top-level conversation as a non-idempotent external mutation. Resolve the current creation, listing, and reading tools from the live catalog. Give each requested task a distinct title.
-- If creation times out or returns an error that does not explicitly prove rejection before dispatch, do not retry immediately. First list existing tasks and, when needed, read matching candidates to reconcile by title, project, prompt, and creation time. Reuse the matching task; create a replacement only after proving that no matching task exists.
+- Give each requested task or top-level conversation a distinct title. When the tool documents safe retries, supply a stable request key on the first call and reuse it on retry (for example, `clientRequestId` with `t3_thread_launch`).
+- If creation may have succeeded and a safe retry is unavailable, list existing tasks and read candidates as needed to match by title, project, prompt, and creation time. Reuse the matching task; create a replacement only after confirming no match exists.
 - If duplicate tasks are discovered, identify a canonical task and preserve any unique work. Report the duplicates; stop or archive them only when that cleanup is explicitly authorized.
 
 ### Subagent delegation
@@ -96,6 +92,5 @@ The named controls below apply only to native Codex subagents; use the current o
 
 - Subject to the shared delegation restrictions, inherit the primary session's model and reasoning effort for substantive delegated work; do not configure a lower-cost subagent default. An explicit user or applicable skill model choice takes precedence within those restrictions.
 - Use `fork_turns: "none"` by default. Include recent conversation context only when the subagent's task cannot be made self-contained.
-- Give each worker a complete bounded workflow through focused testing and evidence collection; do not route routine execution steps back through the parent.
-- Complete independent work before waiting. Wait only for active direct children you spawned. Omit `timeout_ms` to use the configured long default; use a shorter timeout only for a real task deadline, never for status polling. Process completions and action-requiring messages before waiting again. Treat one long timeout as a liveness checkpoint: take at most one `list_agents` snapshot and, if the children remain active with no failure evidence, wait again without narrating. After a second consecutive long timeout or a task-specific deadline, inspect or intervene. Interrupt, replace, or duplicate a worker only with concrete failure evidence.
-- Workers send early messages only when the owner must act before their final result, such as for a blocking dependency, required decision, or failure. Otherwise include findings in the final response. Send findings to the explicit owner or otherwise the parent. Reviewers return consolidated findings and exit; the parent can resume them with `followup_task`.
+- Have each worker complete its assignment, including focused verification and evidence collection. Workers message the owner early only when the owner needs to act before the result. Otherwise, deliver consolidated findings to the owner or parent in the final response.
+- Finish independent work before waiting on active direct children. Use the native wait's long default unless a deadline requires a shorter wait, and handle completions or actionable messages before waiting again. After one timeout, check status once and keep waiting if the child is active and shows no signs of failure. After a second consecutive timeout or a deadline, investigate. Interrupt, replace, or duplicate a worker only with evidence of failure.

@@ -5,8 +5,11 @@
 ### Highlights
 
 - The repository now includes global instructions for Pi (`global-files/pi/AGENTS.md`), and `x9-agent-instructions` checks that their shared part matches the other runtimes when Pi has a global instruction file.
+- The Codex global instructions retain the `rm -f` restriction for routine removals, bound command waits by the session's limits, and prevent duplicate tasks when retrying creation. Codex handles its managed worktrees and provides its own completion guidance. The subagent rules retain model, context, and failure-handling preferences in a shorter form.
 
 ### Install / update
+
+- Update the installed Codex global instructions.
 
 ### Compatibility
 
