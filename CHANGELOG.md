@@ -4,11 +4,19 @@
 
 ### Highlights
 
+- In Russian replies, the global instructions for every runtime now let agents use common IT jargon such as «задеплоить» or «смержить» instead of inventing Russian calques for it. Untranslated English words in Russian sentences are still ruled out, except for exact names, commands, and paths.
+
 ### Install / update
+
+- Update the installed global instruction files for Claude Code, Codex, OpenCode, and Pi.
 
 ### Compatibility
 
+- No other global rules changed.
+
 ### Breaking changes
+
+- None.
 
 ## 26.11.22.1 - 2026-11-22
 

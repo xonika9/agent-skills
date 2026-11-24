@@ -49,7 +49,8 @@ for changes made outside the launched chats.
   for an outside cause, a failed deploy or server check, spend near its
   limit, a stuck chat, or a chat waiting for the owner; those lines say what
   broke, what was done, and what the owner must do. Unchanged open questions
-  become one line with their count; only new questions are written out. The
+  become one line with their count; only new questions are written out,
+  numbered after the open ones. The
   details go into the next report.
 
 ## Report
