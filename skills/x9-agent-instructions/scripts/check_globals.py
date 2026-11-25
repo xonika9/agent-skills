@@ -11,8 +11,11 @@ FILES = (
     Path.home() / ".claude/CLAUDE.md",
     Path.home() / ".codex/AGENTS.md",
 )
-# Checked only where Pi has a global instruction file.
-OPTIONAL_FILES = (Path.home() / ".pi/agent/AGENTS.md",)
+# Checked only where Pi or Antigravity has a global instruction file.
+OPTIONAL_FILES = (
+    Path.home() / ".pi/agent/AGENTS.md",
+    Path.home() / ".gemini/AGENTS.md",
+)
 
 
 def extract(path: Path):

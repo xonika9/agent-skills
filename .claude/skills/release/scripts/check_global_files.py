@@ -13,12 +13,14 @@ PUBLISHED_FILES = (
     ROOT / "global-files/claude/CLAUDE.md",
     ROOT / "global-files/codex/AGENTS.md",
     ROOT / "global-files/pi/AGENTS.md",
+    ROOT / "global-files/antigravity/AGENTS.md",
 )
 INSTALLED_FILES = (
     Path.home() / ".config/opencode/AGENTS.md",
     Path.home() / ".claude/CLAUDE.md",
     Path.home() / ".codex/AGENTS.md",
     Path.home() / ".pi/agent/AGENTS.md",
+    Path.home() / ".gemini/AGENTS.md",
 )
 
 

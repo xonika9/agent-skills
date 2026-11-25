@@ -65,6 +65,7 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn("`~/.claude/CLAUDE.md`", self.skill)
         self.assertIn("`~/.codex/AGENTS.md`", self.skill)
         self.assertIn("`~/.pi/agent/AGENTS.md`, if it exists", self.skill)
+        self.assertIn("`~/.gemini/AGENTS.md` for Antigravity, if it exists", self.skill)
         self.assertIn("byte-identical in every file", self.skill)
 
 

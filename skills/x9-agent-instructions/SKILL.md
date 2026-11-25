@@ -111,6 +111,7 @@ The personal global instructions live in one file per runtime:
 - `~/.claude/CLAUDE.md`
 - `~/.codex/AGENTS.md`
 - `~/.pi/agent/AGENTS.md`, if it exists
+- `~/.gemini/AGENTS.md` for Antigravity, if it exists
 
 They all share one block, between `<!-- BEGIN SHARED PERSONAL CORE -->` and `<!-- END SHARED PERSONAL CORE -->`. Keep that block byte-identical in every file, and read all the files before changing any of them.
 
