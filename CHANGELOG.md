@@ -4,16 +4,30 @@
 
 ### Highlights
 
-- The repository now includes global instructions for Antigravity (`global-files/antigravity/AGENTS.md`, installed as `~/.gemini/AGENTS.md`), and `x9-agent-instructions` checks that their shared part matches the other runtimes when that file exists.
-- In Russian replies, the global instructions for every runtime now let agents use common IT jargon such as «задеплоить» or «смержить» instead of inventing Russian calques for it. Untranslated English words in Russian sentences are still ruled out, except for exact names, commands, and paths.
-
 ### Install / update
-
-- Update the installed global instruction files for Claude Code, Codex, OpenCode, and Pi.
 
 ### Compatibility
 
-- No other global rules changed.
+### Breaking changes
+
+## 26.11.26.1 - 2026-11-26
+
+### Highlights
+
+- The repository now includes global instructions for Antigravity (`global-files/antigravity/AGENTS.md`, installed as `~/.gemini/AGENTS.md`), and `x9-agent-instructions` checks that their shared part matches the other runtimes when that file exists.
+- In Russian replies, the global instructions for every runtime now let agents use common IT jargon such as «задеплоить» or «смержить» instead of inventing Russian calques for it. Untranslated English words in Russian sentences are still ruled out, except for exact names, commands, and paths.
+- The Pi global instructions (`global-files/pi/AGENTS.md`) now wait for long-running commands inside the turn as a single foreground `bash` call without `timeout` so idle-session timeouts do not leave work unattended.
+- `x9-diagrams` now recognizes an already installed `pele` library as a local Mermaid renderer for Pele-backed targets or browserless Mermaid-to-SVG exports, while keeping Mermaid.js targets marked `DEGRADED` when only `pele` is available because its layout, theming, and HTML-label support differ.
+- `x9-cto` pilot updates number newly reported questions after unchanged open ones.
+
+### Install / update
+
+- Update `x9-agent-instructions`, `x9-diagrams`, and `x9-cto` through the existing skill or plugin route, and update the installed global instruction files for Claude Code, Codex, OpenCode, and Pi. For Antigravity, merge the rules you want from `global-files/antigravity/AGENTS.md` into `~/.gemini/AGENTS.md`.
+
+### Compatibility
+
+- The `x9-agent-instructions` global check fails when `~/.gemini/AGENTS.md` exists but lacks the shared core or has a different one; without that file it works as before.
+- `pele` is optional for `x9-diagrams` and is neither bundled nor required.
 
 ### Breaking changes
 

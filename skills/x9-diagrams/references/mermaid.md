@@ -193,7 +193,10 @@ The target surface owns compatibility. Prefer, in order:
 
 1. the actual chat, documentation system, or application renderer;
 2. the repository's existing Mermaid dependency or validation command;
-3. an already available compatible CLI or editor.
+3. an already available compatible CLI or editor;
+4. an already installed `pele` library when the target renders with Pele (such as Obsidian) or only needs a Mermaid-to-SVG export without a browser renderer.
+
+When the target uses Mermaid.js and only `pele` is available locally, use it only for syntax checks and an approximate preview, and report `DEGRADED` for target visual proof: `pele` uses its own layout engine, CSS-variable theming instead of Mermaid themes, and no arbitrary HTML labels.
 
 Inspect the produced image or live rendering, not only the source. A renderer error blocks completion. A syntactically valid diagram with unreadable layout is still unfinished.
 
