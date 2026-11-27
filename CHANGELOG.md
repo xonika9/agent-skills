@@ -4,11 +4,19 @@
 
 ### Highlights
 
+- `x9-codex-imagegen` now supports parallel batch generation (`--batch <jobs.json>`, up to 3 concurrent Codex runs by default) and directs agents to run multiple independent images in one parallel batch instead of sequentially.
+
 ### Install / update
+
+- Update `x9-codex-imagegen` through the existing skill or plugin route.
 
 ### Compatibility
 
+- Single-image `--brief-file` / `--out` invocations are unchanged.
+
 ### Breaking changes
+
+- None.
 
 ## 26.11.26.1 - 2026-11-26
 

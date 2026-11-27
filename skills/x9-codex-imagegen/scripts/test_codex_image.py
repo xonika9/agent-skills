@@ -84,6 +84,42 @@ elif mode == "hang":
     subprocess.Popen([sys.executable, "-c", late])
     sys.stdout.flush()
     time.sleep(60)
+elif mode == "batch_parallel":
+    import fcntl, time
+    tracker = Path(os.environ["BATCH_TRACKER"])
+    def update(delta: int) -> None:
+        with tracker.open("a+") as fh:
+            fcntl.flock(fh, fcntl.LOCK_EX)
+            fh.seek(0)
+            raw = fh.read().strip()
+            cur, peak = (int(x) for x in raw.split()) if raw else (0, 0)
+            cur += delta
+            peak = max(peak, cur)
+            fh.seek(0)
+            fh.truncate()
+            fh.write(f"{{cur}} {{peak}}")
+            fh.flush()
+            fcntl.flock(fh, fcntl.LOCK_UN)
+    update(1)
+    try:
+        time.sleep(0.4)
+        Path(out).write_bytes(png)
+    finally:
+        update(-1)
+    kind = "verbatim" if "verbatim" in task.splitlines()[0] else "brief"
+    reply = f"Saved ({{kind}}) for {{Path(out).name}}"
+    if kind == "brief":
+        reply += f"\\nFINAL_PROMPT: prompt for {{Path(out).name}}"
+    print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": reply}}}}))
+elif mode == "batch_mixed":
+    stem = Path(out).stem
+    if stem == "ok":
+        Path(out).write_bytes(png)
+        print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": "FINAL_PROMPT: ok prompt"}}}}))
+    elif stem == "incomplete":
+        Path(out).write_bytes(png)
+    else:
+        print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": "FAILED=request rejected by the safety system"}}}}))
 if mode in ("alpha", "recover"):
     print(json.dumps({{"type": "item.completed", "item": {{"type": "agent_message", "text": "FINAL_PROMPT: a red square, landscape 3:2"}}}}))
 """
@@ -96,6 +132,20 @@ def run(tmp: Path, mode: str, out: Path, *extra: str, proxy: str = "") -> tuple[
     brief.write_text("a red square, landscape 3:2")
     proc = subprocess.run([sys.executable, str(SCRIPT), "--brief-file", str(brief), "--out", str(out),
                            "--codex", str(tmp / "codex"), "--log-dir", str(tmp / f"logs-{mode}"), *extra],
+                          capture_output=True, text=True, env=env)
+    return proc.returncode, json.loads(proc.stdout)
+
+
+def run_batch(tmp: Path, mode: str, jobs: object, *extra: str, proxy: str = "",
+              extra_env: dict[str, str] | None = None) -> tuple[int, dict]:
+    env = dict(os.environ, FAKE_MODE=mode, CODEX_HOME=str(tmp / f"home-batch-{mode}"), X9_CODEX_IMAGE_PROXY=proxy)
+    env.pop("HTTPS_PROXY", None)
+    if extra_env:
+        env.update(extra_env)
+    manifest = tmp / f"jobs-{mode}-{time.time_ns()}.json"
+    manifest.write_text(json.dumps(jobs))
+    proc = subprocess.run([sys.executable, str(SCRIPT), "--batch", str(manifest),
+                           "--codex", str(tmp / "codex"), "--log-dir", str(tmp / f"logs-batch-{mode}"), *extra],
                           capture_output=True, text=True, env=env)
     return proc.returncode, json.loads(proc.stdout)
 
@@ -229,6 +279,101 @@ def main() -> None:
         os.utime(tmp / "g.png", (0, 0))
         code, result = run(tmp, "network", tmp / "g.png", "--overwrite")
         assert code == 1 and result["status"] == "network_error", result
+
+        # Batch parallel mode: runs concurrently up to --parallel, preserves order, supports inline brief + brief_file + images + verbatim.
+        tracker = tmp / "concurrency.txt"
+        ref_img = tmp / "ref.png"
+        ref_img.write_bytes(png_bytes(10, 10))
+        file_brief = tmp / "batch-brief.txt"
+        file_brief.write_text("brief from file")
+        batch_jobs = [
+            {"brief": "first image", "out": str(tmp / "batch-1.png")},
+            {"brief_file": str(file_brief), "out": str(tmp / "batch-2.png"), "images": [str(ref_img)]},
+            {"brief": "  exact verbatim  ", "out": str(tmp / "batch-3.png"), "verbatim": True},
+            {"brief": "fourth image", "out": str(tmp / "batch-4.png")},
+        ]
+        code, result = run_batch(tmp, "batch_parallel", batch_jobs, "--parallel", "2",
+                                 extra_env={"BATCH_TRACKER": str(tracker)})
+        assert code == 0 and result["status"] == "ok", result
+        assert result["parallel"] == 2 and result["counts"] == {"ok": 4}, result
+        assert [Path(r["out"]).name for r in result["results"]] == [
+            "batch-1.png", "batch-2.png", "batch-3.png", "batch-4.png",
+        ], result
+        assert result["results"][2]["final_prompt"] == "  exact verbatim  ", result
+        cur, peak = (int(x) for x in tracker.read_text().split())
+        assert cur == 0 and peak == 2, f"expected peak concurrency 2, got cur={cur} peak={peak}"
+
+        # Batch partial and all-failed statuses.
+        mixed_jobs = [
+            {"brief": "one", "out": str(tmp / "ok.png")},
+            {"brief": "two", "out": str(tmp / "incomplete.png")},
+            {"brief": "three", "out": str(tmp / "refused.png")},
+        ]
+        code, result = run_batch(tmp, "batch_mixed", mixed_jobs)
+        assert code == 1 and result["status"] == "partial", result
+        assert result["counts"] == {"ok": 1, "incomplete": 1, "failed": 1}, result
+        assert [r["status"] for r in result["results"]] == ["ok", "incomplete", "failed"], result
+
+        code, result = run_batch(tmp, "policy", [
+            {"brief": "one", "out": str(tmp / "fail-1.png")},
+            {"brief": "two", "out": str(tmp / "fail-2.png")},
+        ])
+        assert code == 1 and result["status"] == "failed", result
+        assert result["counts"] == {"failed": 2}, result
+
+        # Batch pre-flight validation fails before starting any Codex run.
+        code, result = run_batch(tmp, "copy", [
+            {"brief": "one", "out": str(tmp / "dup.png")},
+            {"brief": "two", "out": str(tmp / "dup.png")},
+        ])
+        assert code == 1 and result["status"] == "usage_error" and "duplicate" in result["error"], result
+        assert not (tmp / "dup.png").exists()
+
+        code, result = run_batch(tmp, "copy", [
+            {"brief": "one", "out": str(tmp / "bad-key.png"), "image": str(ref_img)},
+        ])
+        assert code == 1 and result["status"] == "usage_error" and "unknown key" in result["error"], result
+        assert not (tmp / "bad-key.png").exists()
+
+        code, result = run_batch(tmp, "copy", [])
+        assert code == 1 and result["status"] == "usage_error", result
+
+        code, result = run_batch(tmp, "copy", [{"brief": "one", "out": str(tmp / "p0.png")}], "--parallel", "0")
+        assert code == 1 and result["status"] == "usage_error", result
+
+        code, result = run_batch(tmp, "copy", [{"brief": "one", "out": str(tmp / "combo.png")}],
+                                 "--out", str(tmp / "other.png"))
+        assert code == 1 and result["status"] == "usage_error", result
+
+        # Dead proxy in batch mode fails before starting any run.
+        code, result = run_batch(tmp, "copy", [
+            {"brief": "one", "out": str(tmp / "bp-1.png")},
+            {"brief": "two", "out": str(tmp / "bp-2.png")},
+        ], proxy="http://127.0.0.1:1")
+        assert code == 1 and result["status"] == "proxy_unreachable", result
+        assert not (tmp / "bp-1.png").exists() and not (tmp / "bp-2.png").exists()
+
+        # SIGTERM during a running batch terminates all active Codex process groups and leaves no late files.
+        hang_manifest = tmp / "hang-batch.json"
+        hang_manifest.write_text(json.dumps([
+            {"brief": "one", "out": str(tmp / "bh-1.png")},
+            {"brief": "two", "out": str(tmp / "bh-2.png")},
+            {"brief": "three", "out": str(tmp / "bh-3.png")},
+        ]))
+        env = dict(os.environ, FAKE_MODE="hang", CODEX_HOME=str(tmp / "home-batch-int"), X9_CODEX_IMAGE_PROXY="")
+        proc = subprocess.Popen(
+            [sys.executable, str(SCRIPT), "--batch", str(hang_manifest), "--parallel", "2",
+             "--codex", str(tmp / "codex"), "--log-dir", str(tmp / "logs-batch-int")],
+            stdout=subprocess.PIPE, text=True, env=env,
+        )
+        time.sleep(1.5)
+        proc.send_signal(signal.SIGTERM)
+        result = json.loads(proc.communicate(timeout=30)[0])
+        assert proc.returncode == 1 and result["status"] == "interrupted", result
+        assert all(r["status"] == "interrupted" for r in result["results"]), result
+        time.sleep(4)
+        for idx in (1, 2, 3):
+            assert not (tmp / f"bh-{idx}.png").exists(), "an interrupted batch must not leave a process that writes files"
 
     print("ok")
 

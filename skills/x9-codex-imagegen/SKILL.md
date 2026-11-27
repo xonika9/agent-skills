@@ -17,21 +17,31 @@ When the user supplies a finished prompt, pass it with `--verbatim` so Codex sen
 
 ## Generate
 
+Single image:
+
 ```bash
 python3 <skill-directory>/scripts/codex_image.py --brief-file <brief.txt> --out <absolute/path.png> [--image <reference.png>] [--root <dir>] [--verbatim]
 ```
 
-- A run takes from under a minute to several minutes, and Codex may refine the image over more than one generation. Give the command a timeout of at least 15 minutes or run it in the background and wait for it; a run stopped early looks like a failure and invites a second, duplicate generation.
+Multiple independent images — run them in parallel in one batch instead of sequentially:
+
+```bash
+python3 <skill-directory>/scripts/codex_image.py --batch <jobs.json> [--parallel 3] [--root <dir>] [--verbatim] [--overwrite]
+```
+
+`<jobs.json>` is a JSON array of objects, each with `out`, either inline `brief` or `brief_file`, and optional `images` (array of paths), `root`, `verbatim`, `overwrite`, `effort`, `timeout`, and `log_dir`. Put dependent images (one using an earlier generated file in `images`) in a later call after their dependency finishes.
+
+- A run takes from under a minute to several minutes, and Codex may refine the image over more than one generation. Give a single run a timeout of at least 15 minutes (more for batches with multiple waves) or run it in the background and wait for it; a run stopped early looks like a failure and invites a second, duplicate generation.
 - `--out` must lie inside `--root`, which defaults to the destination folder; Codex can write only inside that root.
 - The script refuses to replace an existing file. Pass `--overwrite` only when the user asked to replace it.
-- Up to 3 runs may proceed in parallel, each with its own `--out`.
+- Up to 3 Codex runs proceed in parallel by default (`--parallel`, default 3), each with its own `out`.
 - When `X9_CODEX_IMAGE_PROXY` is set, the script sends the Codex run through that HTTP proxy. The user sets it on a machine whose network drops connections that stay silent while an image renders; do not set or change it yourself.
 
 Generate only the images the user asked for. Never substitute an image drawn another way (SVG, code, a local library) for a failed generation.
 
 ## Handle the result
 
-The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread_id`, `log_dir`, and `error`.
+The script prints JSON with `status`, `elapsed_seconds`, `final_prompt`, `thread_id`, `log_dir`, and `error`. In `--batch` mode, it prints `{status, parallel, elapsed_seconds, log_dir, counts, results}` where `status` is `ok`, `partial` (at least one `ok` or `incomplete`), `failed`, `interrupted`, `proxy_unreachable`, or `usage_error`, and each item in `results` uses the per-image statuses below. On `partial` or `failed`, retry only the failed retriable items — never re-run already-completed outputs.
 
 - `ok` — the PNG signature, dimensions, and `has_alpha` were read from disk; `has_alpha` identifies an alpha channel, not whether pixels are transparent. For a requested transparent background, inspect the saved image and verify that the intended background is transparent before reporting that requirement complete. `source` is `codex-copy`, or `recovered:<path>` when Codex generated the image but did not save it. Compare `width` and `height` with the requested proportions and crop or scale a copy when they differ.
 - `incomplete` — the PNG is verified and available at `out`, but `final_prompt` is missing or empty. Deliver the PNG, check its dimensions and transparency as for `ok`, and state that the final prompt is unavailable. Do not generate again for missing metadata; the command exits 1 to distinguish this from complete success.
