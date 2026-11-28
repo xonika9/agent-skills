@@ -239,11 +239,11 @@ def stop_group(proc: subprocess.Popen) -> None:
         try:
             os.killpg(proc.pid, signal.SIGTERM)
             proc.wait(timeout=10)
-        except (ProcessLookupError, subprocess.TimeoutExpired):
+        except (ProcessLookupError, PermissionError, subprocess.TimeoutExpired):
             pass
         try:
             os.killpg(proc.pid, signal.SIGKILL)  # whatever ignored SIGTERM or outlived the leader
-        except ProcessLookupError:
+        except (ProcessLookupError, PermissionError):
             pass
     proc.wait()
 

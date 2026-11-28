@@ -38,8 +38,11 @@ macOS: create `~/Applications/Edge (Agent).app` in Script Editor and save it as 
 Application with this AppleScript:
 
 ```applescript
-do shell script "open -gna \"Microsoft Edge\" --args --user-data-dir=\"$HOME/Library/Application Support/Microsoft Edge Automation\" --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223"
+do shell script "open -gna \"Microsoft Edge\" --args --user-data-dir=\"$HOME/Library/Application Support/Microsoft Edge Automation\" --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223 --silent-debugger-extension-api"
 ```
+
+`--silent-debugger-extension-api` suppresses Chromium's "started debugging this browser"
+infobar so it cannot be dismissed and detach Browse.
 
 Linux: see [Linux adapter](#linux-adapter).
 
@@ -153,7 +156,7 @@ Verified on Fedora with Microsoft Edge from `/opt/microsoft/msedge/msedge`:
 | Parameter | Value |
 |---|---|
 | User-data directory | `~/.config/microsoft-edge-agent` |
-| Launcher | `~/.local/bin/edge-agent` (desktop entry `~/.local/share/applications/microsoft-edge-agent.desktop`), which starts Edge with `--user-data-dir=<profile> --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223` and refuses when port `9223` answers but belongs to another profile |
+| Launcher | `~/.local/bin/edge-agent` (desktop entry `~/.local/share/applications/microsoft-edge-agent.desktop`), which starts Edge with `--user-data-dir=<profile> --remote-debugging-address=127.0.0.1 --remote-debugging-port=9223 --silent-debugger-extension-api` and refuses when port `9223` answers but belongs to another profile |
 | `chrome-devtools` MCP | `~/.local/bin/chrome-devtools-mcp-edge --browserUrl http://127.0.0.1:9223 ...` instead of `npx` |
 | Browse | [Step 3](#3-install-browse-and-pair-the-extension), unchanged |
 

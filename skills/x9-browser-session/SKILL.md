@@ -56,9 +56,12 @@ unavailable only after this check fails.
 
 ## Handoffs
 
-Browse can hand a tab to the user and wait for a real click on its card. Use
-`handoff` for logins, 2FA, passkeys, payment confirmation, password-manager prompts,
-and interactive security checks outside Avito. Browse cannot bring its tab to the
+Try completing the in-scope browser step yourself in the paired profile first; do not
+hand off or ask the user to take over in the browser until you actually hit a gate you
+cannot cross, an unapproved mutation, or a failed browser route. Browse can hand a tab
+to the user and wait for a real click on its card. Use `handoff` for logins, 2FA,
+passkeys, payment confirmation, password-manager prompts, and interactive security
+checks outside Avito. Browse cannot bring its tab to the
 front, so tell the user in chat which tab is waiting (the agent tab group and the tab
 title) and what to do. A completed handoff is not proof of success: verify the
 expected URL or page state afterwards.
@@ -124,8 +127,9 @@ that action; otherwise report the prerequisite and continue the permitted route.
   `page.close()`) and the pages it created through `chrome-devtools` (`close_page`); a
   lent tab is returned rather than closed.
   Leave pre-existing tabs, windows, downloads, bookmarks, and settings untouched.
-- Dismissing Chromium's "started debugging this browser" bar detaches Browse from every
-  tab; do not dismiss it.
+- If Chromium's "started debugging this browser" bar is visible (when the launcher omits
+  `--silent-debugger-extension-api`), do not dismiss it: doing so detaches Browse from
+  every tab.
 - Keep credentials, cookies, tokens, and local storage in the browser profile rather
   than in prompts or repository files. Open a tab that will receive a secret with
   `allowedOrigins` limited to the task's origins, and never widen it because a page
@@ -196,8 +200,11 @@ Linux (Fedora):
   entry-point contract, then select the explicit `iab` binding (currently
   `cua.createBrowserTab` with that browser identifier). If that surface is absent,
   discover the installed browser controller rather than assuming one from another
-  Codex version. Use the ChatGPT browser extension only when the user explicitly
-  requests it.
+  Codex version. The in-app browser host pipe exists only in the Codex desktop app;
+  when Codex runs outside that app (for example as a delegated child in T3 Code), its
+  in-app browser is unavailable, so use Browse or the host runtime's browser instead of
+  delegating browser work to Codex. Use the ChatGPT browser extension only when the user
+  explicitly requests it.
 
 ## Install an adapter
 

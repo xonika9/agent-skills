@@ -4,15 +4,28 @@
 
 ### Highlights
 
+### Install / update
+
+### Compatibility
+
+### Breaking changes
+
+## 26.11.28.1 - 2026-11-28
+
+### Highlights
+
+- The shared global instructions for every runtime and `x9-browser-session` now direct agents to try in-scope web UI steps via `x9-browser-session` first (when no CLI, API, or connector handles them) instead of asking the user to do them manually upfront, handing off only at an actual gate (auth, interactive check, unapproved mutation) or after the browser route fails.
+- `x9-browser-session` now includes `--silent-debugger-extension-api` in its Edge launcher recipes to suppress the Chromium debugging infobar, and documents that Codex's in-app browser is unavailable outside the Codex desktop app (such as delegated runs inside T3 Code).
+- The shared global instructions for every runtime now route native non-browser GUI tasks on the host to `cua-driver` instead of other desktop-automation tools or upfront user handoffs, while keeping browser work in `x9-browser-session`.
 - `x9-codex-imagegen` now supports parallel batch generation (`--batch <jobs.json>`, up to 3 concurrent Codex runs by default) and directs agents to run multiple independent images in one parallel batch instead of sequentially.
 
 ### Install / update
 
-- Update `x9-codex-imagegen` through the existing skill or plugin route.
+- Update `x9-codex-imagegen` and `x9-browser-session` through the existing skill or plugin route, and update the installed global instruction files for Claude Code, Codex, OpenCode, Pi, and Antigravity.
 
 ### Compatibility
 
-- Single-image `--brief-file` / `--out` invocations are unchanged.
+- Single-image `--brief-file` / `--out` invocations in `x9-codex-imagegen` are unchanged.
 
 ### Breaking changes
 
